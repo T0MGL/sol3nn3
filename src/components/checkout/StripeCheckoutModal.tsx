@@ -102,20 +102,7 @@ const CheckoutForm = ({
       <div className="p-4 bg-secondary/20 rounded-lg border border-border/30">
         <PaymentElement
           options={{
-            layout: 'accordion',
-            wallets: {
-              applePay: 'auto',
-              googlePay: 'auto',
-            },
-            terms: {
-              card: 'never',
-              auBecsDebit: 'never',
-              bancontact: 'never',
-              ideal: 'never',
-              sepaDebit: 'never',
-              sofort: 'never',
-              usBankAccount: 'never'
-            },
+            layout: 'tabs',
             fields: {
               billingDetails: 'never'
             }
