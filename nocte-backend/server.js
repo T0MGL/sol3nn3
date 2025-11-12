@@ -152,7 +152,6 @@ app.post('/api/create-payment-intent', async (req, res) => {
     if (paymentMethodId && paymentMethodId !== 'pending') {
       paymentIntentData.payment_method = paymentMethodId;
       paymentIntentData.confirm = true;
-      paymentIntentData.automatic_payment_methods.allow_redirects = 'never';
     }
 
     // Add shipping information if provided
