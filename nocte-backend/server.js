@@ -30,7 +30,10 @@ const corsOptions = {
       'http://127.0.0.1:8080',
       'http://127.0.0.1:8081',
       'http://127.0.0.1:8082',
-      'http://127.0.0.1:8083'
+      'http://127.0.0.1:8083',
+      'https://nocte.studio',           // ← AGREGAR
+      'https://www.nocte.studio',       // ← AGREGAR
+      'https://api.nocte.studio'   
     ];
 
     if (allowedOrigins.indexOf(origin) !== -1) {
