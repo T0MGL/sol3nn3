@@ -101,32 +101,23 @@ const CheckoutForm = ({
       <div className="p-4 bg-secondary/20 rounded-lg border border-border/30">
         <PaymentElement
           options={{
-            layout: {
-              type: 'accordion',
-              defaultCollapsed: false,
-              radios: false,
-              spacedAccordionItems: true
-            },
+            layout: 'accordion',
             wallets: {
-              applePay: 'auto',
-              googlePay: 'auto',
+              applePay: 'always',
+              googlePay: 'always',
             },
             terms: {
-              card: 'never'
-            },
-            defaultValues: {
-              billingDetails: {
-                address: {
-                  country: 'PY'
-                }
-              }
+              card: 'never',
+              auBecsDebit: 'never',
+              bancontact: 'never',
+              idealBank: 'never',
+              p24Bank: 'never',
+              sepaDebit: 'never',
+              sofort: 'never',
+              usBankAccount: 'never'
             },
             fields: {
-              billingDetails: {
-                address: {
-                  country: 'never'
-                }
-              }
+              billingDetails: 'never'
             }
           }}
         />
@@ -326,76 +317,12 @@ export const StripeCheckoutModal = ({
                       colorBackground: '#000000',
                       colorText: '#F9FAFB',
                       colorDanger: '#DC2626',
-                      colorTextSecondary: '#9CA3AF',
-                      colorTextPlaceholder: '#6B7280',
                       fontFamily: 'system-ui, -apple-system, sans-serif',
                       fontSizeBase: '16px',
-                      fontWeightNormal: '400',
                       borderRadius: '8px',
-                      spacingUnit: '4px',
-                      colorIconTab: '#EF4444',
-                      colorIconTabSelected: '#EF4444',
-                      colorIconTabHover: '#DC2626',
-                      colorLogo: 'dark',
-                      focusBoxShadow: '0 0 0 1px #EF4444',
-                      focusOutline: '#EF4444',
-                    },
-                    rules: {
-                      '.Tab, .Block, .PickerItem': {
-                        backgroundColor: '#0a0a0a',
-                        borderColor: '#2a2a2a',
-                        boxShadow: 'none',
-                        color: '#F9FAFB',
-                      },
-                      '.Tab:hover, .PickerItem:hover': {
-                        backgroundColor: '#0a0a0a',
-                        borderColor: '#EF4444',
-                        boxShadow: '0 0 0 1px #EF4444',
-                        color: '#F9FAFB',
-                      },
-                      '.Tab--selected, .Tab--selected:hover': {
-                        backgroundColor: '#0a0a0a',
-                        borderColor: '#EF4444',
-                        boxShadow: '0 0 0 2px #EF4444',
-                        color: '#F9FAFB',
-                      },
-                      '.Input, .CodeInput, .PickerItem--selected': {
-                        backgroundColor: '#000000',
-                        borderColor: '#2a2a2a',
-                        boxShadow: 'none',
-                        color: '#F9FAFB',
-                      },
-                      '.Input:hover, .CodeInput:hover': {
-                        backgroundColor: '#000000',
-                        borderColor: '#3a3a3a',
-                      },
-                      '.Input:focus, .CodeInput:focus, .Input--invalid:focus': {
-                        backgroundColor: '#000000',
-                        borderColor: '#EF4444',
-                        boxShadow: '0 0 0 1px #EF4444',
-                        outline: 'none',
-                      },
-                      '.Label': {
-                        color: '#F9FAFB',
-                        fontWeight: '500',
-                        fontSize: '14px',
-                      },
-                      '.Error': {
-                        color: '#EF4444',
-                      },
-                      '.RedirectText': {
-                        color: '#9CA3AF',
-                      },
-                      '.DropdownItem': {
-                        backgroundColor: '#000000',
-                        color: '#F9FAFB',
-                      },
-                      '.DropdownItem:hover': {
-                        backgroundColor: '#1a1a1a',
-                      },
                     },
                   },
-                  loader: 'auto',
+                  paymentMethodOrder: ['apple_pay', 'google_pay', 'card'],
                 }}
               >
                 <CheckoutForm

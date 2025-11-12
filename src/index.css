@@ -72,19 +72,19 @@ All colors MUST be HSL.
   .glow-red {
     box-shadow: var(--glow-red);
   }
-  
+
   .glow-gold {
     box-shadow: var(--glow-gold);
   }
-  
+
   .gradient-red-overlay {
     background: var(--gradient-red);
   }
-  
+
   .animate-glow {
     animation: glow 2s ease-in-out infinite alternate;
   }
-  
+
   @keyframes glow {
     from {
       box-shadow: 0 0 20px hsl(0 91% 59% / 0.3);
@@ -93,4 +93,15 @@ All colors MUST be HSL.
       box-shadow: 0 0 40px hsl(0 91% 59% / 0.6);
     }
   }
+}
+
+/* Hide Stripe Dev Tools widget in development */
+.__PrivateStripeElement-devTools,
+.__PrivateStripeElement iframe[name*="devtools"],
+#stripe-devtools,
+[data-stripe-devtools] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
