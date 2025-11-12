@@ -81,6 +81,10 @@ const CheckoutForm = ({
             billing_details: {
               name: 'Customer',
               email: 'customer@nocte.studio',
+              phone: '+595123456789',
+              address: {
+                country: 'US',
+              },
             },
           },
         },
