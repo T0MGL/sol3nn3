@@ -147,6 +147,11 @@ app.post('/api/create-payment-intent', async (req, res) => {
         enabled: true,
         allow_redirects: 'never',
       },
+      payment_method_options: {
+        card: {
+          setup_future_usage: 'off_session',
+        },
+      },
     };
 
     // Only attach payment method and confirm if provided and not "pending"

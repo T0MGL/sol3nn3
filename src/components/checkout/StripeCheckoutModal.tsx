@@ -78,7 +78,15 @@ const CheckoutForm = ({
               applePay: 'auto',
               googlePay: 'auto',
             },
-            // Disable Link checkout
+            fields: {
+              billingDetails: {
+                address: 'never',
+              },
+            },
+            terms: {
+              card: 'never',
+            },
+            // Disable Link checkout completely
             paymentMethodOrder: ['card', 'apple_pay', 'google_pay']
           }}
         />
@@ -399,6 +407,7 @@ export const StripeCheckoutModal = ({
                     options={{
                       clientSecret,
                       locale: 'es',
+                      loader: 'never',
                       appearance: {
                         theme: 'night',
                         variables: {
