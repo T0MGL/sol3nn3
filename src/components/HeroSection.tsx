@@ -35,9 +35,9 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 md:gap-16 lg:gap-24 items-center">
           {/* Text Content - Order 2 on mobile, Order 1 on desktop */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             className="space-y-6 md:space-y-10 text-center lg:text-left order-2 lg:order-1 w-full"
           >
             <div className="space-y-4 md:space-y-6">
@@ -54,8 +54,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
             </div>
 
             <p className="text-base md:text-lg lg:text-xl text-foreground/70 leading-relaxed max-w-xl mx-auto lg:mx-0 font-light px-4 md:px-0">
-              Diseñados para dormir mejor. Científicamente probado para bloquear el 99% de luz azul.
-              Para emprendedores que viven en pantallas.
+              Úsalos mientras trabajas de noche. Duerme profundo después. Bloqueamos el 99% de luz azul para emprendedores que viven en pantallas.
             </p>
 
             <div className="space-y-6 pt-2 md:pt-4">
@@ -125,9 +124,9 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
           
           {/* Image - Order 1 on mobile (shows first), Order 2 on desktop */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
             className="relative order-1 lg:order-2 w-full"
           >
             <div className="absolute inset-0 bg-primary/10 rounded-full blur-[100px] md:blur-[120px] scale-75" />

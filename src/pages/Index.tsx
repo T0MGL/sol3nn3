@@ -3,6 +3,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { ScienceSection } from "@/components/ScienceSection";
 import { ProductGallery } from "@/components/ProductGallery";
 import { BenefitsSection } from "@/components/BenefitsSection";
+import { LifestyleSection } from "@/components/LifestyleSection";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { FAQSection } from "@/components/FAQSection";
@@ -305,6 +306,7 @@ const Index = () => {
         <ProductGallery />
         <ScienceSection />
         <BenefitsSection />
+        <LifestyleSection />
         <ComparisonTable />
         <TestimonialsSection />
         <FAQSection />
@@ -360,10 +362,25 @@ const Index = () => {
         <div className="container max-w-[1400px] mx-auto text-center space-y-5 md:space-y-6">
           <p className="text-2xl font-bold tracking-tighter opacity-70">NOCTE<sup className="text-[0.5em] ml-0.5">®</sup></p>
           <p className="text-muted-foreground font-light text-xs md:text-sm">
-            Lentes rojos para dormir mejor
+            Úsalos antes de dormir. Duerme profundo.
           </p>
+
+          {/* Payment Methods - Powered by Stripe */}
+          <div className="flex flex-col items-center justify-center gap-3 pt-2">
+            <div className="flex items-center gap-2">
+              <img
+                src="https://cdn.brandfolder.io/KGT2DTA4/at/8vbr8k4mr5xjwk4hxq4t9vs/Stripe_wordmark_-_blurple.svg"
+                alt="Powered by Stripe"
+                className="h-5 opacity-60"
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground/50">
+              Aceptamos Visa, Mastercard, American Express y más
+            </p>
+          </div>
+
           <p className="text-[10px] md:text-xs text-muted-foreground/60 font-light">
-            Desarrollado por Bright Idea ® Todos los Derechos Reservados
+            © 2025 NOCTE® Todos los Derechos Reservados
           </p>
         </div>
       </footer>

@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 const faqs = [
   {
     question: "¿Cómo funcionan los lentes rojos NOCTE?",
-    answer: "Los lentes rojos bloquean luz azul (400-550nm) que engaña al cerebro haciéndolo pensar que es de día. Al bloquearlo, tu cuerpo produce melatonina naturalmente. Duerme profundo sin pastillas.",
+    answer: "Úsalos 2-3 horas antes de dormir mientras trabajas o usas tu celular. Los lentes bloquean luz azul (400-550nm) que engaña al cerebro haciéndolo pensar que es de día. Al bloquearlo, tu cuerpo produce melatonina naturalmente y duermes profundo sin pastillas.",
   },
   {
     question: "¿Cuál es la garantía de NOCTE?",
@@ -34,10 +34,10 @@ export const FAQSection = () => {
     <section className="py-16 md:py-32 px-4 md:px-6 bg-gradient-to-b from-black via-card/20 to-black">
       <div className="container max-w-[900px] mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           className="text-center mb-12 md:mb-20 space-y-3 md:space-y-4"
         >
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold px-4">

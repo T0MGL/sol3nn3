@@ -15,7 +15,7 @@ const benefits = [
   {
     icon: MoonIcon,
     title: "Mejora el Sueño",
-    description: "Duermes 2-3 horas EXTRA cada noche. Sueño profundo, sin despertares.",
+    description: "Úsalos 2-3 horas antes de dormir mientras usas pantallas. Tu cuerpo producirá melatonina naturalmente.",
   },
 ];
 
@@ -24,19 +24,19 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.2,
+      staggerChildren: 0.1,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 15 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.6,
-      ease: "easeOut",
+      duration: 0.4,
+      ease: [0.25, 0.1, 0.25, 1],
     },
   },
 };
@@ -48,10 +48,10 @@ export const BenefitsSection = () => {
 
       <div className="container max-w-[1200px] mx-auto relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           className="text-center mb-12 md:mb-20 space-y-3 md:space-y-4"
         >
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold px-4">
@@ -63,7 +63,7 @@ export const BenefitsSection = () => {
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-50px" }}
           className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-12"
         >
           {benefits.map((benefit, index) => {
@@ -72,7 +72,7 @@ export const BenefitsSection = () => {
               <motion.div
                 key={index}
                 variants={itemVariants}
-                className="group relative p-8 md:p-10 bg-gradient-to-b from-card to-black border border-border/50 hover:border-primary/50 transition-all duration-500"
+                className="group relative p-8 md:p-10 bg-gradient-to-b from-card to-black border border-border/50 hover:border-primary/50 transition-all duration-300"
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { UserIcon, PhoneIcon, HomeIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 interface PhoneNameFormProps {
@@ -11,36 +11,69 @@ interface PhoneNameFormProps {
 
 export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps) => {
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState("+595 "); // ✅ Predefined prefix
   const [address, setAddress] = useState("");
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
   const [loading, setLoading] = useState(false);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
+
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setName("");
+      setPhone("+595 ");
+      setAddress("");
+      setErrors({});
+      setLoading(false);
+    }
+  }, [isOpen]);
 
   const formatPhoneNumber = (value: string) => {
-    // Remove all non-digits
-    const digits = value.replace(/\D/g, "");
-
-    // Add +595 prefix if not present
-    if (digits.length > 0 && !digits.startsWith("595")) {
-      if (digits.startsWith("0")) {
-        return `+595 ${digits.slice(1)}`;
-      }
-      return `+595 ${digits}`;
+    // Always ensure it starts with +595
+    if (!value.startsWith("+595")) {
+      return "+595 ";
     }
 
-    // Format with +595
-    if (digits.startsWith("595")) {
-      const withoutPrefix = digits.slice(3);
-      return `+595 ${withoutPrefix}`;
-    }
+    // Remove all non-digits after the prefix
+    const afterPrefix = value.slice(5); // Get everything after "+595 "
+    const digits = afterPrefix.replace(/\D/g, "");
 
-    return value;
+    // Return formatted number
+    return `+595 ${digits}`;
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
+    const newValue = e.target.value;
+
+    // Prevent deletion of the prefix
+    if (!newValue.startsWith("+595")) {
+      setPhone("+595 ");
+      return;
+    }
+
+    // If user tries to delete space after +595, restore it
+    if (newValue === "+595") {
+      setPhone("+595 ");
+      return;
+    }
+
+    const formatted = formatPhoneNumber(newValue);
     setPhone(formatted);
     setErrors((prev) => ({ ...prev, phone: undefined }));
+  };
+
+  const handlePhoneFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Position cursor at the end (after the prefix)
+    const length = e.target.value.length;
+    e.target.setSelectionRange(length, length);
+  };
+
+  const handlePhoneClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    // If user clicks before the end of prefix, move cursor to end
+    const target = e.target as HTMLInputElement;
+    if (target.selectionStart !== null && target.selectionStart < 5) {
+      target.setSelectionRange(5, 5); // Position after "+595 "
+    }
   };
 
   const validateForm = () => {
@@ -55,9 +88,10 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
       newErrors.name = "Solo letras, espacios y guiones";
     }
 
-    // Validate phone
-    const phoneDigits = phone.replace(/\D/g, "");
-    if (!phone || phoneDigits.length < 11) {
+    // Validate phone - only digits after "+595 "
+    const afterPrefix = phone.slice(5); // Remove "+595 "
+    const phoneDigits = afterPrefix.replace(/\D/g, "");
+    if (phoneDigits.length < 8 || phoneDigits.length > 10) {
       newErrors.phone = "Teléfono inválido (ej: +595 971 234567)";
     }
 
@@ -84,7 +118,9 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
     setLoading(false);
   };
 
-  const isValid = name.trim().length >= 3 && phone.replace(/\D/g, "").length >= 11;
+  // Validate button state - only digits after "+595 "
+  const phoneDigitsOnly = phone.slice(5).replace(/\D/g, "");
+  const isValid = name.trim().length >= 3 && phoneDigitsOnly.length >= 8 && phoneDigitsOnly.length <= 10;
 
   return (
     <AnimatePresence>
@@ -172,9 +208,12 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                   <div className="relative">
                     <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
+                      ref={phoneInputRef}
                       type="tel"
                       value={phone}
                       onChange={handlePhoneChange}
+                      onFocus={handlePhoneFocus}
+                      onClick={handlePhoneClick}
                       placeholder="Ej: +595 971 234567"
                       className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${
                         errors.phone ? "border-red-500" : "border-border focus:border-primary"

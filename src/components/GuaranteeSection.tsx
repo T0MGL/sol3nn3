@@ -14,10 +14,10 @@ export const GuaranteeSection = ({ onBuyClick }: GuaranteeSectionProps) => {
 
         <div className="container max-w-[900px] mx-auto relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             className="text-center space-y-8 md:space-y-12"
           >
             <div className="flex justify-center">
