@@ -46,7 +46,7 @@ export const DeliveryBanner = ({ onVisibilityChange }: DeliveryBannerProps) => {
                 <button
                   onClick={handleClose}
                   className="absolute right-0 p-1 hover:bg-white/10 rounded transition-colors duration-300"
-                  aria-label="Cerrar banner"
+                  aria-label="Cerrar banner."
                 >
                   <XMarkIcon className="w-4 h-4" />
                 </button>
