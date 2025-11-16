@@ -68,17 +68,6 @@ const CheckoutForm = ({
         elements,
         confirmParams: {
           return_url: `${window.location.origin}?payment=success`,
-          payment_method_data: {
-            billing_details: {
-              name: 'Customer',
-              email: 'customer@nocte.studio',
-              phone: '+595123456789',
-              address: {
-                country: 'US',
-                postal_code: '00000',
-              },
-            },
-          },
         },
         redirect: 'if_required',
       });
@@ -107,9 +96,6 @@ const CheckoutForm = ({
             wallets: {
               applePay: 'auto',
               googlePay: 'auto',
-            },
-            fields: {
-              billingDetails: 'never'
             },
             // Disable Link checkout
             paymentMethodOrder: ['card', 'apple_pay', 'google_pay']
