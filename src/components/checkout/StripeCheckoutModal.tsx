@@ -45,12 +45,17 @@ const CheckoutForm = ({
     setErrorMessage(null);
 
     try {
+      // Confirm payment without redirect - handle everything client-side
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: `${window.location.origin}?payment=success`,
+          // Don't collect any billing details - we handle delivery info separately
+          payment_method_data: {
+            billing_details: {},
+          },
         },
-        redirect: 'if_required',
+        redirect: 'if_required', // Only redirect if absolutely necessary (3D Secure, etc)
       });
 
       if (error) {
@@ -73,21 +78,30 @@ const CheckoutForm = ({
       <div className="p-4 bg-secondary/20 rounded-lg border border-border/30">
         <PaymentElement
           options={{
-            layout: 'tabs',
+            layout: {
+              type: 'tabs',
+              defaultCollapsed: false,
+            },
             wallets: {
               applePay: 'auto',
               googlePay: 'auto',
             },
             fields: {
               billingDetails: {
+                name: 'never',
+                email: 'never',
+                phone: 'never',
                 address: 'never',
               },
             },
             terms: {
               card: 'never',
             },
-            // Disable Link checkout completely
-            paymentMethodOrder: ['card', 'apple_pay', 'google_pay']
+            // CRITICAL: Disable Stripe Link completely
+            link: {
+              enabled: false,
+            },
+            paymentMethodOrder: ['card', 'apple_pay', 'google_pay'],
           }}
         />
       </div>
@@ -419,6 +433,10 @@ export const StripeCheckoutModal = ({
                           fontSizeBase: '16px',
                           borderRadius: '8px',
                         },
+                      },
+                      // Disable all link-related features at Elements level
+                      linkAuthentication: {
+                        enabled: false,
                       },
                     }}
                   >
