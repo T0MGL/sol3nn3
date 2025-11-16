@@ -119,6 +119,11 @@ export const LocationModal = ({ isOpen, onLocationSubmit, onClose }: LocationMod
 
               {/* Headline */}
               <div className="text-center space-y-3">
+                <div className="inline-block px-3 py-1 bg-primary/10 border border-primary/20 rounded-md mb-2">
+                  <p className="text-xs font-semibold text-primary tracking-wide">
+                    🚚 DELIVERY GRATIS
+                  </p>
+                </div>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground">
                   ¿Dónde estás?
                 </h2>

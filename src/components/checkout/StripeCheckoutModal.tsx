@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { X } from 'lucide-react';
-import { BanknotesIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { getStripe, formatPrice } from '@/lib/stripe';
 import { Button } from '@/components/ui/button';
 import { useStripePayment } from '@/hooks/useStripePayment';
@@ -12,10 +11,17 @@ interface StripeCheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   onBack: () => void;
-  onSuccess: () => void;
-  onPayOnDelivery: () => void;
+  onSuccess: (paymentIntentId: string) => void;
   amount: number;
   currency: string;
+  customerData: {
+    name: string;
+    phone: string;
+    location: string;
+    address: string;
+    orderNumber: string;
+    quantity: number;
+  };
 }
 
 const CheckoutForm = ({
@@ -23,16 +29,13 @@ const CheckoutForm = ({
   onClose,
   amount,
   currency,
+  customerData,
 }: Omit<StripeCheckoutModalProps, 'isOpen'>) => {
   const stripe = useStripe();
   const elements = useElements();
+  const { createPaymentIntent } = useStripePayment();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
-
-  // Initialize Payment Request (Apple Pay/Google Pay) - DISABLED for now
-  // Using PaymentElement instead which handles both native and card payments
-  // TODO: Re-enable if needed for explicit Apple Pay/Google Pay buttons
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,33 +44,61 @@ const CheckoutForm = ({
       return;
     }
 
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) {
+      setErrorMessage('Error al cargar el formulario de pago');
+      return;
+    }
+
     setIsProcessing(true);
     setErrorMessage(null);
 
     try {
-      // Confirm payment without redirect - handle everything client-side
-      const { error } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}?payment=success`,
-          // Provide minimum required billing details (country is required by Stripe)
-          payment_method_data: {
+      // Create payment intent with customer data
+
+      const response = await createPaymentIntent({
+        amount,
+        currency,
+        paymentMethodId: 'pending',
+        email: `${customerData.phone}@nocte.com.py`, // Generate email from phone
+        metadata: {
+          orderNumber: customerData.orderNumber,
+          customerName: customerData.name,
+          customerPhone: customerData.phone,
+          deliveryLocation: customerData.location,
+          deliveryAddress: customerData.address,
+          quantity: customerData.quantity.toString(),
+          product: customerData.quantity === 2
+            ? 'NOCTE® Red Light Blocking Glasses - Pack x2'
+            : 'NOCTE® Red Light Blocking Glasses',
+        },
+      });
+
+      // Confirm payment
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        response.clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
             billing_details: {
+              name: customerData.name,
+              phone: customerData.phone,
               address: {
-                country: 'PY', // Paraguay - default country for this business
+                country: 'PY',
+                city: customerData.location,
+                line1: customerData.address,
               },
             },
           },
-        },
-        redirect: 'if_required', // Only redirect if absolutely necessary (3D Secure, etc)
-      });
+        }
+      );
 
       if (error) {
         setErrorMessage(error.message || 'Error al procesar el pago');
         setIsProcessing(false);
-      } else {
+      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
         // Payment succeeded
-        onSuccess();
+        onSuccess(paymentIntent.id);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al procesar el pago';
@@ -77,35 +108,42 @@ const CheckoutForm = ({
   };
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-      {/* Payment Element - handles both native wallets and cards */}
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Customer Info Summary */}
+      <div className="p-4 bg-secondary/20 rounded-lg border border-border/30 space-y-2">
+        <p className="text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">Entrega para:</span> {customerData.name}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">Ubicación:</span> {customerData.location}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">Teléfono:</span> {customerData.phone}
+        </p>
+      </div>
+
+      {/* Card Element */}
       <div className="p-4 bg-secondary/20 rounded-lg border border-border/30">
-        <PaymentElement
+        <label className="block text-sm font-medium text-foreground mb-3">
+          Información de la tarjeta
+        </label>
+        <CardElement
           options={{
-            layout: {
-              type: 'tabs',
-              defaultCollapsed: false,
-            },
-            wallets: {
-              applePay: 'auto',
-              googlePay: 'auto',
-            },
-            fields: {
-              billingDetails: {
-                name: 'never',
-                email: 'never',
-                phone: 'never',
-                address: 'never',
+            style: {
+              base: {
+                fontSize: '16px',
+                color: '#F9FAFB',
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                '::placeholder': {
+                  color: '#6B7280',
+                },
+              },
+              invalid: {
+                color: '#DC2626',
               },
             },
-            terms: {
-              card: 'never',
-            },
-            // CRITICAL: Disable Stripe Link completely
-            link: {
-              enabled: false,
-            },
-            paymentMethodOrder: ['card', 'apple_pay', 'google_pay'],
+            hidePostalCode: true,
+            disableLink: true, // CRITICAL: Disable Stripe Link
           }}
         />
       </div>
@@ -137,7 +175,7 @@ const CheckoutForm = ({
           {isProcessing ? (
             <>
               <div className="inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-              Procesando...
+              Procesando pago...
             </>
           ) : (
             `Pagar ${formatPrice(amount, currency)}`
@@ -157,9 +195,16 @@ const CheckoutForm = ({
       </div>
 
       {/* Security Info */}
-      <p className="text-xs text-center text-muted-foreground">
-        Pago seguro procesado por Stripe. Tus datos están protegidos.
-      </p>
+      <div className="flex items-center justify-center gap-2 pt-2">
+        <img
+          src="https://cdn.brandfolder.io/KGT2DTA4/at/8vbr8k4mr5xjwk4hxq4t9vs/Stripe_wordmark_-_blurple.svg"
+          alt="Powered by Stripe"
+          className="h-4 opacity-70"
+        />
+        <p className="text-xs text-muted-foreground">
+          Pago seguro y encriptado
+        </p>
+      </div>
     </form>
   );
 };
@@ -169,62 +214,23 @@ export const StripeCheckoutModal = ({
   onClose,
   onBack,
   onSuccess,
-  onPayOnDelivery,
   amount,
   currency,
+  customerData,
 }: StripeCheckoutModalProps) => {
   const [stripePromise] = useState(() => getStripe());
-  const { createPaymentIntent } = useStripePayment();
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
-  const [initError, setInitError] = useState<string | null>(null);
-  const [showStripeForm, setShowStripeForm] = useState(false);
 
-  // Create payment intent when user selects digital payment
+  // Track AddPaymentInfo when modal opens
   useEffect(() => {
-    if (isOpen && showStripeForm) {
-      const initPayment = async () => {
-        setIsInitializing(true);
-        setInitError(null);
-        setClientSecret(null); // Force reset
-
-        try {
-          const response = await createPaymentIntent({
-            amount,
-            currency,
-            paymentMethodId: 'pending',
-            email: 'customer@placeholder.com',
-            metadata: {
-              quantity: '1',
-              product: 'NOCTE Red-Tinted Glasses',
-            },
-          });
-
-          setClientSecret(response.clientSecret);
-
-          // Track AddPaymentInfo when payment form is ready
-          trackAddPaymentInfo({
-            value: amount,
-            currency: currency.toUpperCase(),
-            num_items: 1,
-          });
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Error al inicializar el pago';
-          setInitError(message);
-          console.error('Error creating payment intent:', error);
-        } finally {
-          setIsInitializing(false);
-        }
-      };
-
-      initPayment();
-    } else if (!isOpen) {
-      // Reset when modal closes - force complete unmount
-      setClientSecret(null);
-      setInitError(null);
-      setShowStripeForm(false);
+    if (isOpen) {
+      trackAddPaymentInfo({
+        value: amount,
+        currency: currency.toUpperCase(),
+        num_items: customerData.quantity,
+      });
     }
-  }, [isOpen, showStripeForm, amount, currency, createPaymentIntent]);
+  }, [isOpen, amount, currency, customerData.quantity]);
 
   return (
     <AnimatePresence>
@@ -254,206 +260,57 @@ export const StripeCheckoutModal = ({
             </button>
 
             {/* Back Button */}
-            {!showStripeForm && (
-              <button
-                onClick={onBack}
-                className="absolute top-4 left-4 text-sm text-muted-foreground hover:text-foreground transition-colors z-10 flex items-center gap-1"
-              >
-                ← Volver
-              </button>
-            )}
+            <button
+              onClick={onBack}
+              className="absolute top-4 left-4 text-sm text-muted-foreground hover:text-foreground transition-colors z-10 flex items-center gap-1"
+            >
+              ← Volver
+            </button>
 
             {/* Header */}
-            <div className="mb-6 text-center">
+            <div className="mb-6 text-center pt-6">
               <div className="inline-block px-3 py-1 bg-primary/10 border border-primary/20 rounded-md mb-4">
                 <p className="text-xs font-semibold text-primary tracking-wide">
-                  CHECKOUT SEGURO
+                  PAGO SEGURO
                 </p>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
                 Finalizar Compra
               </h2>
               <p className="text-sm text-muted-foreground">
-                NOCTE® Red-Tinted Glasses
+                Orden #{customerData.orderNumber}
               </p>
             </div>
 
-            {/* Payment Method Selection */}
-            {!showStripeForm && (
-              <div className="space-y-5">
-                {/* Pago Digital - Recommended */}
-                <div className="p-5 bg-primary/10 border-2 border-primary/50 rounded-xl space-y-3 relative overflow-hidden">
-                  <div className="absolute top-2 right-2 px-2 py-1 bg-primary rounded-full">
-                    <p className="text-xs font-bold text-white">RECOMENDADO</p>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <CreditCardIcon className="w-8 h-8 text-primary flex-shrink-0 mt-1" />
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-foreground mb-2">
-                        Pago seguro con tarjeta
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Procesado por Stripe. Paga con Face ID, Google Pay, Apple Pay o cualquier tarjeta de débito/crédito.
-                      </p>
-                      <div className="space-y-1.5 mb-3">
-                        <p className="text-xs text-foreground flex items-center gap-2">
-                          ✓ Aceptamos Ueno, Itaú, Familiar, Vision, Rio
-                        </p>
-                        <p className="text-xs text-foreground flex items-center gap-2">
-                          ✓ Delivery GRATIS incluido
-                        </p>
-                        <p className="text-xs text-foreground flex items-center gap-2">
-                          ✓ Pago instantáneo y seguro
-                        </p>
-                        <p className="text-xs text-foreground flex items-center gap-2">
-                          ✓ Confirmación inmediata por email
-                        </p>
-                        <p className="text-xs text-foreground flex items-center gap-2">
-                          ✓ Protección de compra garantizada
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 p-2 bg-black/20 rounded-lg border border-primary/20">
-                        <img
-                          src="https://cdn.brandfolder.io/KGT2DTA4/at/8vbr8k4mr5xjwk4hxq4t9vs/Stripe_wordmark_-_blurple.svg"
-                          alt="Powered by Stripe"
-                          className="h-4 opacity-70"
-                        />
-                        <span className="text-[10px] text-muted-foreground">
-                          Procesamiento seguro
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={() => setShowStripeForm(true)}
-                    variant="hero"
-                    size="lg"
-                    className="w-full mt-3 font-bold"
-                  >
-                    Pagar con tarjeta ahora
-                  </Button>
-                </div>
-
-                {/* Pagar al recibir - Alternative */}
-                <div className="p-4 bg-secondary/30 border border-border rounded-lg">
-                  <div className="flex items-start gap-3 mb-3">
-                    <BanknotesIcon className="w-6 h-6 text-muted-foreground flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <h3 className="text-base font-semibold text-foreground mb-1">
-                        Pago al recibir
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        Paga en efectivo cuando recibas el producto
-                      </p>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={onPayOnDelivery}
-                    variant="outline"
-                    size="default"
-                    className="w-full bg-secondary/50 hover:bg-secondary/80"
-                  >
-                    Continuar con pago al recibir
-                  </Button>
-                </div>
-
-                {/* Total */}
-                <div className="flex justify-between items-center p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                  <span className="font-semibold text-foreground">Total a pagar:</span>
-                  <span className="text-2xl font-bold text-primary">
-                    {formatPrice(amount, currency)}
-                  </span>
-                </div>
-
-                {/* Cancel Button */}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  className="w-full bg-transparent border-border/50 hover:bg-secondary/50"
-                  onClick={onClose}
-                >
-                  Cancelar
-                </Button>
-              </div>
-            )}
-
-            {/* Stripe Payment Form */}
-            {showStripeForm && (
-              <>
-                {/* Back Button */}
-                <button
-                  onClick={() => setShowStripeForm(false)}
-                  className="mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
-                >
-                  ← Volver a métodos de pago
-                </button>
-
-                {/* Loading State */}
-                {isInitializing && (
-                  <div className="py-12 text-center">
-                    <div className="inline-block w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-                    <p className="mt-4 text-muted-foreground">Preparando pago...</p>
-                  </div>
-                )}
-
-                {/* Error State */}
-                {initError && (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                      <p className="text-sm text-red-400">{initError}</p>
-                    </div>
-                    <Button
-                      onClick={() => setShowStripeForm(false)}
-                      variant="outline"
-                      size="lg"
-                      className="w-full bg-transparent border-border/50 hover:bg-secondary/50"
-                    >
-                      Volver
-                    </Button>
-                  </div>
-                )}
-
-                {/* Stripe Elements */}
-                {!isInitializing && !initError && clientSecret && (
-                  <Elements
-                    key={clientSecret}
-                    stripe={stripePromise}
-                    options={{
-                      clientSecret,
-                      locale: 'es',
-                      loader: 'never',
-                      appearance: {
-                        theme: 'night',
-                        variables: {
-                          colorPrimary: '#EF4444',
-                          colorBackground: '#000000',
-                          colorText: '#F9FAFB',
-                          colorDanger: '#DC2626',
-                          fontFamily: 'system-ui, -apple-system, sans-serif',
-                          fontSizeBase: '16px',
-                          borderRadius: '8px',
-                        },
-                      },
-                      // Disable all link-related features at Elements level
-                      linkAuthentication: {
-                        enabled: false,
-                      },
-                    }}
-                  >
-                    <CheckoutForm
-                      onSuccess={onSuccess}
-                      onClose={() => setShowStripeForm(false)}
-                      amount={amount}
-                      currency={currency}
-                    />
-                  </Elements>
-                )}
-              </>
-            )}
+            {/* Stripe Elements */}
+            <Elements
+              stripe={stripePromise}
+              options={{
+                locale: 'es',
+                loader: 'never',
+                appearance: {
+                  theme: 'night',
+                  variables: {
+                    colorPrimary: '#EF4444',
+                    colorBackground: '#1F2937',
+                    colorText: '#F9FAFB',
+                    colorDanger: '#DC2626',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    fontSizeBase: '16px',
+                    borderRadius: '8px',
+                  },
+                },
+              }}
+            >
+              <CheckoutForm
+                onSuccess={onSuccess}
+                onClose={onClose}
+                onBack={onBack}
+                amount={amount}
+                currency={currency}
+                customerData={customerData}
+              />
+            </Elements>
           </motion.div>
         </motion.div>
       )}

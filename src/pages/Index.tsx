@@ -95,7 +95,7 @@ const Index = () => {
 
     setShowUpsell(false);
     setCheckoutInProgress(true); // Activate protection
-    setShowStripeCheckout(true); // Show Stripe checkout
+    setShowLocation(true); // STEP 1: Get delivery location
   };
 
   const handleSelectSingle = () => {
@@ -112,12 +112,62 @@ const Index = () => {
 
     setShowUpsell(false);
     setCheckoutInProgress(true); // Activate protection
-    setShowStripeCheckout(true); // Show Stripe checkout
+    setShowLocation(true); // STEP 1: Get delivery location
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async (paymentIntentId: string) => {
+    // STEP 4: Payment successful - now send order to n8n and show success
     setShowStripeCheckout(false);
-    setShowLocation(true); // Show location modal after successful payment
+    setCheckoutData((prev) => ({ ...prev, paymentIntentId }));
+
+    const totalAmount = checkoutData.quantity === 2 ? 418500 : 279000;
+
+    // Send order to n8n webhook with all collected data
+    try {
+      console.log('📦 Sending completed order to n8n...');
+
+      const orderData = {
+        name: checkoutData.name,
+        phone: checkoutData.phone,
+        location: checkoutData.location,
+        address: checkoutData.address,
+        lat: checkoutData.lat,
+        long: checkoutData.long,
+        quantity: checkoutData.quantity,
+        total: totalAmount,
+        orderNumber: checkoutData.orderNumber,
+        paymentIntentId: paymentIntentId,
+        email: undefined,
+        paymentType: 'Card' as const,
+        deliveryType: 'común' as const,
+      };
+
+      const result = await sendOrderToN8N(orderData);
+
+      if (!result.success) {
+        console.error('❌ Failed to send order to n8n:', result.error);
+      } else {
+        console.log('✅ Order sent to n8n successfully:', result);
+      }
+    } catch (error) {
+      console.error('❌ Error sending order to n8n:', error);
+    }
+
+    // Track Purchase conversion event
+    trackPurchase({
+      value: totalAmount,
+      currency: 'PYG',
+      content_name: checkoutData.quantity === 2
+        ? 'NOCTE® Red Light Blocking Glasses - Pack x2'
+        : 'NOCTE® Red Light Blocking Glasses',
+      content_ids: checkoutData.quantity === 2
+        ? ['nocte-red-glasses-2pack']
+        : ['nocte-red-glasses'],
+      num_items: checkoutData.quantity,
+      order_id: checkoutData.orderNumber,
+    });
+
+    setShowSuccess(true);
   };
 
   const handleBackToUpsell = () => {
@@ -191,70 +241,17 @@ const Index = () => {
     });
   };
 
-  const handlePhoneSubmit = async (data: { name: string; phone: string; address?: string }) => {
-    // Update checkout data
-    const updatedCheckoutData = {
-      ...checkoutData,
+  const handlePhoneSubmit = (data: { name: string; phone: string; address?: string }) => {
+    // STEP 2: Store personal info and proceed to payment
+    setCheckoutData((prev) => ({
+      ...prev,
       name: data.name,
       phone: data.phone,
-      address: data.address || "",
-    };
+      address: data.address || prev.address,
+    }));
 
-    setCheckoutData(updatedCheckoutData);
     setShowPhoneForm(false);
-
-    const totalAmount = checkoutData.quantity === 2 ? 418500 : 279000;
-
-    // Send order to n8n webhook
-    try {
-      console.log('📦 Preparing to send order to n8n...');
-
-      const orderData = {
-        name: data.name,
-        phone: data.phone,
-        location: checkoutData.location,
-        address: data.address || checkoutData.address,
-        lat: checkoutData.lat,
-        long: checkoutData.long,
-        quantity: checkoutData.quantity,
-        total: totalAmount,
-        orderNumber: checkoutData.orderNumber,
-        paymentIntentId: checkoutData.paymentIntentId || undefined,
-        email: undefined, // We don't collect email in the flow
-        paymentType: 'Cash' as const,
-        deliveryType: 'común' as const,
-      };
-
-      // Send to n8n via backend
-      const result = await sendOrderToN8N(orderData);
-
-      if (!result.success) {
-        console.error('❌ Failed to send order to n8n:', result.error);
-        // Still show success page to user (they completed checkout)
-        // But log the error for debugging
-      } else {
-        console.log('✅ Order sent to n8n successfully:', result);
-      }
-    } catch (error) {
-      console.error('❌ Error sending order to n8n:', error);
-      // Still show success page to user
-    }
-
-    // Track Purchase conversion event (CRITICAL for ROAS)
-    trackPurchase({
-      value: totalAmount,
-      currency: 'PYG',
-      content_name: checkoutData.quantity === 2
-        ? 'NOCTE® Red Light Blocking Glasses - Pack x2'
-        : 'NOCTE® Red Light Blocking Glasses',
-      content_ids: checkoutData.quantity === 2
-        ? ['nocte-red-glasses-2pack']
-        : ['nocte-red-glasses'],
-      num_items: checkoutData.quantity,
-      order_id: checkoutData.orderNumber,
-    });
-
-    setShowSuccess(true);
+    setShowStripeCheckout(true); // STEP 3: Show payment with all info collected
   };
 
   const handlePhoneFormClose = () => {
@@ -345,11 +342,18 @@ const Index = () => {
       <StripeCheckoutModal
         isOpen={showStripeCheckout}
         onClose={handleStripeCheckoutClose}
-        onBack={handleBackToUpsell}
+        onBack={() => setShowPhoneForm(true)}
         onSuccess={handlePaymentSuccess}
-        onPayOnDelivery={handlePayOnDeliveryFromCheckout}
         amount={checkoutData.quantity === 2 ? 418500 : 279000}
         currency="pyg"
+        customerData={{
+          name: checkoutData.name,
+          phone: checkoutData.phone,
+          location: checkoutData.location,
+          address: checkoutData.address,
+          orderNumber: checkoutData.orderNumber,
+          quantity: checkoutData.quantity,
+        }}
       />
 
       <PaymentFallbackModal
