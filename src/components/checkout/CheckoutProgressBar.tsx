@@ -1,96 +1,52 @@
 import { motion } from 'framer-motion';
-import { MapPinIcon, UserIcon, CreditCardIcon, CheckIcon } from '@heroicons/react/24/outline';
 
 interface CheckoutProgressBarProps {
   currentStep: 1 | 2 | 3;
 }
 
 const steps = [
-  { id: 1, name: 'Ubicación', icon: MapPinIcon },
-  { id: 2, name: 'Información', icon: UserIcon },
-  { id: 3, name: 'Pago', icon: CreditCardIcon },
+  { id: 1, name: 'Ubicación' },
+  { id: 2, name: 'Datos' },
+  { id: 3, name: 'Pago' },
 ];
 
 export const CheckoutProgressBar = ({ currentStep }: CheckoutProgressBarProps) => {
   const progress = ((currentStep - 1) / (steps.length - 1)) * 100;
 
   return (
-    <div className="w-full max-w-md mx-auto mb-8">
-      {/* Progress Bar */}
-      <div className="relative">
-        {/* Background Bar */}
-        <div className="h-2 bg-secondary/50 rounded-full overflow-hidden">
-          {/* Active Progress */}
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full"
-          />
-        </div>
+    <div className="w-full mb-6">
+      {/* Steps Labels */}
+      <div className="flex justify-between mb-2">
+        {steps.map((step) => {
+          const isActive = currentStep >= step.id;
 
-        {/* Step Indicators */}
-        <div className="absolute -top-1 left-0 w-full flex justify-between">
-          {steps.map((step) => {
-            const Icon = step.icon;
-            const isCompleted = currentStep > step.id;
-            const isCurrent = currentStep === step.id;
-
-            return (
+          return (
+            <div key={step.id} className="flex items-center gap-2">
               <div
-                key={step.id}
-                className="flex flex-col items-center"
-                style={{
-                  marginLeft: step.id === 1 ? '0' : '-12px',
-                  marginRight: step.id === steps.length ? '0' : '-12px',
-                }}
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                  isActive ? 'bg-primary' : 'bg-border'
+                }`}
+              />
+              <span
+                className={`text-xs font-medium transition-colors duration-300 ${
+                  isActive ? 'text-foreground' : 'text-muted-foreground'
+                }`}
               >
-                {/* Circle */}
-                <motion.div
-                  initial={{ scale: 0.8 }}
-                  animate={{ scale: isCurrent ? 1.1 : 1 }}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
-                    isCompleted
-                      ? 'bg-primary border-primary'
-                      : isCurrent
-                      ? 'bg-primary border-primary shadow-[0_0_20px_rgba(239,68,68,0.4)]'
-                      : 'bg-secondary border-border'
-                  }`}
-                >
-                  {isCompleted ? (
-                    <CheckIcon className="w-5 h-5 text-white" strokeWidth={3} />
-                  ) : (
-                    <Icon
-                      className={`w-5 h-5 ${
-                        isCurrent ? 'text-white' : 'text-muted-foreground'
-                      }`}
-                      strokeWidth={2}
-                    />
-                  )}
-                </motion.div>
-
-                {/* Label */}
-                <p
-                  className={`mt-2 text-xs font-medium transition-colors ${
-                    isCurrent ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  {step.name}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+                {step.name}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Completion Percentage */}
-      <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">
-          Paso {currentStep} de {steps.length}
-          <span className="ml-2 text-primary font-semibold">
-            ({Math.round((currentStep / steps.length) * 100)}% completado)
-          </span>
-        </p>
+      {/* Progress Bar */}
+      <div className="relative h-0.5 bg-border/30 rounded-full overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+          className="absolute inset-y-0 left-0 bg-primary"
+        />
       </div>
     </div>
   );

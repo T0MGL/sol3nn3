@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { X } from 'lucide-react';
 import { getStripe, formatPrice } from '@/lib/stripe';
 import { Button } from '@/components/ui/button';
@@ -45,8 +45,8 @@ const CheckoutForm = ({
       return;
     }
 
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
+    const cardNumberElement = elements.getElement(CardNumberElement);
+    if (!cardNumberElement) {
       setErrorMessage('Error al cargar el formulario de pago');
       return;
     }
@@ -80,15 +80,10 @@ const CheckoutForm = ({
         response.clientSecret,
         {
           payment_method: {
-            card: cardElement,
+            card: cardNumberElement,
             billing_details: {
               name: customerData.name,
               phone: customerData.phone,
-              address: {
-                country: 'PY',
-                city: customerData.location,
-                line1: customerData.address,
-              },
             },
           },
         }
@@ -111,42 +106,109 @@ const CheckoutForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Customer Info Summary */}
-      <div className="p-4 bg-secondary/20 rounded-lg border border-border/30 space-y-2">
+      <div className="p-5 bg-secondary/20 rounded-lg border border-border/30 space-y-3">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b border-border/30 pb-2 mb-3">
+          Información de entrega
+        </h3>
         <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">Entrega para:</span> {customerData.name}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">Ubicación:</span> {customerData.location}
+          <span className="font-semibold text-foreground">Nombre:</span> {customerData.name}
         </p>
         <p className="text-sm text-muted-foreground">
           <span className="font-semibold text-foreground">Teléfono:</span> {customerData.phone}
         </p>
+        <p className="text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">Ciudad:</span> {customerData.location}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">Dirección:</span> {customerData.address}
+        </p>
       </div>
 
       {/* Card Element */}
-      <div className="p-4 bg-secondary/20 rounded-lg border border-border/30">
-        <label className="block text-sm font-medium text-foreground mb-3">
-          Información de la tarjeta
-        </label>
-        <CardElement
-          options={{
-            style: {
-              base: {
-                fontSize: '16px',
-                color: '#F9FAFB',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                '::placeholder': {
-                  color: '#6B7280',
+      <div className="p-5 bg-secondary/20 rounded-lg border border-border/30 space-y-4">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b border-border/30 pb-2 mb-4">
+          Información de pago
+        </h3>
+
+        {/* Card Number */}
+        <div>
+          <label className="block text-xs font-medium text-muted-foreground mb-2">
+            Número de tarjeta
+          </label>
+          <div className="p-3 bg-background/50 rounded-md border border-border/50">
+            <CardNumberElement
+              options={{
+                style: {
+                  base: {
+                    fontSize: '16px',
+                    color: '#F9FAFB',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    '::placeholder': {
+                      color: '#6B7280',
+                    },
+                  },
+                  invalid: {
+                    color: '#DC2626',
+                  },
                 },
-              },
-              invalid: {
-                color: '#DC2626',
-              },
-            },
-            hidePostalCode: true,
-            disableLink: true, // CRITICAL: Disable Stripe Link
-          }}
-        />
+                showIcon: true,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Expiry and CVC */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-2">
+              Fecha de expiración
+            </label>
+            <div className="p-3 bg-background/50 rounded-md border border-border/50">
+              <CardExpiryElement
+                options={{
+                  style: {
+                    base: {
+                      fontSize: '16px',
+                      color: '#F9FAFB',
+                      fontFamily: 'system-ui, -apple-system, sans-serif',
+                      '::placeholder': {
+                        color: '#6B7280',
+                      },
+                    },
+                    invalid: {
+                      color: '#DC2626',
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-2">
+              CVC
+            </label>
+            <div className="p-3 bg-background/50 rounded-md border border-border/50">
+              <CardCvcElement
+                options={{
+                  style: {
+                    base: {
+                      fontSize: '16px',
+                      color: '#F9FAFB',
+                      fontFamily: 'system-ui, -apple-system, sans-serif',
+                      '::placeholder': {
+                        color: '#6B7280',
+                      },
+                    },
+                    invalid: {
+                      color: '#DC2626',
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -156,12 +218,49 @@ const CheckoutForm = ({
         </div>
       )}
 
-      {/* Total */}
-      <div className="flex justify-between items-center p-4 bg-primary/5 border border-primary/20 rounded-lg">
-        <span className="font-semibold text-foreground">Total a pagar:</span>
-        <span className="text-2xl font-bold text-primary">
-          {formatPrice(amount, currency)}
-        </span>
+      {/* Order Summary */}
+      <div className="p-5 bg-secondary/20 rounded-lg border border-border/30 space-y-4">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b border-border/30 pb-2">
+          Resumen del pedido
+        </h3>
+
+        {/* Product */}
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <p className="text-sm font-medium text-foreground">
+              {customerData.quantity === 2
+                ? 'NOCTE® Red Light Blocking Glasses - Pack x2'
+                : 'NOCTE® Red Light Blocking Glasses'}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Cantidad: {customerData.quantity}
+            </p>
+          </div>
+          <p className="text-sm font-semibold text-foreground ml-4">
+            {formatPrice(amount, currency)}
+          </p>
+        </div>
+
+        {/* Delivery */}
+        <div className="flex justify-between items-center pt-2 border-t border-border/30">
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-foreground">Delivery</p>
+            <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 rounded text-xs font-semibold text-primary">
+              GRATIS
+            </span>
+          </div>
+          <p className="text-sm font-semibold text-muted-foreground line-through">
+            {formatPrice(0, currency)}
+          </p>
+        </div>
+
+        {/* Total */}
+        <div className="flex justify-between items-center pt-3 border-t border-border/50">
+          <span className="text-base font-bold text-foreground">Total a pagar</span>
+          <span className="text-2xl font-bold text-primary">
+            {formatPrice(amount, currency)}
+          </span>
+        </div>
       </div>
 
       {/* Buttons */}
