@@ -37,10 +37,17 @@ const CheckoutForm = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    console.log('🔵 [CheckoutForm] Component mounted, stripe:', !!stripe, 'elements:', !!elements);
+  }, [stripe, elements]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log('🔵 [Payment] Starting payment submission...');
+
     if (!stripe || !elements) {
+      console.error('❌ [Payment] Stripe or Elements not initialized');
       return;
     }
 
@@ -48,6 +55,8 @@ const CheckoutForm = ({
     setErrorMessage(null);
 
     try {
+      console.log('🔵 [Payment] Confirming payment with Stripe...');
+
       // Confirm payment using PaymentElement
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
@@ -68,14 +77,27 @@ const CheckoutForm = ({
         redirect: 'if_required',
       });
 
+      console.log('🔵 [Payment] Stripe response received:', {
+        hasError: !!error,
+        paymentIntentStatus: paymentIntent?.status,
+        errorMessage: error?.message
+      });
+
       if (error) {
+        console.error('❌ [Payment] Payment failed:', error);
         setErrorMessage(error.message || 'Error al procesar el pago');
         setIsProcessing(false);
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
         // Payment succeeded
+        console.log('✅ [Payment] Payment succeeded:', paymentIntent.id);
         onSuccess(paymentIntent.id);
+      } else {
+        console.warn('⚠️ [Payment] Unexpected payment status:', paymentIntent?.status);
+        setErrorMessage(`Estado de pago inesperado: ${paymentIntent?.status}`);
+        setIsProcessing(false);
       }
     } catch (error) {
+      console.error('❌ [Payment] Exception during payment:', error);
       const message = error instanceof Error ? error.message : 'Error al procesar el pago';
       setErrorMessage(message);
       setIsProcessing(false);
@@ -245,6 +267,12 @@ export const StripeCheckoutModal = ({
   // Create PaymentIntent when modal opens
   useEffect(() => {
     if (isOpen && !clientSecret) {
+      console.log('🔵 [Init] Creating payment intent...', {
+        amount,
+        currency,
+        customerData: customerData.name
+      });
+
       setIsInitializing(true);
       setInitError(null);
 
@@ -266,6 +294,11 @@ export const StripeCheckoutModal = ({
         },
       })
         .then((response) => {
+          console.log('✅ [Init] Payment intent created successfully:', {
+            paymentIntentId: response.paymentIntentId,
+            hasClientSecret: !!response.clientSecret
+          });
+
           setClientSecret(response.clientSecret);
           setIsInitializing(false);
 
@@ -277,6 +310,7 @@ export const StripeCheckoutModal = ({
           });
         })
         .catch((error) => {
+          console.error('❌ [Init] Failed to create payment intent:', error);
           setInitError(error.message || 'Error al inicializar el pago');
           setIsInitializing(false);
         });
@@ -373,35 +407,38 @@ export const StripeCheckoutModal = ({
 
             {/* Stripe Elements */}
             {!isInitializing && !initError && clientSecret && (
-              <Elements
-                stripe={stripePromise}
-                options={{
-                  clientSecret,
-                  locale: 'es',
-                  loader: 'never',
-                  appearance: {
-                    theme: 'night',
-                    variables: {
-                      colorPrimary: '#EF4444',
-                      colorBackground: '#1F2937',
-                      colorText: '#F9FAFB',
-                      colorDanger: '#DC2626',
-                      fontFamily: 'system-ui, -apple-system, sans-serif',
-                      fontSizeBase: '16px',
-                      borderRadius: '8px',
+              <>
+                {console.log('🔵 [Elements] Rendering Stripe Elements with clientSecret:', clientSecret.substring(0, 20) + '...')}
+                <Elements
+                  stripe={stripePromise}
+                  options={{
+                    clientSecret,
+                    locale: 'es',
+                    loader: 'never',
+                    appearance: {
+                      theme: 'night',
+                      variables: {
+                        colorPrimary: '#EF4444',
+                        colorBackground: '#1F2937',
+                        colorText: '#F9FAFB',
+                        colorDanger: '#DC2626',
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
+                        fontSizeBase: '16px',
+                        borderRadius: '8px',
+                      },
                     },
-                  },
-                }}
-              >
-                <CheckoutForm
-                  onSuccess={onSuccess}
-                  onClose={onClose}
-                  onBack={onBack}
-                  amount={amount}
-                  currency={currency}
-                  customerData={customerData}
-                />
-              </Elements>
+                  }}
+                >
+                  <CheckoutForm
+                    onSuccess={onSuccess}
+                    onClose={onClose}
+                    onBack={onBack}
+                    amount={amount}
+                    currency={currency}
+                    customerData={customerData}
+                  />
+                </Elements>
+              </>
             )}
           </motion.div>
         </motion.div>
