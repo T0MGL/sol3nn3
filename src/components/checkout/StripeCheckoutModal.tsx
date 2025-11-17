@@ -280,7 +280,7 @@ export const StripeCheckoutModal = ({
         amount,
         currency,
         paymentMethodId: 'pending',
-        email: `${customerData.phone}@nocte.com.py`,
+        email: 'customer@nocte.studio',
         metadata: {
           orderNumber: customerData.orderNumber,
           customerName: customerData.name,
