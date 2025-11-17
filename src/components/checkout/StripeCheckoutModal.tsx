@@ -69,6 +69,7 @@ const CheckoutForm = ({
               address: {
                 line1: customerData.address,
                 city: customerData.location,
+                postal_code: '0000',
                 country: 'PY',
               },
             },
@@ -141,7 +142,16 @@ const CheckoutForm = ({
               billingDetails: {
                 name: 'never',
                 phone: 'never',
-                address: 'never',
+                address: {
+                  country: 'never',
+                },
+              },
+            },
+            defaultValues: {
+              billingDetails: {
+                address: {
+                  country: 'PY',
+                },
               },
             },
             terms: {
@@ -419,7 +429,7 @@ export const StripeCheckoutModal = ({
                       theme: 'night',
                       variables: {
                         colorPrimary: '#EF4444',
-                        colorBackground: '#1F2937',
+                        colorBackground: '#000000',
                         colorText: '#F9FAFB',
                         colorDanger: '#DC2626',
                         fontFamily: 'system-ui, -apple-system, sans-serif',
