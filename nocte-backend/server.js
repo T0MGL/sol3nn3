@@ -145,12 +145,6 @@ app.post('/api/create-payment-intent', async (req, res) => {
       },
       automatic_payment_methods: {
         enabled: true,
-        allow_redirects: 'never',
-      },
-      payment_method_options: {
-        card: {
-          setup_future_usage: 'off_session',
-        },
       },
     };
 

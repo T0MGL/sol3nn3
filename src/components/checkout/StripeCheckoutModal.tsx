@@ -122,10 +122,6 @@ const CheckoutForm = ({
                 address: 'never',
               },
             },
-            wallets: {
-              applePay: 'auto',
-              googlePay: 'auto',
-            },
             terms: {
               card: 'never',
             },
