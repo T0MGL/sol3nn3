@@ -14,7 +14,7 @@ export const ProductVideo = () => {
 
   return (
     <section data-section="product-video" className="py-16 md:py-24 px-4 bg-gradient-to-b from-black via-secondary/20 to-black">
-      <div className="container max-w-[1200px] mx-auto">
+      <div className="container max-w-[900px] mx-auto">
         <motion.div
           {...fadeInUpView}
           className="space-y-6 md:space-y-8"
@@ -30,7 +30,7 @@ export const ProductVideo = () => {
           <motion.div
             {...fadeInUpView}
             transition={{ ...fadeInUpView.transition, delay: 0.2 }}
-            className="relative w-full overflow-hidden bg-gradient-to-b from-black via-card/20 to-black border border-gold/30 shadow-[0_4px_6px_rgba(0,0,0,0.1)]"
+            className="relative w-full max-w-[800px] mx-auto overflow-hidden bg-gradient-to-b from-black via-card/20 to-black border border-gold/30 shadow-[0_4px_6px_rgba(0,0,0,0.1)]"
             onMouseEnter={handleMouseEnter}
           >
             {/* Ambient glow effect */}

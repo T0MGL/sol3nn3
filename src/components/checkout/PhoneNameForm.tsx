@@ -320,8 +320,8 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                     </motion.div>
                   )}
 
-                  {/* Error Display */}
-                  {locationError && (
+                  {/* Error Display - only show if not in manual mode */}
+                  {locationError && !showManualLocation && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -357,7 +357,10 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
 
                       <button
                         type="button"
-                        onClick={() => setShowManualLocation(true)}
+                        onClick={() => {
+                          setShowManualLocation(true);
+                          setLocationError(null); // Clear any location errors
+                        }}
                         className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
                       >
                         O ingresar manualmente
@@ -383,6 +386,10 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                           onChange={(e) => {
                             setAddress(e.target.value);
                             setErrors((prev) => ({ ...prev, address: undefined }));
+                            // Clear location error when user starts typing
+                            if (locationError) {
+                              setLocationError(null);
+                            }
                           }}
                           placeholder="Ej: Asunción, Av. Mariscal López 1234"
                           className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${

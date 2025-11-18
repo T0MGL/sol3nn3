@@ -125,7 +125,7 @@ export const QuantitySelector = ({ isOpen, onClose, onContinue }: QuantitySelect
                   <div className="flex items-center justify-center gap-2">
                     <TruckIcon className="w-5 h-5 text-primary" />
                     <p className="text-sm text-primary font-medium">
-                      Envío gratis a todo el Paraguay
+                      Envío gratis a todo el Paraguay 🇵🇾
                     </p>
                   </div>
                 </div>
