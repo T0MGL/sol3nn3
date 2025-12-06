@@ -17,11 +17,11 @@ interface SuccessPageProps {
 
 export const SuccessPage = ({ isOpen, orderData, onClose }: SuccessPageProps) => {
   const handleWhatsApp = () => {
-    const phoneNumber = orderData.phone.replace(/\D/g, "");
+    const adminPhoneNumber = "595983912902";
     const message = encodeURIComponent(
-      `Hola! Acabo de completar mi orden ${orderData.orderNumber} por ${orderData.products}. Total: ${orderData.total}`
+      `Hola! Acabo de completar mi orden ${orderData.orderNumber} por ${orderData.products}. Total: ${orderData.total}. Mi número de contacto es ${orderData.phone}.`
     );
-    window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
+    window.open(`https://wa.me/${adminPhoneNumber}?text=${message}`, "_blank");
   };
 
   return (
