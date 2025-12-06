@@ -295,6 +295,126 @@ app.post('/api/geocode', async (req, res) => {
 });
 
 /**
+ * POST /api/reverse-geocode
+ * Convert GPS coordinates to human-readable address
+ */
+app.post('/api/reverse-geocode', async (req, res) => {
+  try {
+    const { lat, lng } = req.body;
+
+    if (!lat || !lng) {
+      return res.status(400).json({
+        error: 'Latitude and longitude are required'
+      });
+    }
+
+    // Validate coordinates
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+
+    if (isNaN(latitude) || isNaN(longitude)) {
+      return res.status(400).json({
+        error: 'Invalid coordinates'
+      });
+    }
+
+    if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+      return res.status(400).json({
+        error: 'Coordinates out of valid range'
+      });
+    }
+
+    // If no Google Maps API key, return fallback with coordinates
+    if (!process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
+      console.log('⚠️ No Google Maps API key - using fallback location');
+      return res.json({
+        address: 'Paraguay',
+        city: 'Paraguay',
+        formattedAddress: 'Paraguay',
+        lat: latitude,
+        lng: longitude,
+        usesFallback: true,
+        googleMapsLink: `https://www.google.com/maps?q=${latitude},${longitude}`
+      });
+    }
+
+    // Use Google Reverse Geocoding API for precise address
+    const reverseGeocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_MAPS_API_KEY}&language=es`;
+
+    console.log(`🔍 Reverse geocoding: ${latitude}, ${longitude}`);
+
+    const response = await fetch(reverseGeocodeUrl);
+    const data = await response.json();
+
+    if (data.status === 'OK' && data.results.length > 0) {
+      const result = data.results[0];
+      const formattedAddress = result.formatted_address;
+
+      // Extract city from address components
+      let city = 'Paraguay';
+      let locality = null;
+
+      for (const component of result.address_components) {
+        if (component.types.includes('locality')) {
+          locality = component.long_name;
+        } else if (component.types.includes('administrative_area_level_2')) {
+          city = component.long_name;
+        } else if (component.types.includes('administrative_area_level_1') && !locality) {
+          city = component.long_name;
+        }
+      }
+
+      // Prefer locality over administrative areas
+      if (locality) {
+        city = locality;
+      }
+
+      console.log(`✅ Reverse geocoded to: ${city}, ${formattedAddress}`);
+
+      return res.json({
+        address: formattedAddress,
+        city: city,
+        formattedAddress: formattedAddress,
+        lat: latitude,
+        lng: longitude,
+        usesFallback: false,
+        googleMapsLink: `https://www.google.com/maps?q=${latitude},${longitude}`
+      });
+    } else {
+      // Fallback if reverse geocoding fails
+      console.warn(`⚠️ Reverse geocoding failed: ${data.status}`);
+      return res.json({
+        address: 'Paraguay',
+        city: 'Paraguay',
+        formattedAddress: 'Paraguay',
+        lat: latitude,
+        lng: longitude,
+        usesFallback: true,
+        googleMapsLink: `https://www.google.com/maps?q=${latitude},${longitude}`
+      });
+    }
+  } catch (error) {
+    console.error('❌ Reverse geocoding error:', error.message);
+
+    // Fallback: return coordinates only
+    const { lat, lng } = req.body;
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+
+    res.json({
+      address: 'Paraguay',
+      city: 'Paraguay',
+      formattedAddress: 'Paraguay',
+      lat: latitude,
+      lng: longitude,
+      usesFallback: true,
+      googleMapsLink: `https://www.google.com/maps?q=${latitude},${longitude}`,
+      error: error.message
+    });
+  }
+});
+
+/**
  * POST /api/send-order
  * Send order data to n8n webhook
  */
@@ -487,6 +607,7 @@ const server = app.listen(PORT, () => {
   console.log('📝 Endpoints:');
   console.log('   POST /api/create-payment-intent');
   console.log('   POST /api/geocode');
+  console.log('   POST /api/reverse-geocode');
   console.log('   POST /api/send-order');
   console.log('   POST /api/webhook');
   console.log('   GET  /api/health');

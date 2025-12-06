@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
 import { UserIcon, PhoneIcon, HomeIcon, XMarkIcon, MapPinIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { CheckoutProgressBar } from "./CheckoutProgressBar";
+import { API_CONFIG } from "@/lib/stripe";
 
 interface PhoneNameFormProps {
   isOpen: boolean;
@@ -103,20 +104,40 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
         const { latitude, longitude } = position.coords;
 
         try {
-          // Simulate API delay
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          console.log(`📍 GPS coordinates obtained: ${latitude}, ${longitude}`);
 
-          // For now, assume Asunción
-          const city = "Asunción, Paraguay";
-          setDetectedLocation(city);
+          // Call backend reverse geocoding API
+          const response = await fetch(`${API_CONFIG.baseUrl}/api/reverse-geocode`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              lat: latitude,
+              lng: longitude,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Reverse geocoding failed: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log('✅ Reverse geocoding result:', data);
+
+          // Use the precise address from reverse geocoding
+          const locationText = data.city || data.formattedAddress || "Paraguay";
+          setDetectedLocation(locationText);
           setLocationCoords({ lat: latitude, long: longitude });
           setIsLoadingLocation(false);
         } catch (err) {
           console.error("Location processing error:", err);
-          setLocationError("No pudimos detectar tu ubicación");
-          setDetectedLocation(null);
+
+          // Fallback: use coordinates with generic location
+          console.log('⚠️ Reverse geocoding failed, using fallback');
+          setDetectedLocation("Paraguay (coordenadas GPS obtenidas)");
+          setLocationCoords({ lat: latitude, long: longitude });
           setIsLoadingLocation(false);
-          setShowManualLocation(true);
         }
       },
       (err) => {
