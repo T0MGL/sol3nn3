@@ -10,8 +10,9 @@ import {
 import { StarIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 import heroImage from "@/assets/nocte-hero-lifestyle.webp";
-import productImage from "@/assets/nocte-product-hero.jpg";
-import caseImage from "@/assets/nocte-case.jpg";
+import productImage from "@/assets/nocte-product.jpg";
+import caseImage from "@/assets/nocte-case.webp";
+import nocteProductImage from "@/assets/nocteproduct.webp";
 import tarjetasImage from "@/assets/tarjetas.webp";
 import { StripePaymentButton } from "@/components/StripePaymentButton";
 import { PaymentSuccessModal } from "@/components/PaymentSuccessModal";
@@ -35,7 +36,8 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
   const slides = [
     { image: heroImage, alt: "Persona usando lentes NOCTE" },
     { image: productImage, alt: "Lentes NOCTE - Vista detallada" },
-    { image: caseImage, alt: "NOCTE Packaging Premium" }
+    { image: caseImage, alt: "NOCTE Packaging Premium" },
+    { image: nocteProductImage, alt: "NOCTE Producto Premium" }
   ];
 
   // Track ViewContent when hero section is viewed

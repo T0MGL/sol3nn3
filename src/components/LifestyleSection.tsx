@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { DevicePhoneMobileIcon, ComputerDesktopIcon, ClockIcon } from "@heroicons/react/24/outline";
-import productImage from "@/assets/nocte-product-hero.jpg";
+import productImage from "@/assets/nocte-product.jpg";
 
 const useCases = [
   {

@@ -14,6 +14,7 @@ import {
 import { useExitIntent } from "@/hooks/useExitIntent";
 
 // Lazy load heavy sections that are below the fold
+const CelebritiesMarquee = lazy(() => import("@/components/CelebritiesMarquee"));
 const ProductGallery = lazy(() => import("@/components/ProductGallery"));
 const ProductVideo = lazy(() => import("@/components/ProductVideo"));
 const ScienceSection = lazy(() => import("@/components/ScienceSection"));
@@ -412,6 +413,10 @@ const Index = () => {
       {/* Main Content */}
       <main className="pt-0 pb-0 transition-all duration-300">
         <HeroSection onBuyClick={handleBuyClick} />
+
+        <Suspense fallback={<div className="h-64" />}>
+          <CelebritiesMarquee />
+        </Suspense>
 
         <Suspense fallback={<div className="h-96" />}>
           <ProductGallery />

@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { fadeInUpView } from "@/lib/animations";
-import heroImage from "@/assets/nocte-product-hero.jpg";
-import sideView from "@/assets/nocte-side-view.webp";
-import caseImage from "@/assets/nocte-case.jpg";
+import lifestyle1 from "@/assets/lifestyle1.jpg";
+import sideView from "@/assets/nocte-side-view.jpg";
+import caseImage from "@/assets/nocte-case.webp";
 import lifestyle from "@/assets/nocte-lifestyle-2.jpg";
+import nocteProductImage from "@/assets/nocteproduct.webp";
 
 const images = [
-  { src: heroImage, alt: "NOCTE lentes rojos vista frontal" },
+  { src: lifestyle1, alt: "NOCTE lifestyle - Persona usando lentes" },
   { src: sideView, alt: "NOCTE lentes rojos vista lateral" },
   { src: caseImage, alt: "NOCTE estuche premium" },
   { src: lifestyle, alt: "NOCTE en uso" },
+  { src: nocteProductImage, alt: "NOCTE producto premium" },
 ];
 
 export const ProductGallery = () => {
@@ -39,7 +41,7 @@ export const ProductGallery = () => {
           <motion.div
             {...fadeInUpView}
             transition={{ ...fadeInUpView.transition, delay: 0.1 }}
-            className="grid grid-cols-4 gap-3 md:gap-4"
+            className="grid grid-cols-3 md:grid-cols-5 gap-3 md:gap-4"
           >
             {images.map((image, index) => (
               <button
