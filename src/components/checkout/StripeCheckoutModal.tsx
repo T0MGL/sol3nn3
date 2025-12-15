@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { XMarkIcon, CreditCardIcon, DevicePhoneMobileIcon, BanknotesIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, CreditCardIcon, DevicePhoneMobileIcon, BanknotesIcon, CheckIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { getStripe, formatPrice } from '@/lib/stripe';
 import { Button } from '@/components/ui/button';
 import { useStripePayment } from '@/hooks/useStripePayment';
@@ -9,6 +9,8 @@ import { trackAddPaymentInfo } from '@/lib/meta-pixel';
 import { CheckoutProgressBar } from './CheckoutProgressBar';
 
 type PaymentMethod = 'card' | 'cash_on_delivery';
+
+const PRIORITY_SHIPPING_COST = 10000;
 
 interface StripeCheckoutModalProps {
   isOpen: boolean;
@@ -39,6 +41,10 @@ const CheckoutForm = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash_on_delivery');
+  const [isPriorityShipping, setIsPriorityShipping] = useState(false);
+
+  // Calculate final total including priority shipping
+  const finalTotal = amount + (isPriorityShipping ? PRIORITY_SHIPPING_COST : 0);
 
   // Refs to track AddPaymentInfo events and prevent duplicates
   const initialTrackDoneRef = useRef(false);
@@ -54,7 +60,7 @@ const CheckoutForm = ({
     if (!initialTrackDoneRef.current) {
       console.log('📊 [Meta Pixel] Tracking AddPaymentInfo - Default: Pago contra entrega');
       trackAddPaymentInfo({
-        value: amount,
+        value: finalTotal,
         currency: currency.toUpperCase(),
         num_items: customerData.quantity,
         payment_type: 'Pago contra entrega',
@@ -69,19 +75,19 @@ const CheckoutForm = ({
       const paymentType = paymentMethod === 'cash_on_delivery' ? 'Pago contra entrega' : 'Tarjeta';
       console.log(`📊 [Meta Pixel] Tracking AddPaymentInfo - User changed to: ${paymentType}`);
       trackAddPaymentInfo({
-        value: amount,
+        value: finalTotal,
         currency: currency.toUpperCase(),
         num_items: customerData.quantity,
         payment_type: paymentType,
       });
       previousPaymentMethodRef.current = paymentMethod;
     }
-  }, [paymentMethod, amount, currency, customerData.quantity]);
+  }, [paymentMethod, amount, currency, customerData.quantity, finalTotal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log('🔵 [Payment] Starting payment submission...', { paymentMethod });
+    console.log('🔵 [Payment] Starting payment submission...', { paymentMethod, isPriorityShipping, finalTotal });
 
     setIsProcessing(true);
     setErrorMessage(null);
@@ -91,8 +97,11 @@ const CheckoutForm = ({
       if (paymentMethod === 'cash_on_delivery') {
         console.log('🔵 [Payment] Processing Cash on Delivery order...');
 
-        // Generate a COD order ID
-        const codOrderId = `COD-${customerData.orderNumber}-${Date.now()}`;
+        // Generate a COD order ID - Append PRIORITY tag if selected
+        let codOrderId = `COD-${customerData.orderNumber}-${Date.now()}`;
+        if (isPriorityShipping) {
+          codOrderId += '-PRIORITY';
+        }
 
         console.log('✅ [Payment] Cash on Delivery order created:', codOrderId);
 
@@ -309,7 +318,7 @@ const CheckoutForm = ({
                 Pagas recién cuando tienes el producto en mano
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Aceptamos efectivo, QR o transferencia al momento de la entrega. Total: {formatPrice(amount, currency)}
+                Aceptamos efectivo, QR o transferencia al momento de la entrega. Total: {formatPrice(finalTotal, currency)}
               </p>
             </div>
           </div>
@@ -359,11 +368,46 @@ const CheckoutForm = ({
           </p>
         </div>
 
+        {/* PRIORITY SHIPPING UPSELL */}
+        <div
+          onClick={() => setIsPriorityShipping(!isPriorityShipping)}
+          className={`
+            relative flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all duration-300
+            ${isPriorityShipping
+              ? 'bg-primary/5 border-primary/30 shadow-md'
+              : 'bg-secondary/30 border-border/30 hover:bg-secondary/50'
+            }
+          `}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`
+              w-5 h-5 rounded border flex items-center justify-center transition-colors
+              ${isPriorityShipping ? 'bg-primary border-primary' : 'border-muted-foreground/50'}
+            `}>
+              {isPriorityShipping && <CheckIcon className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <RocketLaunchIcon className={`w-4 h-4 ${isPriorityShipping ? 'text-primary' : 'text-muted-foreground'}`} />
+                <p className={`text-sm font-semibold ${isPriorityShipping ? 'text-primary' : 'text-foreground'}`}>
+                  Envío Prioritario VIP
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Despacho inmediato en 24hs
+              </p>
+            </div>
+          </div>
+          <p className={`text-sm font-semibold ${isPriorityShipping ? 'text-primary' : 'text-muted-foreground'}`}>
+            +Gs. 10.000
+          </p>
+        </div>
+
         {/* Total */}
         <div className="flex justify-between items-center pt-3 border-t border-border/50">
           <span className="text-lg font-bold text-foreground">Total a pagar</span>
           <span className="text-2xl font-bold text-primary">
-            {formatPrice(amount, currency)}
+            {formatPrice(finalTotal, currency)}
           </span>
         </div>
 
@@ -390,7 +434,7 @@ const CheckoutForm = ({
               Procesando pedido...
             </>
           ) : (
-            `Confirmar Pedido - ${formatPrice(amount, currency)}`
+            `Confirmar Pedido - ${formatPrice(finalTotal, currency)}`
           )}
         </Button>
 

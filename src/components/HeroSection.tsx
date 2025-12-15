@@ -8,7 +8,7 @@ import {
   TruckIcon
 } from "@heroicons/react/24/outline";
 import { StarIcon } from "@heroicons/react/24/solid";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import heroImage from "@/assets/nocte-hero-lifestyle.webp";
 import productImage from "@/assets/nocte-product.jpg";
 import caseImage from "@/assets/nocte-case.webp";
@@ -48,7 +48,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
     <section className="relative min-h-[85vh] flex items-start overflow-hidden bg-black">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.08),transparent_70%)] pointer-events-none" />
 
-      <div className="container max-w-[1400px] mx-auto px-4 md:px-6 lg:px-12 relative z-10 pt-[80px] md:pt-4 pb-6 md:pb-12">
+      <div className="container max-w-[1400px] mx-auto px-4 md:px-6 lg:px-12 relative z-10 pt-[80px] md:pt-36 pb-6 md:pb-12">
         {/* Mobile-First Layout */}
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 md:gap-8 items-start">
 
@@ -60,11 +60,36 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
             className="relative order-1 w-full"
           >
             {/* Authority Badge */}
-            <div className="absolute top-4 left-2 md:top-2 md:left-4 z-20 bg-gradient-to-r from-primary to-red-600 px-3 py-1.5 rounded-md shadow-lg">
-              <p className="text-white text-xs md:text-sm font-semibold">
-                #1 Lentes Anti-Luz Azul en Paraguay 🇵🇾
-              </p>
-            </div>
+            <motion.div
+              layout
+              className="absolute top-4 left-2 md:top-2 md:left-4 z-20 bg-gradient-to-r from-primary to-red-600 px-3 py-1.5 rounded-md shadow-lg overflow-hidden"
+              initial={false}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {currentSlide === 0 ? (
+                  <motion.p
+                    key="full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-white text-xs md:text-sm font-semibold whitespace-nowrap"
+                  >
+                    #1 Lentes Anti-Luz Azul en Paraguay 🇵🇾
+                  </motion.p>
+                ) : (
+                  <motion.p
+                    key="short"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-white text-xs md:text-sm font-semibold whitespace-nowrap"
+                  >
+                    #1 🇵🇾
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
             {/* Image Carousel with scroll-snap */}
             <div className="relative w-full max-w-[500px] mx-auto">
