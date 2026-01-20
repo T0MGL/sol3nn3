@@ -509,6 +509,7 @@ async function sendToOrdefy(orderData) {
     googleMapsLink,
     quantity,
     total,
+    orderNumber,
     paymentType,
     isPaid,
     deliveryType,
@@ -528,8 +529,9 @@ async function sendToOrdefy(orderData) {
   const paymentStatus = isPaid === true || paymentType === 'Card' ? 'paid' : 'pending';
 
   // Build Ordefy payload
+  // Use orderNumber as idempotency_key for traceability and duplicate prevention
   const ordefyPayload = {
-    idempotency_key: generateOrdefyIdempotencyKey(),
+    idempotency_key: orderNumber || generateOrdefyIdempotencyKey(),
     customer: {
       name,
       phone: phone || undefined,
@@ -546,12 +548,12 @@ async function sendToOrdefy(orderData) {
       {
         sku: getSku(quantity || 1),
         name: getProductName(quantity || 1),
-        quantity: quantity || 1,
-        price: unitPrice,
+        quantity: 1,  // Always 1 bundle - SKU identifies the pack type
+        price: total - shippingCost,  // Bundle price (total minus shipping)
       },
     ],
     totals: {
-      subtotal: unitPrice * (quantity || 1),
+      subtotal: total - shippingCost,
       shipping: shippingCost,
       total: total,
     },
@@ -677,6 +679,7 @@ app.post('/api/send-order', async (req, res) => {
         googleMapsLink,
         quantity,
         total,
+        orderNumber: webhookPayload.orderNumber,
         paymentType,
         isPaid,
         deliveryType,
