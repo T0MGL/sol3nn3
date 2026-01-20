@@ -37,7 +37,8 @@ interface StripeCheckoutModalProps {
   };
 }
 
-onSuccess,
+const CheckoutForm = ({
+  onSuccess,
   onClose,
   amount,
   currency,

@@ -33,7 +33,7 @@ const corsOptions = {
       'http://127.0.0.1:8083',
       'https://nocte.studio',           // ← AGREGAR
       'https://www.nocte.studio',       // ← AGREGAR
-      'https://api.nocte.studio'   
+      'https://api.nocte.studio'
     ];
 
     if (allowedOrigins.indexOf(origin) !== -1) {
@@ -521,8 +521,28 @@ async function sendToOrdefy(orderData) {
     return { success: false, error: 'Ordefy not configured' };
   }
 
-  const unitPrice = getUnitPrice(quantity || 1, total);
-  const shippingCost = deliveryType === 'premium' ? 10000 : 0;
+  const isPriority = deliveryType === 'premium';
+  const priorityCost = isPriority ? 10000 : 0;
+  const productPrice = total - priorityCost;
+
+  const items = [
+    {
+      sku: getSku(quantity || 1),
+      name: getProductName(quantity || 1),
+      quantity: 1,  // Always 1 bundle - SKU identifies the pack type
+      price: productPrice,
+    },
+  ];
+
+  // Add priority shipping as a line item if selected
+  if (isPriority) {
+    items.push({
+      sku: 'NOCTE-ENVIO-PRIORITARIO',
+      name: 'Envío Prioritario VIP',
+      quantity: 1,
+      price: priorityCost
+    });
+  }
 
   // Determine payment status
   // Card payments are always paid, COD is pending payment
@@ -544,17 +564,10 @@ async function sendToOrdefy(orderData) {
       city: location,
       googleMapsLink,
     }),
-    items: [
-      {
-        sku: getSku(quantity || 1),
-        name: getProductName(quantity || 1),
-        quantity: 1,  // Always 1 bundle - SKU identifies the pack type
-        price: total - shippingCost,  // Bundle price (total minus shipping)
-      },
-    ],
+    items: items,
     totals: {
-      subtotal: total - shippingCost,
-      shipping: shippingCost,
+      subtotal: total, // Subtotal includes all items (product + shipping service)
+      shipping: 0,     // Shipping is now a line item
       total: total,
     },
     payment_method: paymentType === 'Card' ? 'online' : 'cash_on_delivery',
@@ -656,15 +669,15 @@ app.post('/api/send-order', async (req, res) => {
       // Send to n8n (if configured)
       process.env.N8N_WEBHOOK_URL
         ? fetch(process.env.N8N_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(webhookPayload)
-          }).then(async (response) => {
-            if (!response.ok) {
-              throw new Error(`n8n webhook failed: ${response.status}`);
-            }
-            return response.json().catch(() => ({}));
-          })
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(webhookPayload)
+        }).then(async (response) => {
+          if (!response.ok) {
+            throw new Error(`n8n webhook failed: ${response.status}`);
+          }
+          return response.json().catch(() => ({}));
+        })
         : Promise.resolve({ skipped: true, reason: 'N8N_WEBHOOK_URL not configured' }),
 
       // Send to Ordefy

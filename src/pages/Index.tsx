@@ -143,6 +143,8 @@ const Index = () => {
 
     // Preload ExitIntentModal to prevent black screen on exit
     import("@/components/checkout/ExitIntentModal");
+    // Preload PhoneNameForm for seamless transition
+    import("@/components/checkout/PhoneNameForm");
   };
 
   const handleQuantitySelected = (quantity: number, totalPrice: number) => {
@@ -162,11 +164,9 @@ const Index = () => {
       currency: 'PYG',
     });
 
-    // Open phone form after a small delay
+    // Open phone form immediately
     // InitiateCheckout will be tracked when the form opens
-    setTimeout(() => {
-      setShowPhoneForm(true);
-    }, 100);
+    setShowPhoneForm(true);
   };
 
   const handlePaymentSuccess = async (result: {
