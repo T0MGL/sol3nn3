@@ -427,10 +427,12 @@ function generateOrdefyIdempotencyKey() {
 
 /**
  * Build Ordefy shipping address from order data
- * Prefers Google Maps URL if coordinates are available
+ * ONLY sends google_maps_url when we have real GPS coordinates
+ * When user types address manually, sends text address fields instead
  */
 function buildOrdefyShippingAddress({ lat, long, address, city, googleMapsLink, reference }) {
-  // If we have coordinates or Google Maps link, use that (most accurate)
+  // ONLY use Google Maps URL if we have real GPS coordinates
+  // This prevents sending "fake" search links to Ordefy
   if (lat && long) {
     return {
       google_maps_url: `https://www.google.com/maps?q=${lat},${long}`,
@@ -438,14 +440,17 @@ function buildOrdefyShippingAddress({ lat, long, address, city, googleMapsLink, 
     };
   }
 
-  if (googleMapsLink) {
+  // If googleMapsLink is provided AND it contains coordinates (not a search link)
+  // Check if it's a coordinate-based link (contains "?q=" followed by numbers)
+  if (googleMapsLink && /maps\.google\.com\/.*\?q=-?\d+\.?\d*,-?\d+\.?\d*/.test(googleMapsLink)) {
     return {
       google_maps_url: googleMapsLink,
       notes: reference || address || undefined,
     };
   }
 
-  // Otherwise, use manual address
+  // Otherwise, use manual text address (google_maps_url will be null/undefined)
+  // This is the correct behavior when user types their address manually
   return {
     address: address || city,
     city: city,
