@@ -206,6 +206,11 @@ export const QuantitySelector = ({ isOpen, onClose, onContinue }: QuantitySelect
               >
                 Continuar con {selectedBundle.label} ({selectedBundle.quantity} {selectedBundle.quantity === 1 ? 'unidad' : 'unidades'})
               </Button>
+
+              {/* Trust Indicators */}
+              <p className="text-center text-xs text-muted-foreground/60 leading-relaxed">
+                Soporte real por WhatsApp · Envíos a todo Paraguay · Pago al recibir
+              </p>
             </div>
           </motion.div>
         </motion.div>
