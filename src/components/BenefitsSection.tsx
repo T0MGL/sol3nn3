@@ -51,7 +51,7 @@ export const BenefitsSection = () => {
               <motion.div
                 key={index}
                 variants={staggerItem}
-                className="group relative p-8 md:p-10 bg-gradient-to-b from-card to-black border border-border/50 hover:border-primary/50 transition-all duration-300 will-change-transform"
+                className="group relative p-8 md:p-10 bg-gradient-to-b from-card to-black border border-border/50 hover:border-primary/50 transition-all duration-300"
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 

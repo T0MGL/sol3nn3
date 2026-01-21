@@ -143,7 +143,7 @@ export const ComparisonTable = () => {
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseLeave}
-            className="overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing will-change-transform"
+            className="overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <div className="flex gap-6 md:gap-8 pb-4 min-w-max">
@@ -153,7 +153,7 @@ export const ComparisonTable = () => {
                   className={`p-8 md:p-10 border-2 w-[280px] md:w-[340px] flex-shrink-0 ${option.isNocte
                     ? "border-primary/50 bg-primary/5 md:scale-105"
                     : "border-border/50 bg-card/30"
-                    } relative select-none will-change-transform`}
+                    } relative select-none`}
                 >
                   {option.isNocte && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary px-6 py-2 text-sm font-bold shadow-lg">

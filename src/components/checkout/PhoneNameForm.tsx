@@ -246,7 +246,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                 </p>
                 <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
                   <span>✓ +1.000 entregas realizadas</span>
-                  <span>✓ Confirmamos por WhatsApp</span>
+                  <span>✓ Soporte via WhatsApp</span>
                   <span>✓ Pagás al recibir</span>
                 </div>
               </div>

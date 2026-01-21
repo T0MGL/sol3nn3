@@ -110,7 +110,7 @@ export const TestimonialsSection = () => {
             <motion.div
               key={index}
               variants={itemVariants}
-              className="group p-6 md:p-8 bg-gradient-to-b from-card to-black border border-border/50 hover:border-primary/30 transition-all duration-300 will-change-transform"
+              className="group p-6 md:p-8 bg-gradient-to-b from-card to-black border border-border/50 hover:border-primary/30 transition-all duration-300"
             >
               <div className="space-y-5 md:space-y-6">
                 <div className="flex gap-0.5">

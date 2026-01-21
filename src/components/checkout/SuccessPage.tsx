@@ -11,6 +11,8 @@ interface SuccessPageProps {
     location: string;
     phone: string;
     name: string;
+    address?: string;
+    googleMapsLink?: string;
   };
   onClose: () => void;
 }
@@ -18,8 +20,35 @@ interface SuccessPageProps {
 export const SuccessPage = ({ isOpen, orderData, onClose }: SuccessPageProps) => {
   const handleWhatsApp = () => {
     const adminPhoneNumber = "595991893587";
+
+    // Build location line based on available data (priority: GPS > Manual Address > City)
+    let locationLine = '';
+    if (orderData.googleMapsLink) {
+      // If we have GPS coordinates, use the Google Maps link
+      locationLine = `📍 ${orderData.googleMapsLink}`;
+    } else if (orderData.address && orderData.address.trim().length > 0) {
+      // If user entered a manual address, use that
+      locationLine = `📍 ${orderData.address}`;
+    } else if (orderData.location) {
+      // Fallback to just the city/location
+      locationLine = `📍 ${orderData.location}`;
+    }
+
     const message = encodeURIComponent(
-      `Hola! Acabo de completar mi orden ${orderData.orderNumber} por ${orderData.products}. Total: ${orderData.total}. Mi número de contacto es ${orderData.phone}.`
+      `Hola *NOCTE®* 👋
+
+Acabo de completar mi pedido!
+
+Orden: ${orderData.orderNumber}
+🔴 ${orderData.products}
+💰 ${orderData.total}
+
+Mis datos:
+👤 ${orderData.name}
+📞 ${orderData.phone}
+${locationLine}
+
+Quedo atento a la confirmación de envío. ¡Gracias! 🙌`
     );
     window.open(`https://wa.me/${adminPhoneNumber}?text=${message}`, "_blank");
   };
@@ -63,30 +92,30 @@ export const SuccessPage = ({ isOpen, orderData, onClose }: SuccessPageProps) =>
               </div>
 
               {/* Details */}
-              <div className="p-6 bg-secondary/50 border border-border rounded-xl space-y-3 text-left">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Número de orden:</span>
-                  <span className="text-sm font-bold text-foreground">{orderData.orderNumber}</span>
+              <div className="p-4 md:p-6 bg-secondary/50 border border-border rounded-xl space-y-3 text-left">
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-xs md:text-sm text-muted-foreground flex-shrink-0">Número de orden:</span>
+                  <span className="text-xs md:text-sm font-bold text-foreground">{orderData.orderNumber}</span>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Productos:</span>
-                  <span className="text-sm font-semibold text-foreground">{orderData.products}</span>
+                <div className="flex justify-between items-start gap-3">
+                  <span className="text-xs md:text-sm text-muted-foreground flex-shrink-0">Productos:</span>
+                  <span className="text-xs md:text-sm font-semibold text-foreground text-right">{orderData.products}</span>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Total:</span>
-                  <span className="text-base font-bold text-primary">{orderData.total}</span>
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-xs md:text-sm text-muted-foreground">Total:</span>
+                  <span className="text-sm md:text-base font-bold text-primary whitespace-nowrap">{orderData.total}</span>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Estado:</span>
-                  <span className="text-sm font-semibold text-[#4ADE80]">Preparando para envío</span>
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-xs md:text-sm text-muted-foreground">Estado:</span>
+                  <span className="text-xs md:text-sm font-semibold text-[#4ADE80]">Preparando para envío</span>
                 </div>
 
-                <div className="flex justify-between items-start">
-                  <span className="text-sm text-muted-foreground">Ubicación:</span>
-                  <span className="text-sm font-medium text-foreground text-right">
+                <div className="flex justify-between items-start gap-3">
+                  <span className="text-xs md:text-sm text-muted-foreground flex-shrink-0">Ubicación:</span>
+                  <span className="text-xs md:text-sm font-medium text-foreground text-right break-words">
                     📍 {orderData.location}
                   </span>
                 </div>
@@ -94,13 +123,13 @@ export const SuccessPage = ({ isOpen, orderData, onClose }: SuccessPageProps) =>
 
               {/* Confirmations */}
               <div className="space-y-2 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                <p className="text-sm text-blue-400 flex items-start gap-2">
-                  <span>✓</span>
-                  <span>Recibirás confirmación por WhatsApp a: {orderData.phone}</span>
+                <p className="text-xs md:text-sm text-blue-400 flex items-start gap-2">
+                  <span className="flex-shrink-0">✓</span>
+                  <span className="text-left">Nos pondremos en contacto contigo al {orderData.phone}</span>
                 </p>
-                <p className="text-sm text-blue-400 flex items-start gap-2">
-                  <span>✓</span>
-                  <span>Tu nombre en el registro: {orderData.name}</span>
+                <p className="text-xs md:text-sm text-blue-400 flex items-start gap-2">
+                  <span className="flex-shrink-0">✓</span>
+                  <span className="text-left">Pedido registrado a nombre de {orderData.name}</span>
                 </p>
               </div>
 
@@ -110,9 +139,9 @@ export const SuccessPage = ({ isOpen, orderData, onClose }: SuccessPageProps) =>
                   onClick={handleWhatsApp}
                   variant="hero"
                   size="xl"
-                  className="w-full h-14 text-base font-bold"
+                  className="w-full h-12 md:h-14 text-sm md:text-base font-bold"
                 >
-                  Contactar por WhatsApp
+                  Escribirnos por WhatsApp (Opcional)
                 </Button>
 
                 <Button
@@ -126,8 +155,8 @@ export const SuccessPage = ({ isOpen, orderData, onClose }: SuccessPageProps) =>
               </div>
 
               {/* Extra Info */}
-              <p className="text-xs text-muted-foreground">
-                Te contactaremos pronto para coordinar la entrega. ¡Gracias por confiar en NOCTE<sup className="text-[0.3em]">®</sup>!
+              <p className="text-xs md:text-sm text-muted-foreground leading-relaxed px-2">
+                Nos pondremos en contacto para coordinar la entrega. ¡Gracias por confiar en NOCTE<sup className="text-[0.3em]">®</sup>!
               </p>
             </div>
           </motion.div>

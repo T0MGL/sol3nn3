@@ -27,11 +27,11 @@ export const LifestyleSection = () => {
 
       <div className="container max-w-[1200px] mx-auto relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12 md:mb-20 space-y-4 md:space-y-6 will-change-transform"
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+          className="text-center mb-12 md:mb-20 space-y-4 md:space-y-6"
         >
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter px-4">
             ¿Cuándo usar NOCTE?
@@ -44,11 +44,11 @@ export const LifestyleSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center">
           {/* Image Side */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6 }}
-            className="relative order-2 lg:order-1 will-change-transform"
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            className="relative order-2 lg:order-1"
           >
             <div className="absolute inset-0 bg-primary/10 rounded-full blur-[100px] scale-75" />
             <div className="relative">
@@ -69,21 +69,36 @@ export const LifestyleSection = () => {
 
           {/* Use Cases Side */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial="initial"
+            whileInView="animate"
             viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-8 order-1 lg:order-2 will-change-transform"
+            variants={{
+              initial: { opacity: 0 },
+              animate: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.1,
+                },
+              },
+            }}
+            className="space-y-8 order-1 lg:order-2"
           >
             {useCases.map((useCase, index) => {
               const Icon = useCase.icon;
               return (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.4 }}
-                  transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
+                  variants={{
+                    initial: { opacity: 0, y: 15 },
+                    animate: {
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        duration: 0.4,
+                        ease: [0.25, 0.1, 0.25, 1],
+                      },
+                    },
+                  }}
                   className="flex gap-6 items-start p-6 md:p-8 bg-gradient-to-r from-card/50 to-transparent border-l-2 border-primary/50 hover:border-primary transition-all duration-300"
                 >
                   <div className="flex-shrink-0">
@@ -107,11 +122,11 @@ export const LifestyleSection = () => {
 
         {/* Bottom CTA */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-16 md:mt-20 text-center will-change-transform"
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+          className="mt-16 md:mt-20 text-center"
         >
           <div className="inline-block bg-secondary/50 backdrop-blur-sm border border-primary/30 rounded-lg px-8 py-6 md:px-12 md:py-8">
             <p className="text-lg md:text-xl lg:text-2xl font-light text-foreground/90 leading-relaxed">

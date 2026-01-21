@@ -55,8 +55,8 @@ export const ProductVideo = () => {
           {/* Video Container - Integrado en la página */}
           <motion.div
             {...fadeInUpView}
-            transition={{ ...fadeInUpView.transition, delay: 0.2 }}
-            className="relative w-full mx-auto overflow-hidden rounded-lg will-change-transform"
+            transition={{ ...fadeInUpView.transition, delay: 0.1 }}
+            className="relative w-full mx-auto overflow-hidden rounded-lg"
           >
             {/* Ambient glow effect - más sutil */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.1),transparent_70%)] pointer-events-none" />

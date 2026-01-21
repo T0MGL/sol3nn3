@@ -15,7 +15,7 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground shadow-[0_4px_6px_rgba(0,0,0,0.1)] hover:bg-secondary/80 hover:shadow-lg",
         ghost: "hover:bg-muted/50 hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline hover:text-primary/80",
-        hero: "bg-gradient-to-b from-[#EF4444] to-[#DC2626] text-white shadow-[0_4px_6px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_16px_rgba(239,68,68,0.3)] hover:from-[#DC2626] hover:to-[#B91C1C] active:scale-[0.98] font-semibold",
+        hero: "bg-gradient-to-r from-[#EF4444] via-[#DC2626] to-[#EF4444] text-white shadow-[0_4px_6px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_16px_rgba(239,68,68,0.3)] active:scale-[0.98] font-semibold animate-gradient-shift animate-shine",
         premium: "bg-secondary/50 text-card-foreground border border-gold/30 shadow-[0_4px_6px_rgba(0,0,0,0.1)] hover:border-gold/50 hover:bg-secondary/70 hover:shadow-lg",
       },
       size: {

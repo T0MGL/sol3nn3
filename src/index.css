@@ -118,6 +118,54 @@ All colors MUST be HSL.
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Minimalist animated gradient for CTAs */
+  .animate-gradient-shift {
+    background-size: 200% 100%;
+    animation: gradient-shift 3s ease-in-out infinite;
+    will-change: background-position;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  /* Subtle shine effect for premium feel */
+  .animate-shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .animate-shine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    animation: shine 3s ease-in-out infinite;
+    will-change: left;
+  }
+
+  @keyframes shine {
+    0% {
+      left: -100%;
+    }
+    50%, 100% {
+      left: 100%;
+    }
+  }
 }
 
 /* Hide Stripe Dev Tools widget in development */

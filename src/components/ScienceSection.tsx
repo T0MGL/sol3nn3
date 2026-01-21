@@ -11,7 +11,7 @@ export const ScienceSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-          className="text-center mb-16 md:mb-20 space-y-6 md:space-y-8 will-change-transform"
+          className="text-center mb-16 md:mb-20 space-y-6 md:space-y-8"
         >
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter px-4 leading-tight">
             Por qué los lentes rojos, no transparentes.
@@ -26,7 +26,7 @@ export const ScienceSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-          className="relative will-change-transform"
+          className="relative"
         >
           {/* Desktop/Tablet: Side by side comparison */}
           <div className="hidden md:grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
@@ -221,9 +221,9 @@ export const ScienceSection = () => {
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.4, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-          className="mt-12 md:mt-16 text-center will-change-transform"
+          className="mt-12 md:mt-16 text-center"
         >
           <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-4 leading-relaxed">
             Longitud de onda (nm) - La luz azul entre 400-500nm es la que más afecta tu sueño.

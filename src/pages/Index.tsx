@@ -11,7 +11,6 @@ import {
   trackAddPaymentInfo,
   trackPurchase,
 } from "@/lib/meta-pixel";
-import { useExitIntent } from "@/hooks/useExitIntent";
 
 // Lazy load heavy sections that are below the fold
 const CelebritiesMarquee = lazy(() => import("@/components/CelebritiesMarquee"));
@@ -31,7 +30,6 @@ const PhoneNameForm = lazy(() => import("@/components/checkout/PhoneNameForm"));
 const SuccessPage = lazy(() => import("@/components/checkout/SuccessPage"));
 const PaymentFallbackModal = lazy(() => import("@/components/checkout/PaymentFallbackModal"));
 const StripeCheckoutModal = lazy(() => import("@/components/checkout/StripeCheckoutModal"));
-const ExitIntentModal = lazy(() => import("@/components/checkout/ExitIntentModal"));
 
 // Skeleton loader for lazy-loaded sections - prevents layout shift
 const SectionSkeleton = memo(({ height }: { height: string }) => (
@@ -57,9 +55,8 @@ const Index = () => {
   const [showPaymentFallback, setShowPaymentFallback] = useState(false);
   const [showPhoneForm, setShowPhoneForm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isProcessingOrder, setIsProcessingOrder] = useState(false);
   const [checkoutInProgress, setCheckoutInProgress] = useState(false);
-  const [showExitIntent, setShowExitIntent] = useState(false);
-  const [exitIntentShown, setExitIntentShown] = useState(false);
 
   const [checkoutData, setCheckoutData] = useState({
     quantity: 1,
@@ -76,30 +73,10 @@ const Index = () => {
     paymentIntentId: "",
   });
 
-  // Check if user is in any checkout step
-  const isInCheckout = checkoutInProgress || showQuantitySelector || showPhoneForm || showStripeCheckout;
-
-  // Detect exit intent during any checkout step
-  useExitIntent({
-    onExitIntent: () => {
-      if (isInCheckout && !showSuccess && !exitIntentShown && !showExitIntent) {
-        // Close any open modals first
-        setShowQuantitySelector(false);
-        setShowPhoneForm(false);
-        setShowStripeCheckout(false);
-
-        // Show exit intent modal
-        setShowExitIntent(true);
-        setExitIntentShown(true);
-      }
-    },
-    enabled: isInCheckout && !showSuccess && !exitIntentShown && !showExitIntent,
-  });
-
   // Prevent page close/reload during checkout
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isInCheckout && !showSuccess && !showExitIntent) {
+      if (checkoutInProgress && !showSuccess) {
         e.preventDefault();
         e.returnValue = "Tienes un pedido en proceso. Si sales ahora, perderás tu progreso.";
         return e.returnValue;
@@ -108,7 +85,7 @@ const Index = () => {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [isInCheckout, showSuccess, showExitIntent]);
+  }, [checkoutInProgress, showSuccess]);
 
   // Generate order number on component mount
   useEffect(() => {
@@ -141,8 +118,6 @@ const Index = () => {
     setCheckoutInProgress(true); // Start checkout progress tracking
     setShowQuantitySelector(true);
 
-    // Preload ExitIntentModal to prevent black screen on exit
-    import("@/components/checkout/ExitIntentModal");
     // Preload PhoneNameForm for seamless transition
     import("@/components/checkout/PhoneNameForm");
   };
@@ -176,8 +151,8 @@ const Index = () => {
     deliveryType: 'común' | 'premium';
     finalTotal: number;
   }) => {
-    // STEP 4: Payment successful - now send order to n8n/Ordefy and show success
-    setShowStripeCheckout(false);
+    // STEP 4: Payment successful - show loading while processing
+    setIsProcessingOrder(true);
     setCheckoutData((prev) => ({ ...prev, paymentIntentId: result.paymentIntentId }));
 
     // Send order to backend (which handles n8n and Ordefy)
@@ -230,6 +205,9 @@ const Index = () => {
       order_id: checkoutData.orderNumber,
     });
 
+    // Close Stripe modal and show success
+    setIsProcessingOrder(false);
+    setShowStripeCheckout(false);
     setShowSuccess(true);
   };
 
@@ -239,57 +217,41 @@ const Index = () => {
   };
 
   const handleQuantitySelectorClose = () => {
-    // Show exit intent modal instead of just closing
-    if (!exitIntentShown) {
-      setShowQuantitySelector(false);
-      setShowExitIntent(true);
-      setExitIntentShown(true);
-    } else {
-      // If already shown, just close and reset
-      setShowQuantitySelector(false);
-      setCheckoutInProgress(false);
-      setCheckoutData({
-        quantity: 1,
-        totalPrice: 199000,
-        colors: null,
-        location: "",
-        name: "",
-        phone: "",
-        address: "",
-        paymentMethod: "digital",
-        orderNumber: generateOrderNumber(),
-        paymentIntentId: "",
-        lat: undefined,
-        long: undefined,
-      });
-    }
+    setShowQuantitySelector(false);
+    setCheckoutInProgress(false);
+    setCheckoutData({
+      quantity: 1,
+      totalPrice: 199000,
+      colors: null,
+      location: "",
+      name: "",
+      phone: "",
+      address: "",
+      paymentMethod: "digital",
+      orderNumber: generateOrderNumber(),
+      paymentIntentId: "",
+      lat: undefined,
+      long: undefined,
+    });
   };
 
   const handleStripeCheckoutClose = () => {
-    // Show exit intent modal instead of just closing
-    if (!exitIntentShown) {
-      setShowStripeCheckout(false);
-      setShowExitIntent(true);
-      setExitIntentShown(true);
-    } else {
-      // If already shown, just close and reset
-      setShowStripeCheckout(false);
-      setCheckoutInProgress(false);
-      setCheckoutData({
-        quantity: 1,
-        totalPrice: 199000,
-        colors: null,
-        location: "",
-        name: "",
-        phone: "",
-        address: "",
-        paymentMethod: "digital",
-        orderNumber: generateOrderNumber(),
-        paymentIntentId: "",
-        lat: undefined,
-        long: undefined,
-      });
-    }
+    setShowStripeCheckout(false);
+    setCheckoutInProgress(false);
+    setCheckoutData({
+      quantity: 1,
+      totalPrice: 199000,
+      colors: null,
+      location: "",
+      name: "",
+      phone: "",
+      address: "",
+      paymentMethod: "digital",
+      orderNumber: generateOrderNumber(),
+      paymentIntentId: "",
+      lat: undefined,
+      long: undefined,
+    });
   };
 
   const handlePhoneSubmit = (data: { name: string; phone: string; location: string; address: string; lat?: number; long?: number }) => {
@@ -309,30 +271,22 @@ const Index = () => {
   };
 
   const handlePhoneFormClose = () => {
-    // Show exit intent modal instead of just closing
-    if (!exitIntentShown) {
-      setShowPhoneForm(false);
-      setShowExitIntent(true);
-      setExitIntentShown(true);
-    } else {
-      // If already shown, just close and reset
-      setShowPhoneForm(false);
-      setCheckoutInProgress(false);
-      setCheckoutData({
-        quantity: 1,
-        totalPrice: 199000,
-        colors: null,
-        location: "",
-        name: "",
-        phone: "",
-        address: "",
-        paymentMethod: "digital",
-        orderNumber: generateOrderNumber(),
-        paymentIntentId: "",
-        lat: undefined,
-        long: undefined,
-      });
-    }
+    setShowPhoneForm(false);
+    setCheckoutInProgress(false);
+    setCheckoutData({
+      quantity: 1,
+      totalPrice: 199000,
+      colors: null,
+      location: "",
+      name: "",
+      phone: "",
+      address: "",
+      paymentMethod: "digital",
+      orderNumber: generateOrderNumber(),
+      paymentIntentId: "",
+      lat: undefined,
+      long: undefined,
+    });
   };
 
   const handleSuccessClose = () => {
@@ -355,27 +309,14 @@ const Index = () => {
     });
   };
 
-  const handleExitIntentClose = () => {
-    setShowExitIntent(false);
-    setCheckoutInProgress(false);
-    // Reset checkout state
-    setCheckoutData({
-      quantity: 1,
-      totalPrice: 199000,
-      colors: null,
-      location: "",
-      name: "",
-      phone: "",
-      address: "",
-      paymentMethod: "digital",
-      orderNumber: generateOrderNumber(),
-      paymentIntentId: "",
-      lat: undefined,
-      long: undefined,
-    });
-  };
 
   const orderData = useMemo(() => {
+    // Generate Google Maps link if we have coordinates
+    let googleMapsLink: string | undefined;
+    if (checkoutData.lat && checkoutData.long) {
+      googleMapsLink = `https://www.google.com/maps?q=${checkoutData.lat},${checkoutData.long}`;
+    }
+
     return {
       orderNumber: checkoutData.orderNumber,
       products: `${checkoutData.quantity}x NOCTE® Red Light Blocking Glasses`,
@@ -383,6 +324,8 @@ const Index = () => {
       location: checkoutData.location,
       phone: checkoutData.phone,
       name: checkoutData.name,
+      address: checkoutData.address,
+      googleMapsLink,
     };
   }, [checkoutData]);
 
@@ -528,6 +471,7 @@ const Index = () => {
             onSuccess={handlePaymentSuccess}
             amount={checkoutData.totalPrice}
             currency="pyg"
+            isProcessingOrder={isProcessingOrder}
             customerData={{
               name: checkoutData.name,
               phone: checkoutData.phone,
@@ -557,15 +501,6 @@ const Index = () => {
             isOpen={showSuccess}
             orderData={orderData}
             onClose={handleSuccessClose}
-          />
-        </Suspense>
-      )}
-
-      {showExitIntent && (
-        <Suspense fallback={null}>
-          <ExitIntentModal
-            isOpen={showExitIntent}
-            onClose={handleExitIntentClose}
           />
         </Suspense>
       )}

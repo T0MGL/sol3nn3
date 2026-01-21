@@ -25,7 +25,7 @@ export const ProductGallery = () => {
           {/* Main Image */}
           <motion.div
             {...fadeInUpView}
-            className="relative aspect-[4/3] md:aspect-video w-full overflow-hidden bg-gradient-to-b from-black via-card/20 to-black will-change-transform"
+            className="relative aspect-[4/3] md:aspect-video w-full overflow-hidden bg-gradient-to-b from-black via-card/20 to-black"
           >
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.15),transparent_60%)]" />
             <img

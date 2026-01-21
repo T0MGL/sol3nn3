@@ -33,6 +33,24 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const deliveryDates = getDeliveryDates();
 
+  // Dynamic stock counter (resets daily, creates urgency)
+  const [stockLeft] = useState(() => {
+    const today = new Date().toDateString();
+    const stored = localStorage.getItem('nocte-stock-data');
+
+    if (stored) {
+      const data = JSON.parse(stored);
+      if (data.date === today) {
+        return data.stock;
+      }
+    }
+
+    // Generate random stock between 3-8 for the day
+    const newStock = Math.floor(Math.random() * 6) + 3;
+    localStorage.setItem('nocte-stock-data', JSON.stringify({ date: today, stock: newStock }));
+    return newStock;
+  });
+
   const slides = [
     { image: heroImage, alt: "Persona usando lentes NOCTE" },
     { image: productImage, alt: "Lentes NOCTE - Vista detallada" },
@@ -54,10 +72,10 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
 
           {/* Image Slider - Order 1 on mobile (shows first) */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             className="relative order-1 w-full"
           >
             {/* Authority Badge */}
@@ -149,10 +167,10 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
 
           {/* Content - Order 2 on mobile */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
             className="space-y-4 md:space-y-6 order-2 w-full"
           >
             {/* Main Title */}
@@ -214,6 +232,22 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
               <span className="text-base text-foreground/40 line-through">Gs. 239.000</span>
               <span className="text-4xl md:text-5xl font-bold text-white">Gs. 199.000</span>
             </div>
+
+            {/* Stock Urgency Indicator */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg"
+            >
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+              </span>
+              <span className="text-sm font-semibold text-primary">
+                Solo quedan {stockLeft} unidades en stock
+              </span>
+            </motion.div>
 
             {/* CTA Button */}
             <div className="space-y-3">

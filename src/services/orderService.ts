@@ -163,15 +163,15 @@ export async function sendOrderToN8N(
 
 /**
  * Generate a unique order number
+ * Format: #NOC-MMDD-XXXX (e.g., #NOC-0121-5847)
  */
 export function generateOrderNumber(): string {
   const date = new Date();
-  const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   const random = Math.floor(Math.random() * 10000)
     .toString()
     .padStart(4, '0');
 
-  return `#NOCTE-${year}${month}${day}-${random}`;
+  return `#NOC-${month}${day}-${random}`;
 }

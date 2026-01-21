@@ -46,10 +46,10 @@ export const CelebritiesMarquee = () => {
             <div className="container max-w-[1400px] mx-auto px-4">
                 {/* Title */}
                 <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
                     className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-12 md:mb-16 text-white"
                 >
                     CUANDO ALGO FUNCIONA, SE NOTA...
@@ -121,8 +121,8 @@ export const CelebritiesMarquee = () => {
                 <motion.p
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 1, delay: 0.3 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.4, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
                     className="text-center mt-12 md:mt-16 text-sm md:text-base text-white/50 font-light tracking-wide"
                 >
                     Confiado por profesionales y celebridades alrededor del mundo
