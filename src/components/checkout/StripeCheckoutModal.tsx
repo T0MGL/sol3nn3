@@ -27,6 +27,7 @@ interface StripeCheckoutModalProps {
   onSuccess: (result: PaymentResult) => void;
   amount: number;
   currency: string;
+  isProcessingOrder?: boolean;
   customerData: {
     name: string;
     phone: string;
@@ -44,7 +45,9 @@ const CheckoutForm = ({
   currency,
   customerData,
   onCloseAttempt,
-}: Omit<StripeCheckoutModalProps, 'isOpen'> & { onCloseAttempt: () => void }) => {
+}: Omit<StripeCheckoutModalProps, 'isOpen'> & {
+  onCloseAttempt: () => void;
+}) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -360,9 +363,9 @@ const CheckoutForm = ({
         </h3>
 
         {/* Product */}
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">
+        <div className="flex justify-between items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground leading-tight">
               {customerData.quantity === 2
                 ? 'Lentes Rojos Premium Anti-Luz Azul - Pack x2'
                 : 'Lentes Rojos Premium Anti-Luz Azul'}
@@ -371,7 +374,7 @@ const CheckoutForm = ({
               Cantidad: {customerData.quantity}
             </p>
           </div>
-          <p className="text-sm font-semibold text-foreground ml-4">
+          <p className="text-sm font-semibold whitespace-nowrap flex-shrink-0 text-foreground">
             {formatPrice(amount, currency)}
           </p>
         </div>
@@ -393,49 +396,52 @@ const CheckoutForm = ({
         <div
           onClick={() => setIsPriorityShipping(!isPriorityShipping)}
           className={`
-            relative flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 group
+            relative p-4 rounded-xl border cursor-pointer transition-all duration-300 group
             ${isPriorityShipping
               ? 'bg-primary/5 border-primary/40 shadow-[0_0_20px_-10px_rgba(239,68,68,0.3)]'
               : 'bg-secondary/30 border-border/40 hover:bg-secondary/50 hover:border-border/60'
             }
           `}
         >
-          {/* Checkbox */}
-          <div className={`
-            w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 flex-shrink-0
-            ${isPriorityShipping
-              ? 'bg-primary border-primary scale-110'
-              : 'border-muted-foreground/40 group-hover:border-primary/50'
-            }
-          `}>
-            {isPriorityShipping && <CheckIcon className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
-          </div>
-
-          {/* Text Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <p className={`text-sm font-bold truncate ${isPriorityShipping ? 'text-primary' : 'text-foreground'}`}>
-                Envío Prioritario VIP
-              </p>
-              <RocketLaunchIcon className={`w-4 h-4 ${isPriorityShipping ? 'text-primary' : 'text-muted-foreground/70'}`} />
+          <div className="flex items-start gap-3">
+            {/* Checkbox */}
+            <div className={`
+              w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 flex-shrink-0 mt-0.5
+              ${isPriorityShipping
+                ? 'bg-primary border-primary scale-110'
+                : 'border-muted-foreground/40 group-hover:border-primary/50'
+              }
+            `}>
+              {isPriorityShipping && <CheckIcon className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Despacho inmediato en 24hs
-            </p>
-          </div>
 
-          {/* Price */}
-          <div className="text-right flex-shrink-0">
-            <p className={`text-sm font-bold ${isPriorityShipping ? 'text-primary' : 'text-muted-foreground'}`}>
-              +Gs. 10.000
-            </p>
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              {/* Title Row */}
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <p className={`text-sm font-bold ${isPriorityShipping ? 'text-primary' : 'text-foreground'}`}>
+                    Envío Prioritario VIP
+                  </p>
+                  <RocketLaunchIcon className={`w-4 h-4 flex-shrink-0 ${isPriorityShipping ? 'text-primary' : 'text-muted-foreground/70'}`} />
+                </div>
+                <p className={`text-sm font-bold whitespace-nowrap ml-2 ${isPriorityShipping ? 'text-primary' : 'text-muted-foreground'}`}>
+                  + Gs. 10.000
+                </p>
+              </div>
+
+              {/* Description */}
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Despacho inmediato en 24hs
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Total */}
-        <div className="flex justify-between items-center pt-3 border-t border-border/50">
-          <span className="text-lg font-bold text-foreground">Total a pagar</span>
-          <span className="text-2xl font-bold text-primary">
+        <div className="flex justify-between items-center gap-3 pt-3 border-t border-border/50">
+          <span className="text-base md:text-lg font-bold text-foreground">Total a pagar</span>
+          <span className="text-xl md:text-2xl font-bold text-primary whitespace-nowrap">
             {formatPrice(finalTotal, currency)}
           </span>
         </div>
@@ -454,7 +460,7 @@ const CheckoutForm = ({
           type="submit"
           variant="hero"
           size="xl"
-          className="w-full h-14"
+          className="w-full h-14 text-sm md:text-base"
           disabled={paymentMethod === 'card' ? (!stripe || isProcessing) : isProcessing}
         >
           {isProcessing ? (
@@ -463,7 +469,9 @@ const CheckoutForm = ({
               Procesando pedido...
             </>
           ) : (
-            `Confirmar Pedido - ${formatPrice(finalTotal, currency)}`
+            <span className="truncate">
+              Confirmar Pedido - {formatPrice(finalTotal, currency)}
+            </span>
           )}
         </Button>
 
@@ -489,6 +497,7 @@ export const StripeCheckoutModal = ({
   onSuccess,
   amount,
   currency,
+  isProcessingOrder = false,
   customerData,
 }: StripeCheckoutModalProps) => {
   const [stripePromise] = useState(() => getStripe());
@@ -497,17 +506,35 @@ export const StripeCheckoutModal = ({
   const [isInitializing, setIsInitializing] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [hasShownExitOffer, setHasShownExitOffer] = useState(false);
 
-  // Intercept close attempt
+  // Intercept close attempt - show WhatsApp help if not shown yet
   const handleCloseAttempt = () => {
-    setShowExitConfirm(true);
+    if (!hasShownExitOffer) {
+      setShowExitConfirm(true);
+      setHasShownExitOffer(true);
+    } else {
+      onClose();
+    }
   };
 
-  const handleKeepCheckout = () => {
+  // User contacts via WhatsApp
+  const handleWhatsAppContact = () => {
+    const phone = "595991893587";
+    const message = encodeURIComponent(
+      `Hola! Estaba por comprar NOCTE pero tengo algunas dudas. Mi orden: ${customerData.orderNumber}`
+    );
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
     setShowExitConfirm(false);
   };
 
-  const handleConfirmExit = () => {
+  // User continues without help
+  const handleContinueCheckout = () => {
+    setShowExitConfirm(false);
+  };
+
+  // User exits
+  const handleExit = () => {
     setShowExitConfirm(false);
     onClose();
   };
@@ -616,7 +643,7 @@ export const StripeCheckoutModal = ({
                   Finalizar Compra
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Orden #{customerData.orderNumber}
+                  Orden {customerData.orderNumber}
                 </p>
               </div>
             </div>
@@ -683,7 +710,7 @@ export const StripeCheckoutModal = ({
               </>
             )}
 
-            {/* Internal Exit Confirmation Overlay */}
+            {/* Exit WhatsApp Help Overlay */}
             <AnimatePresence>
               {showExitConfirm && (
                 <motion.div
@@ -693,32 +720,91 @@ export const StripeCheckoutModal = ({
                   className="absolute inset-0 z-50 flex items-center justify-center bg-black/95 p-6 rounded-xl backdrop-blur-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="text-center space-y-4 max-w-sm w-full">
-                    <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <XMarkIcon className="w-6 h-6 text-red-500" />
+                  <div className="text-center space-y-5 max-w-md w-full">
+                    {/* Headline */}
+                    <div className="space-y-3">
+                      <div className="w-16 h-16 mx-auto bg-green-500/10 rounded-full flex items-center justify-center">
+                        <svg className="w-10 h-10 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                      </div>
+                      <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
+                        ¿Necesitás ayuda para completar tu compra?
+                      </h2>
+                      <p className="text-base text-muted-foreground leading-relaxed px-2">
+                        Nuestro equipo está disponible por WhatsApp para resolver tus dudas al instante.
+                        <span className="block mt-2 text-foreground font-medium">
+                          Respondemos en menos de 2 minutos 🇵🇾
+                        </span>
+                      </p>
                     </div>
-                    <h3 className="text-xl font-bold text-white">¿Estás seguro?</h3>
-                    <p className="text-sm text-gray-400">
-                      Estás a un paso de completar tu pedido. Si sales ahora, podrías perder la reserva de tu producto.
-                    </p>
-                    <div className="pt-4 space-y-3">
+
+                    {/* Benefits of contacting */}
+                    <div className="text-left space-y-2 bg-secondary/30 border border-border/30 rounded-lg p-4">
+                      <p className="text-sm text-muted-foreground flex items-start gap-2">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>Resolvemos todas tus dudas sobre el producto</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground flex items-start gap-2">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>Te ayudamos a completar tu pedido paso a paso</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground flex items-start gap-2">
+                        <span className="text-green-500 mt-0.5">✓</span>
+                        <span>Atención personalizada en español 🇵🇾</span>
+                      </p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="pt-2 space-y-3">
                       <Button
                         type="button"
                         variant="hero"
-                        size="lg"
-                        className="w-full h-12 text-base"
-                        onClick={handleKeepCheckout}
+                        size="xl"
+                        className="w-full h-14 text-base font-semibold bg-green-500 hover:bg-green-600"
+                        onClick={handleWhatsAppContact}
                       >
-                        Continuar con mi compra
+                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Hablar por WhatsApp
                       </Button>
                       <button
                         type="button"
-                        onClick={handleConfirmExit}
-                        className="text-sm text-gray-500 hover:text-white transition-colors py-2"
+                        onClick={handleContinueCheckout}
+                        className="w-full text-sm font-medium text-foreground hover:text-primary transition-colors py-2 underline"
                       >
-                        Sí, quiero salir y perder mi oferta
+                        Continuar sin ayuda
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleExit}
+                        className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+                      >
+                        Salir
                       </button>
                     </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Processing Order Overlay */}
+            <AnimatePresence>
+              {isProcessingOrder && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6 rounded-xl backdrop-blur-sm"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="text-center space-y-4 max-w-sm w-full">
+                    <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
+                    <h3 className="text-xl md:text-2xl font-bold text-white">Procesando tu pedido...</h3>
+                    <p className="text-sm text-gray-400 leading-relaxed">
+                      Estamos confirmando tu orden y enviando los detalles. Esto tomará solo unos segundos.
+                    </p>
                   </div>
                 </motion.div>
               )}
