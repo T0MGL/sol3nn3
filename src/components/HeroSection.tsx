@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import {
@@ -25,13 +25,15 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
   const [showStripeSuccess, setShowStripeSuccess] = useState(false);
-  const [stripeError, setStripeError] = useState<string | null>(null);
   const [useStripe] = useState(() => {
     // Only enable Stripe if API key is configured
     return !!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
   });
   const [currentSlide, setCurrentSlide] = useState(0);
-  const deliveryDates = getDeliveryDates();
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Memoize delivery dates calculation (doesn't change during session)
+  const deliveryDates = useMemo(() => getDeliveryDates(), []);
 
   // Dynamic stock counter (resets daily, creates urgency)
   const [stockLeft] = useState(() => {
@@ -123,6 +125,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
             {/* Image Carousel with scroll-snap */}
             <div className="relative w-full max-w-[500px] mx-auto">
               <div
+                ref={carouselRef}
                 className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide rounded-lg"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 onScroll={(e) => {
@@ -156,10 +159,9 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                   <button
                     key={index}
                     onClick={() => {
-                      const container = document.querySelector('.snap-x');
-                      if (container) {
-                        container.scrollTo({
-                          left: index * container.clientWidth,
+                      if (carouselRef.current) {
+                        carouselRef.current.scrollTo({
+                          left: index * carouselRef.current.clientWidth,
                           behavior: 'smooth'
                         });
                       }
@@ -276,7 +278,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                   <StripePaymentButton
                     onSuccess={() => setShowStripeSuccess(true)}
                     onError={(error) => {
-                      setStripeError(error);
+                      console.error('Stripe error:', error);
                       onBuyClick();
                     }}
                     className="w-full h-14 md:h-16 text-base md:text-lg font-bold shadow-[0_8px_24px_rgba(239,68,68,0.4)]"

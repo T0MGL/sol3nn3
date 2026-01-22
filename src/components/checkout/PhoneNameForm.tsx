@@ -23,6 +23,15 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
   const [errors, setErrors] = useState<{ name?: string; phone?: string; address?: string }>({});
   const [loading, setLoading] = useState(false);
   const phoneInputRef = useRef<HTMLInputElement>(null);
+  const isMountedRef = useRef(true);
+
+  // Track component mounted state to prevent state updates after unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -39,6 +48,46 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
       setLoading(false);
     }
   }, [isOpen]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Detect fake phone numbers with suspicious patterns
+  const isFakePhoneNumber = (digits: string): boolean => {
+    // All same digit (e.g., 981111111)
+    if (/^(\d)\1+$/.test(digits)) return true;
+
+    // Sequential repeating pairs (e.g., 981222333, 981223344)
+    if (/^(\d{2,3})(\d)\2{2,}(\d)\3{2,}$/.test(digits)) return true;
+
+    // Common fake patterns: ascending/descending sequences
+    if (/^9[789]1?(123456|234567|345678|456789|987654|876543|765432)/.test(digits)) return true;
+
+    // Mirror patterns (e.g., 981123321)
+    if (digits.length >= 6) {
+      const firstHalf = digits.slice(0, Math.floor(digits.length / 2));
+      const secondHalf = digits.slice(-Math.floor(digits.length / 2));
+      const reversedSecond = secondHalf.split('').reverse().join('');
+      if (firstHalf === reversedSecond) return true;
+    }
+
+    // Three or more same consecutive digits anywhere (e.g., 981111234)
+    if (/(\d)\1{3,}/.test(digits)) return true;
+
+    // Two groups of 3+ same digits (e.g., 981222333)
+    if (/(\d)\1{2,}.*(\d)\2{2,}/.test(digits)) return true;
+
+    return false;
+  };
 
   const formatPhoneNumber = (value: string) => {
     // Always ensure it starts with +595
@@ -71,7 +120,14 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
 
     const formatted = formatPhoneNumber(newValue);
     setPhone(formatted);
-    setErrors((prev) => ({ ...prev, phone: undefined }));
+
+    // Real-time validation for fake numbers
+    const digits = formatted.slice(5).replace(/\D/g, "");
+    if (digits.length >= 8 && isFakePhoneNumber(digits)) {
+      setErrors((prev) => ({ ...prev, phone: "Por favor, introducí un número válido" }));
+    } else {
+      setErrors((prev) => ({ ...prev, phone: undefined }));
+    }
   };
 
   const handlePhoneFocus = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -101,6 +157,9 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        // Check if component is still mounted before updating state
+        if (!isMountedRef.current) return;
+
         const { latitude, longitude } = position.coords;
 
         try {
@@ -118,6 +177,9 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
             }),
           });
 
+          // Check again after async operation
+          if (!isMountedRef.current) return;
+
           if (!response.ok) {
             throw new Error(`Reverse geocoding failed: ${response.status}`);
           }
@@ -125,12 +187,18 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
           const data = await response.json();
           console.log('✅ Reverse geocoding result:', data);
 
+          // Final check before state updates
+          if (!isMountedRef.current) return;
+
           // Use the precise address from reverse geocoding
           const locationText = data.city || data.formattedAddress || "Paraguay";
           setDetectedLocation(locationText);
           setLocationCoords({ lat: latitude, long: longitude });
           setIsLoadingLocation(false);
         } catch (err) {
+          // Check if component is still mounted before updating state
+          if (!isMountedRef.current) return;
+
           console.error("Location processing error:", err);
 
           // Fallback: use coordinates with generic location
@@ -141,6 +209,9 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
         }
       },
       (err) => {
+        // Check if component is still mounted before updating state
+        if (!isMountedRef.current) return;
+
         console.error("Geolocation error:", err);
         setLocationError("Permiso denegado para acceder a tu ubicación");
         setDetectedLocation(null);
@@ -167,6 +238,8 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
     const phoneDigits = afterPrefix.replace(/\D/g, "");
     if (phoneDigits.length < 8 || phoneDigits.length > 10) {
       newErrors.phone = "Teléfono inválido (ej: +595 971 234567)";
+    } else if (isFakePhoneNumber(phoneDigits)) {
+      newErrors.phone = "Por favor, introducí un número válido";
     }
 
     // Validate address (either detected or manual)
@@ -203,7 +276,8 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
   // Validate button state
   const phoneDigitsOnly = phone.slice(5).replace(/\D/g, "");
   const hasValidLocation = detectedLocation || address.trim().length >= 10;
-  const isValid = name.trim().length >= 3 && phoneDigitsOnly.length >= 8 && phoneDigitsOnly.length <= 10 && hasValidLocation;
+  const isValidPhone = phoneDigitsOnly.length >= 8 && phoneDigitsOnly.length <= 10 && !isFakePhoneNumber(phoneDigitsOnly);
+  const isValid = name.trim().length >= 3 && isValidPhone && hasValidLocation;
 
   return (
     <AnimatePresence>

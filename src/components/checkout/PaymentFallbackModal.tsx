@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { CreditCardIcon, BanknotesIcon } from "@heroicons/react/24/outline";
+import { useEffect } from "react";
 
 interface PaymentFallbackModalProps {
   isOpen: boolean;
@@ -15,6 +16,18 @@ export const PaymentFallbackModal = ({
   onRetryPayment,
   onCancel,
 }: PaymentFallbackModalProps) => {
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (

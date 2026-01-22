@@ -12,6 +12,7 @@ interface QuantitySelectorProps {
 // Fixed bundle pricing strategy
 const BUNDLES = [
   {
+    id: 'personal',
     quantity: 1,
     price: 199000,
     unitPrice: 199000,
@@ -20,6 +21,7 @@ const BUNDLES = [
     highlighted: false,
   },
   {
+    id: 'pareja',
     quantity: 2,
     price: 299000,
     unitPrice: 149500,
@@ -29,6 +31,7 @@ const BUNDLES = [
     savings: 99000, // 398.000 - 299.000
   },
   {
+    id: 'oficina',
     quantity: 3,
     price: 429000,
     unitPrice: 143000,
@@ -55,6 +58,18 @@ export const QuantitySelector = ({ isOpen, onClose, onContinue }: QuantitySelect
       setSelectedBundleIndex(1);
       setExtraUnits(0);
     }
+  }, [isOpen]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen]);
 
   const selectedBundle = BUNDLES[selectedBundleIndex];
@@ -128,7 +143,7 @@ export const QuantitySelector = ({ isOpen, onClose, onContinue }: QuantitySelect
 
                   return (
                     <motion.button
-                      key={index}
+                      key={bundle.id}
                       onClick={() => {
                         setSelectedBundleIndex(index);
                         setExtraUnits(0); // Reset extra units when changing bundle

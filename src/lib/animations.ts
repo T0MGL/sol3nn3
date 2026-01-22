@@ -1,9 +1,8 @@
 // Optimized Framer Motion animation variants
 // Reduces animation complexity and respects user preferences
+// Note: For reactive reduced motion detection in components, use useReducedMotion hook
 
-const REDUCED_MOTION = typeof window !== 'undefined'
-  ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  : false;
+import { REDUCED_MOTION } from '@/hooks/useReducedMotion';
 
 // Fast easing function for smooth animations
 export const EASING = [0.25, 0.1, 0.25, 1] as const;

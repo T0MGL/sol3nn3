@@ -24,6 +24,16 @@ export const StripePaymentButton = ({
   const paymentButtonRef = useRef<HTMLDivElement>(null);
   const { createPaymentIntent } = useStripePayment();
 
+  // Store callbacks in refs to avoid re-initializing paymentRequest on every render
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
+
+  // Keep refs updated with latest callbacks
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+    onErrorRef.current = onError;
+  }, [onSuccess, onError]);
+
   useEffect(() => {
     const initPaymentRequest = async () => {
       try {
@@ -117,10 +127,10 @@ export const StripePaymentButton = ({
 
               // Payment successful
               ev.complete('success');
-              onSuccess?.();
+              onSuccessRef.current?.();
             } catch (error) {
               const errorMessage = error instanceof Error ? error.message : 'Error al procesar el pago';
-              onError?.(errorMessage);
+              onErrorRef.current?.(errorMessage);
               console.error('Payment error:', error);
             } finally {
               setIsProcessing(false);
@@ -155,7 +165,8 @@ export const StripePaymentButton = ({
     };
 
     initPaymentRequest();
-  }, [createPaymentIntent, onSuccess, onError]);
+    // Note: onSuccess/onError are accessed via refs to avoid re-initialization
+  }, [createPaymentIntent]);
 
   // Render Apple Pay/Google Pay button if available
   useEffect(() => {
@@ -196,7 +207,7 @@ export const StripePaymentButton = ({
         size="xl"
         className={className}
         onClick={() => {
-          onError?.('Apple Pay o Google Pay no están disponibles en este dispositivo');
+          onErrorRef.current?.('Apple Pay o Google Pay no están disponibles en este dispositivo');
         }}
         disabled={isProcessing}
       >

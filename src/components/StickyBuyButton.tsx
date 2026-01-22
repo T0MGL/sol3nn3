@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { ShieldCheckIcon, TruckIcon } from "@heroicons/react/24/outline";
 import { getDeliveryDates } from "@/lib/delivery-utils";
 
@@ -12,8 +12,37 @@ export const StickyBuyButton = ({ onBuyClick }: StickyBuyButtonProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const deliveryDates = useMemo(() => getDeliveryDates(), []);
 
+  // Use refs to cache DOM element references
+  const heroButtonRef = useRef<Element | null>(null);
+  const guaranteeButtonRef = useRef<Element | null>(null);
+
   useEffect(() => {
     let ticking = false;
+
+    const handleScroll = () => {
+      // Try to find buttons if not cached (lazy loading support)
+      if (!heroButtonRef.current) {
+        heroButtonRef.current = document.querySelector('[data-hero-cta]');
+        guaranteeButtonRef.current = document.querySelector('[data-guarantee-cta]');
+        if (!heroButtonRef.current) return;
+      }
+
+      const heroRect = heroButtonRef.current.getBoundingClientRect();
+      const heroOutOfView = heroRect.bottom < 0 || heroRect.top > window.innerHeight;
+
+      // Only show sticky button if user has scrolled down at least 300px
+      const hasScrolledDown = window.scrollY > 300;
+
+      // Check if guarantee button is visible
+      let guaranteeInView = false;
+      if (guaranteeButtonRef.current) {
+        const guaranteeRect = guaranteeButtonRef.current.getBoundingClientRect();
+        guaranteeInView = guaranteeRect.top < window.innerHeight && guaranteeRect.bottom > 0;
+      }
+
+      // Show sticky button only when user has scrolled, hero button is out of view AND guarantee button is not visible
+      setIsVisible(hasScrolledDown && heroOutOfView && !guaranteeInView);
+    };
 
     const onScroll = () => {
       if (!ticking) {
@@ -24,35 +53,6 @@ export const StickyBuyButton = ({ onBuyClick }: StickyBuyButtonProps) => {
         ticking = true;
       }
     };
-
-    const handleScroll = () => {
-      if (!heroButton) {
-        // Try to find buttons again if they weren't found initially (lazy loading support)
-        heroButton = document.querySelector('[data-hero-cta]');
-        guaranteeButton = document.querySelector('[data-guarantee-cta]');
-        if (!heroButton) return;
-      }
-
-      const heroRect = heroButton.getBoundingClientRect();
-      const heroOutOfView = heroRect.bottom < 0 || heroRect.top > window.innerHeight;
-
-      // Only show sticky button if user has scrolled down at least 300px
-      const hasScrolledDown = window.scrollY > 300;
-
-      // Check if guarantee button is visible
-      let guaranteeInView = false;
-      if (guaranteeButton) {
-        const guaranteeRect = guaranteeButton.getBoundingClientRect();
-        guaranteeInView = guaranteeRect.top < window.innerHeight && guaranteeRect.bottom > 0;
-      }
-
-      // Show sticky button only when user has scrolled, hero button is out of view AND guarantee button is not visible
-      setIsVisible(hasScrolledDown && heroOutOfView && !guaranteeInView);
-    };
-
-    // Initialize references
-    let heroButton = document.querySelector('[data-hero-cta]');
-    let guaranteeButton = document.querySelector('[data-guarantee-cta]');
 
     // Don't check initial state - wait for user to scroll
     window.addEventListener('scroll', onScroll, { passive: true });

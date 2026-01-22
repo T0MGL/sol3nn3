@@ -162,6 +162,21 @@ export async function sendOrderToN8N(
 }
 
 /**
+ * Fire-and-forget version of sendOrderToN8N
+ * Sends order in background without blocking UI
+ * Errors are logged but don't affect user flow
+ */
+export function sendOrderInBackground(orderData: OrderData): void {
+  // Use setTimeout to ensure this runs after the current call stack clears
+  // This makes the UI transition instant
+  setTimeout(() => {
+    sendOrderToN8N(orderData).catch((error) => {
+      console.error('❌ Background order send failed:', error);
+    });
+  }, 0);
+}
+
+/**
  * Generate a unique order number
  * Format: #NOC-MMDD-XXXX (e.g., #NOC-0121-5847)
  */

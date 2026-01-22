@@ -541,6 +541,9 @@ export const StripeCheckoutModal = ({
 
   // Create PaymentIntent when modal opens
   useEffect(() => {
+    // Track if effect is still mounted to prevent state updates after unmount
+    let isMounted = true;
+
     if (isOpen && !clientSecret) {
       console.log('🔵 [Init] Creating payment intent...', {
         amount,
@@ -569,6 +572,12 @@ export const StripeCheckoutModal = ({
         },
       })
         .then((response) => {
+          // Only update state if component is still mounted
+          if (!isMounted) {
+            console.log('⚠️ [Init] Component unmounted, skipping state update');
+            return;
+          }
+
           console.log('✅ [Init] Payment intent created successfully:', {
             paymentIntentId: response.paymentIntentId,
             hasClientSecret: !!response.clientSecret
@@ -578,11 +587,22 @@ export const StripeCheckoutModal = ({
           setIsInitializing(false);
         })
         .catch((error) => {
+          // Only update state if component is still mounted
+          if (!isMounted) {
+            console.log('⚠️ [Init] Component unmounted, skipping error state update');
+            return;
+          }
+
           console.error('❌ [Init] Failed to create payment intent:', error);
           setInitError(error.message || 'Error al inicializar el pago');
           setIsInitializing(false);
         });
     }
+
+    // Cleanup function: mark as unmounted when effect re-runs or component unmounts
+    return () => {
+      isMounted = false;
+    };
   }, [isOpen, clientSecret, amount, currency, customerData, createPaymentIntent]);
 
   // Reset state when modal closes
@@ -591,6 +611,18 @@ export const StripeCheckoutModal = ({
       setClientSecret(null);
       setInitError(null);
     }
+  }, [isOpen]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen]);
 
   return (

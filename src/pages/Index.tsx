@@ -1,14 +1,13 @@
-import { useState, useEffect, useMemo, lazy, Suspense, memo } from "react";
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense, memo } from "react";
 import { DeliveryBanner } from "@/components/DeliveryBanner";
 import { HeroSection } from "@/components/HeroSection";
 import { StickyBuyButton } from "@/components/StickyBuyButton";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { OfferCTA } from "@/components/OfferCTA";
-import { sendOrderToN8N, generateOrderNumber } from "@/services/orderService";
+import { sendOrderInBackground, generateOrderNumber } from "@/services/orderService";
 import {
   trackInitiateCheckout,
   trackAddToCart,
-  trackAddPaymentInfo,
   trackPurchase,
 } from "@/lib/meta-pixel";
 
@@ -46,16 +45,12 @@ const SectionSkeleton = memo(({ height }: { height: string }) => (
 SectionSkeleton.displayName = 'SectionSkeleton';
 
 const Index = () => {
-  // UI state
-  const [isBannerVisible, setIsBannerVisible] = useState(true);
-
   // Checkout state management
   const [showQuantitySelector, setShowQuantitySelector] = useState(false);
   const [showStripeCheckout, setShowStripeCheckout] = useState(false);
   const [showPaymentFallback, setShowPaymentFallback] = useState(false);
   const [showPhoneForm, setShowPhoneForm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isProcessingOrder, setIsProcessingOrder] = useState(false);
   const [checkoutInProgress, setCheckoutInProgress] = useState(false);
 
   const [checkoutData, setCheckoutData] = useState({
@@ -114,16 +109,16 @@ const Index = () => {
     }
   }, [showPhoneForm, checkoutData.quantity, checkoutData.totalPrice]);
 
-  const handleBuyClick = () => {
+  const handleBuyClick = useCallback(() => {
     setCheckoutInProgress(true); // Start checkout progress tracking
     setShowQuantitySelector(true);
 
     // Preload next modals for seamless transition
     import("@/components/checkout/PhoneNameForm");
     import("@/components/checkout/StripeCheckoutModal");
-  };
+  }, []);
 
-  const handleQuantitySelected = (quantity: number, totalPrice: number) => {
+  const handleQuantitySelected = useCallback((quantity: number, totalPrice: number) => {
     setCheckoutData((prev) => ({ ...prev, quantity, totalPrice }));
     setShowQuantitySelector(false);
 
@@ -143,81 +138,63 @@ const Index = () => {
     // Open phone form immediately
     // InitiateCheckout will be tracked when the form opens
     setShowPhoneForm(true);
-  };
+  }, []);
 
-  const handlePaymentSuccess = async (result: {
+  const handlePaymentSuccess = useCallback((result: {
     paymentIntentId: string;
     paymentType: 'Card' | 'COD';
     isPaid: boolean;
     deliveryType: 'común' | 'premium';
     finalTotal: number;
   }) => {
-    // STEP 4: Payment successful - show loading while processing
-    setIsProcessingOrder(true);
-    setCheckoutData((prev) => ({ ...prev, paymentIntentId: result.paymentIntentId }));
-
-    // Send order to backend (which handles n8n and Ordefy)
-    try {
-      console.log('📦 Sending completed order...', {
-        paymentType: result.paymentType,
-        isPaid: result.isPaid,
-        deliveryType: result.deliveryType,
-      });
-
-      const orderData = {
-        name: checkoutData.name,
-        phone: checkoutData.phone,
-        location: checkoutData.location,
-        address: checkoutData.address,
-        lat: checkoutData.lat,
-        long: checkoutData.long,
-        quantity: checkoutData.quantity,
+    // INSTANT transition - no waiting for API calls
+    setCheckoutData((prev) => {
+      // Send order to backend in background (fire-and-forget)
+      sendOrderInBackground({
+        name: prev.name,
+        phone: prev.phone,
+        location: prev.location,
+        address: prev.address,
+        lat: prev.lat,
+        long: prev.long,
+        quantity: prev.quantity,
         total: result.finalTotal,
-        orderNumber: checkoutData.orderNumber,
+        orderNumber: prev.orderNumber,
         paymentIntentId: result.paymentIntentId,
         email: undefined,
         paymentType: result.paymentType,
         isPaid: result.isPaid,
         deliveryType: result.deliveryType,
-      };
+      });
 
-      const sendResult = await sendOrderToN8N(orderData);
+      // Track Purchase conversion event (also non-blocking)
+      trackPurchase({
+        value: result.finalTotal,
+        currency: 'PYG',
+        content_name: prev.quantity === 1
+          ? 'NOCTE® Red Light Blocking Glasses'
+          : `NOCTE® Red Light Blocking Glasses - Pack x${prev.quantity}`,
+        content_ids: prev.quantity === 1
+          ? ['nocte-red-glasses']
+          : [`nocte-red-glasses-${prev.quantity}pack`],
+        num_items: prev.quantity,
+        order_id: prev.orderNumber,
+      });
 
-      if (!sendResult.success) {
-        console.error('❌ Failed to send order:', sendResult.error);
-      } else {
-        console.log('✅ Order sent successfully:', sendResult);
-      }
-    } catch (error) {
-      console.error('❌ Error sending order:', error);
-    }
-
-    // Track Purchase conversion event
-    trackPurchase({
-      value: result.finalTotal,
-      currency: 'PYG',
-      content_name: checkoutData.quantity === 1
-        ? 'NOCTE® Red Light Blocking Glasses'
-        : `NOCTE® Red Light Blocking Glasses - Pack x${checkoutData.quantity}`,
-      content_ids: checkoutData.quantity === 1
-        ? ['nocte-red-glasses']
-        : [`nocte-red-glasses-${checkoutData.quantity}pack`],
-      num_items: checkoutData.quantity,
-      order_id: checkoutData.orderNumber,
+      return { ...prev, paymentIntentId: result.paymentIntentId };
     });
 
-    // Close Stripe modal and show success
-    setIsProcessingOrder(false);
+    // INSTANT UI update - show success immediately
     setShowStripeCheckout(false);
     setShowSuccess(true);
-  };
+  }, []);
 
-  const handleBackToPhoneForm = () => {
+  const handleBackToPhoneForm = useCallback(() => {
     setShowStripeCheckout(false);
     setShowPhoneForm(true);
-  };
+  }, []);
 
-  const handleQuantitySelectorClose = () => {
+  const handleQuantitySelectorClose = useCallback(() => {
     setShowQuantitySelector(false);
     setCheckoutInProgress(false);
     setCheckoutData({
@@ -234,9 +211,9 @@ const Index = () => {
       lat: undefined,
       long: undefined,
     });
-  };
+  }, []);
 
-  const handleStripeCheckoutClose = () => {
+  const handleStripeCheckoutClose = useCallback(() => {
     setShowStripeCheckout(false);
     setCheckoutInProgress(false);
     setCheckoutData({
@@ -253,9 +230,9 @@ const Index = () => {
       lat: undefined,
       long: undefined,
     });
-  };
+  }, []);
 
-  const handlePhoneSubmit = (data: { name: string; phone: string; location: string; address: string; lat?: number; long?: number }) => {
+  const handlePhoneSubmit = useCallback((data: { name: string; phone: string; location: string; address: string; lat?: number; long?: number }) => {
     // Store personal info and location, then proceed to payment
     setCheckoutData((prev) => ({
       ...prev,
@@ -269,9 +246,9 @@ const Index = () => {
 
     setShowPhoneForm(false);
     setShowStripeCheckout(true); // Show payment with all info collected
-  };
+  }, []);
 
-  const handlePhoneFormClose = () => {
+  const handlePhoneFormClose = useCallback(() => {
     setShowPhoneForm(false);
     setCheckoutInProgress(false);
     setCheckoutData({
@@ -288,9 +265,9 @@ const Index = () => {
       lat: undefined,
       long: undefined,
     });
-  };
+  }, []);
 
-  const handleSuccessClose = () => {
+  const handleSuccessClose = useCallback(() => {
     setShowSuccess(false);
     setCheckoutInProgress(false); // Deactivate protection
     // Reset checkout state
@@ -308,7 +285,7 @@ const Index = () => {
       lat: undefined,
       long: undefined,
     });
-  };
+  }, []);
 
 
   const orderData = useMemo(() => {
@@ -329,6 +306,16 @@ const Index = () => {
       googleMapsLink,
     };
   }, [checkoutData]);
+
+  // Memoize customerData to prevent re-renders of StripeCheckoutModal (contains expensive Stripe Elements)
+  const customerData = useMemo(() => ({
+    name: checkoutData.name,
+    phone: checkoutData.phone,
+    location: checkoutData.location,
+    address: checkoutData.address,
+    orderNumber: checkoutData.orderNumber,
+    quantity: checkoutData.quantity,
+  }), [checkoutData.name, checkoutData.phone, checkoutData.location, checkoutData.address, checkoutData.orderNumber, checkoutData.quantity]);
 
   // Scroll detection for header
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -472,15 +459,8 @@ const Index = () => {
             onSuccess={handlePaymentSuccess}
             amount={checkoutData.totalPrice}
             currency="pyg"
-            isProcessingOrder={isProcessingOrder}
-            customerData={{
-              name: checkoutData.name,
-              phone: checkoutData.phone,
-              location: checkoutData.location,
-              address: checkoutData.address,
-              orderNumber: checkoutData.orderNumber,
-              quantity: checkoutData.quantity,
-            }}
+            isProcessingOrder={false}
+            customerData={customerData}
           />
         </Suspense>
       )}

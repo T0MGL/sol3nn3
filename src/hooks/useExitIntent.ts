@@ -55,7 +55,7 @@ export const useExitIntent = ({
     return () => {
       document.removeEventListener("mouseout", handleMouseLeave);
     };
-  }, [enabled, onExitIntent, sensitivity]);
+  }, [enabled, onExitIntent, sensitivity, delay]);
 
   // Reset trigger when enabled state changes
   useEffect(() => {

@@ -10,12 +10,17 @@ export const ProductVideo = () => {
     const videoElement = videoRef.current;
     if (!videoElement) return;
 
+    let isMounted = true;
+
     // Intenta reproducir el video cuando el componente se monta
     const playVideo = async () => {
       try {
         await videoElement.play();
       } catch (error) {
-        console.log("Autoplay bloqueado por el navegador:", error);
+        // Solo logueamos si el componente sigue montado
+        if (isMounted) {
+          console.log("Autoplay bloqueado por el navegador:", error);
+        }
       }
     };
 
@@ -23,7 +28,7 @@ export const ProductVideo = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && isMounted) {
             playVideo();
           }
         });
@@ -34,6 +39,7 @@ export const ProductVideo = () => {
     observer.observe(videoElement);
 
     return () => {
+      isMounted = false;
       observer.disconnect();
     };
   }, []);
