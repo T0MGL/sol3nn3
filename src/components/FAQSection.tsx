@@ -25,7 +25,7 @@ const faqs = [
   },
   {
     question: "¿Qué incluye la caja de NOCTE?",
-    answer: "1 par de lentes rojos NOCTE • Estuche premium (negro + dorado) • Paño de limpieza • Tarjeta de garantía (30 días)",
+    answer: "1 par de lentes rojos NOCTE con garantía de 30 días.",
   },
 ];
 

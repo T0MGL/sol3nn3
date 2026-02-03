@@ -46,24 +46,34 @@ export const fadeInUpView = {
   },
 };
 
-// Stagger container for multiple items
-export const staggerContainer = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  transition: {
-    staggerChildren: REDUCED_MOTION ? 0 : 0.05,
+// Stagger container variants (use with variants prop, NOT spread)
+export const staggerContainerVariants = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: REDUCED_MOTION ? 0 : 0.08,
+      delayChildren: 0.1,
+    },
   },
 };
 
-// Stagger children items
-export const staggerItem = {
-  initial: { opacity: 0, y: REDUCED_MOTION ? 0 : 15 },
-  animate: { opacity: 1, y: 0 },
-  transition: {
-    duration: REDUCED_MOTION ? 0 : DURATION.fast,
-    ease: EASING,
+// Stagger item variants (use with variants prop, NOT spread)
+export const staggerItemVariants = {
+  hidden: { opacity: 0, y: REDUCED_MOTION ? 0 : 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: REDUCED_MOTION ? 0 : DURATION.normal,
+      ease: EASING,
+    },
   },
 };
+
+// Legacy exports for backwards compatibility (deprecated - use variants above)
+export const staggerContainer = staggerContainerVariants;
+export const staggerItem = staggerItemVariants;
 
 // Scale animation (for hover effects)
 export const scaleOnHover = {
