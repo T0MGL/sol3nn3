@@ -182,7 +182,7 @@ const Index = () => {
         order_id: prev.orderNumber,
       });
 
-      return { ...prev, paymentIntentId: result.paymentIntentId };
+      return { ...prev, paymentIntentId: result.paymentIntentId, totalPrice: result.finalTotal };
     });
 
     // INSTANT UI update - show success immediately
