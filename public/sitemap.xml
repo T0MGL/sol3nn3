@@ -9,9 +9,21 @@
 
   <!--
     NOCTE - Lentes Rojos Anti-Luz Azul Paraguay
-    Sitemap optimizado para búsquedas en Paraguay
-    Keywords: lentes rojos, lentes anti luz azul, blue blockers paraguay
-    Última actualización: 2025-01-31
+    Sitemap optimizado para SEO y AI Discovery
+
+    Keywords principales:
+    - lentes anti luz azul
+    - lentes rojos para dormir
+    - blue light blocking glasses paraguay
+    - gafas luz azul asuncion
+    - lentes para pantalla computadora
+    - anteojos para insomnio
+    - lentes bloqueadores luz azul
+    - gafas gaming paraguay
+    - lentes fatiga visual
+    - mejorar sueño naturalmente
+
+    Última actualización: 2025-02-03
   -->
 
   <!-- ========================================== -->
@@ -19,50 +31,46 @@
   <!-- ========================================== -->
   <url>
     <loc>https://nocte.studio/</loc>
-    <lastmod>2025-01-31</lastmod>
+    <lastmod>2025-02-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
 
-    <!-- Logo principal -->
-    <image:image>
-      <image:loc>https://nocte.studio/logo.svg</image:loc>
-      <image:title>NOCTE - Lentes Rojos Anti-Luz Azul Paraguay</image:title>
-      <image:caption>Logo de NOCTE, marca paraguaya de lentes rojos bloqueadores de luz azul para mejorar el sueño</image:caption>
-      <image:geo_location>Asunción, Paraguay</image:geo_location>
-    </image:image>
-
-    <!-- Imagen OG / Hero -->
+    <!-- Imagen OG / Hero - Producto principal -->
     <image:image>
       <image:loc>https://nocte.studio/og-image.webp</image:loc>
-      <image:title>Lentes Rojos NOCTE - Comprar en Paraguay</image:title>
-      <image:caption>Lentes rojos anti luz azul NOCTE para dormir mejor. Bloquean 99% de luz azul. Envío gratis Asunción y Paraguay</image:caption>
+      <image:title>Lentes Rojos NOCTE Anti-Luz Azul - Comprar en Paraguay</image:title>
+      <image:caption>Lentes rojos anti luz azul NOCTE para dormir mejor. Bloquean 99% de luz azul. Envío gratis Asunción y Paraguay. Ideal para insomnio y fatiga visual.</image:caption>
       <image:geo_location>Asunción, Paraguay</image:geo_location>
     </image:image>
 
-    <!-- Producto principal -->
+    <!-- Logo -->
     <image:image>
-      <image:loc>https://nocte.studio/src/assets/nocteproduct.webp</image:loc>
-      <image:title>Lentes Anti Luz Azul Rojos - NOCTE Paraguay</image:title>
-      <image:caption>Gafas rojas bloqueadoras de luz azul para programadores y emprendedores en Paraguay. Reduce fatiga ocular</image:caption>
+      <image:loc>https://nocte.studio/logo.svg</image:loc>
+      <image:title>NOCTE - Marca Paraguaya de Lentes Anti-Luz Azul</image:title>
+      <image:caption>Logo de NOCTE, lentes rojos bloqueadores de luz azul para mejorar el sueño</image:caption>
       <image:geo_location>Asunción, Paraguay</image:geo_location>
     </image:image>
 
-    <!-- Estuche del producto -->
-    <image:image>
-      <image:loc>https://nocte.studio/src/assets/nocte-case.webp</image:loc>
-      <image:title>Estuche Lentes NOCTE - Incluido Gratis</image:title>
-      <image:caption>Estuche protector incluido con cada par de lentes rojos NOCTE. Compra en Paraguay con garantía</image:caption>
-      <image:geo_location>Asunción, Paraguay</image:geo_location>
-    </image:image>
+  </url>
 
-    <!-- Lifestyle -->
-    <image:image>
-      <image:loc>https://nocte.studio/src/assets/nocte-hero-lifestyle2.webp</image:loc>
-      <image:title>Gafas Luz Azul para Programadores Paraguay</image:title>
-      <image:caption>Lentes rojos anti luz azul para desarrolladores y gamers paraguayos. Mejora tu sueño naturalmente</image:caption>
-      <image:geo_location>Asunción, Paraguay</image:geo_location>
-    </image:image>
+  <!-- ========================================== -->
+  <!-- POLÍTICA DE PRIVACIDAD -->
+  <!-- ========================================== -->
+  <url>
+    <loc>https://nocte.studio/politica-de-privacidad</loc>
+    <lastmod>2025-02-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
 
+  <!-- ========================================== -->
+  <!-- TÉRMINOS Y CONDICIONES -->
+  <!-- ========================================== -->
+  <url>
+    <loc>https://nocte.studio/terminos-y-condiciones</loc>
+    <lastmod>2025-02-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
   </url>
 
 </urlset>
