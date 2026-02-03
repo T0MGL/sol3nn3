@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense, memo } from "react";
+import { Link } from "react-router-dom";
 import { DeliveryBanner } from "@/components/DeliveryBanner";
 import { HeroSection } from "@/components/HeroSection";
 import { StickyBuyButton } from "@/components/StickyBuyButton";
@@ -487,15 +488,32 @@ const Index = () => {
       )}
 
       {/* Footer */}
-      <footer className="bg-black border-t border-border/30 py-12 md:py-16 px-4 md:px-6">
+      <footer className="bg-black border-t border-border/30 py-12 md:py-16 px-4 md:px-6 pb-32 md:pb-40">
         <div className="container max-w-[1400px] mx-auto text-center space-y-5 md:space-y-6">
           <p className="text-2xl font-bold tracking-tighter opacity-70">NOCTE<sup className="text-[0.5em] ml-0.5">®</sup></p>
           <p className="text-muted-foreground font-light text-xs md:text-sm">
             Úsalos antes de dormir. Dormí profundo.
           </p>
 
+          {/* Legal Links */}
+          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground/60">
+            <Link
+              to="/terminos-y-condiciones"
+              className="hover:text-white transition-colors"
+            >
+              Términos y Condiciones
+            </Link>
+            <span className="text-muted-foreground/30">|</span>
+            <Link
+              to="/politica-de-privacidad"
+              className="hover:text-white transition-colors"
+            >
+              Política de Privacidad
+            </Link>
+          </div>
+
           <p className="text-[10px] md:text-xs text-muted-foreground/60 font-light">
-            © 2025 NOCTE® Todos los Derechos Reservados
+            © {new Date().getFullYear()} NOCTE® Todos los Derechos Reservados
           </p>
         </div>
       </footer>

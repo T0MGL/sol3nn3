@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { fadeInUpView } from "@/lib/animations";
+import { staggerContainerVariants, staggerItemVariants } from "@/lib/animations";
 import productVideo from "@/assets/nocteglasses.mp4";
 import { useRef, useEffect } from "react";
 
@@ -48,20 +48,22 @@ export const ProductVideo = () => {
     <section data-section="product-video" className="py-6 md:py-8 lg:py-12 px-4 bg-gradient-to-b from-black via-secondary/20 to-black">
       <div className="container max-w-[900px] mx-auto">
         <motion.div
-          {...fadeInUpView}
+          variants={staggerContainerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
           className="space-y-4 md:space-y-6 lg:space-y-8"
         >
           {/* Heading */}
-          <div className="text-center space-y-3">
+          <motion.div variants={staggerItemVariants} className="text-center space-y-3">
             <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight">
               NOCTE <sup className="text-[0.5em] ml-0.5">®</sup>
             </h2>
-          </div>
+          </motion.div>
 
           {/* Video Container - Integrado en la página */}
           <motion.div
-            {...fadeInUpView}
-            transition={{ ...fadeInUpView.transition, delay: 0.1 }}
+            variants={staggerItemVariants}
             className="relative w-full mx-auto overflow-hidden rounded-lg"
           >
             {/* Ambient glow effect - más sutil */}
