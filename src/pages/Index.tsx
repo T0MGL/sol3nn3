@@ -171,6 +171,7 @@ const Index = () => {
         paymentType: result.paymentType,
         isPaid: result.isPaid,
         deliveryType: result.deliveryType,
+        productName: 'PDRN SERUM',
       });
 
       // Track Purchase conversion event (also non-blocking)
