@@ -21,6 +21,7 @@ export interface OrderData {
   paymentType: 'COD' | 'Cash' | 'Card';
   isPaid?: boolean;
   deliveryType: 'común' | 'premium';
+  productName: string;
 }
 
 export interface GeocodeResponse {
