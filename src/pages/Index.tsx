@@ -61,7 +61,7 @@ const Index = () => {
 
   const [checkoutData, setCheckoutData] = useState({
     quantity: 1,
-    totalPrice: 199000, // Default to single unit price
+    totalPrice: 229000, // Default to single unit price
     colors: null as [string, string] | null,
     location: "",
     name: "",
@@ -205,7 +205,7 @@ const Index = () => {
     setCheckoutInProgress(false);
     setCheckoutData({
       quantity: 1,
-      totalPrice: 199000,
+      totalPrice: 229000,
       colors: null,
       location: "",
       name: "",
@@ -224,7 +224,7 @@ const Index = () => {
     setCheckoutInProgress(false);
     setCheckoutData({
       quantity: 1,
-      totalPrice: 199000,
+      totalPrice: 229000,
       colors: null,
       location: "",
       name: "",
@@ -259,7 +259,7 @@ const Index = () => {
     setCheckoutInProgress(false);
     setCheckoutData({
       quantity: 1,
-      totalPrice: 199000,
+      totalPrice: 229000,
       colors: null,
       location: "",
       name: "",
@@ -279,7 +279,7 @@ const Index = () => {
     // Reset checkout state
     setCheckoutData({
       quantity: 1,
-      totalPrice: 199000,
+      totalPrice: 229000,
       colors: null,
       location: "",
       name: "",

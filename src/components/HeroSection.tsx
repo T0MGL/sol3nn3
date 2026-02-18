@@ -273,9 +273,8 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                       setCurrentSlide(index);
                       setHasInteracted(true);
                     }}
-                    className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                      index === currentSlide ? 'bg-primary w-6' : 'bg-primary/40 hover:bg-primary/60 w-2'
-                    }`}
+                    className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${index === currentSlide ? 'bg-primary w-6' : 'bg-primary/40 hover:bg-primary/60 w-2'
+                      }`}
                     aria-label={`Ir a slide ${index + 1}`}
                   />
                 ))}
@@ -369,8 +368,8 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
 
             {/* Price */}
             <div className="flex items-center gap-3 py-2">
-              <span className="text-base text-foreground/40 line-through">Gs. 239.000</span>
-              <span className="text-4xl md:text-5xl font-bold text-foreground">Gs. 199.000</span>
+              <span className="text-base text-foreground/40 line-through">Gs. 269.000</span>
+              <span className="text-4xl md:text-5xl font-bold text-foreground">Gs. 229.000</span>
             </div>
 
             {/* Stock Urgency Indicator */}
@@ -435,7 +434,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                       background: "#C08B7A",
                     }}
                   >
-                    COMPRAR AHORA — Gs. 199.000
+                    COMPRAR AHORA — Gs. 229.000
                   </StripePaymentButton>
                 </motion.div>
               ) : (
@@ -460,7 +459,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                     }}
                     onClick={onBuyClick}
                   >
-                    COMPRAR AHORA — Gs. 199.000
+                    COMPRAR AHORA — Gs. 229.000
                   </Button>
                 </motion.div>
               )}
