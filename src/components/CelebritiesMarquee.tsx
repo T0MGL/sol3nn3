@@ -1,65 +1,56 @@
 import { motion } from "framer-motion";
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
-import robertDowney from "@/assets/Robert-Downey-Jr-Glasses-5.jpg";
-import lewisHamilton from "@/assets/lewis-hamilton-great-britain-mercedes-955639803.png";
-import cbum from "@/assets/cbum.jpeg";
-import selenaGomez from "@/assets/selena-gomez-sunglasses-tint-bb13-2017-billboard-1548.jpeg";
-import tomHolland from "@/assets/tumblr_880f0d056d244f576f1dc8c30b9fab6e_16c94225_1280.jpg";
-import erlingHaaland from "@/assets/WhatsApp_Image_2025-04-13_at_17.40.59.jpg";
+// Celebrity images not available - assets commented out
+// import robertDowney from "@/assets/Robert-Downey-Jr-Glasses-5.jpg";
+// import lewisHamilton from "@/assets/lewis-hamilton-great-britain-mercedes-955639803.png";
+// import cbum from "@/assets/cbum.jpeg";
+// import selenaGomez from "@/assets/selena-gomez-sunglasses-tint-bb13-2017-billboard-1548.jpeg";
+// import tomHolland from "@/assets/tumblr_880f0d056d244f576f1dc8c30b9fab6e_16c94225_1280.jpg";
+// import erlingHaaland from "@/assets/WhatsApp_Image_2025-04-13_at_17.40.59.jpg";
 
 const celebrities = [
-    {
-        name: "Erling Haaland",
-        role: "Futbolista profesional",
-        image: erlingHaaland,
-    },
-    {
-        name: "Robert Downey Jr",
-        role: "Actor",
-        image: robertDowney,
-    },
-    {
-        name: "Chris Bumstead",
-        role: "Fisicoculturista",
-        image: cbum,
-    },
-    {
-        name: "Tom Holland",
-        role: "Actor",
-        image: tomHolland,
-    },
-    {
-        name: "Lewis Hamilton",
-        role: "Piloto de F1",
-        image: lewisHamilton,
-    },
-    {
-        name: "Selena Gomez",
-        role: "Cantante",
-        image: selenaGomez,
-    },
+    // Celebrities array disabled - image assets not available
+    // {
+    //     name: "Erling Haaland",
+    //     role: "Futbolista profesional",
+    //     image: erlingHaaland,
+    // },
 ];
 
 export const CelebritiesMarquee = () => {
+    // Return null if no celebrities available
+    if (celebrities.length === 0) return null;
+
     return (
-        <section className="py-12 md:py-20 bg-black overflow-hidden">
+        <section className="py-12 md:py-20 bg-background overflow-hidden">
             <div className="container max-w-[1400px] mx-auto px-4">
                 {/* Title */}
-                <motion.h2
+                <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.2 }}
                     transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-                    className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-12 md:mb-16 text-white"
+                    className="text-center mb-12 md:mb-16"
                 >
-                    CUANDO ALGO FUNCIONA, SE NOTA...
-                </motion.h2>
+                    <motion.h2
+                        className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3"
+                        initial={{ clipPath: 'inset(0 100% 0 0)' }}
+                        whileInView={{ clipPath: 'inset(0 0% 0 0)' }}
+                        viewport={{ once: true, amount: 0.2 }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                    >
+                        Recomendado por Quienes Exigen lo Mejor
+                    </motion.h2>
+                    <p className="text-muted-foreground">
+                        Personas que cuidan su piel con los mejores ingredientes
+                    </p>
+                </motion.div>
 
                 {/* Infinite Marquee */}
                 <div className="relative">
                     {/* Gradient overlays for smooth fade */}
-                    <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-black via-black/90 to-transparent z-10 pointer-events-none" />
-                    <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-black via-black/90 to-transparent z-10 pointer-events-none" />
+                    <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-background via-background/90 to-transparent z-10 pointer-events-none" />
+                    <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-background via-background/90 to-transparent z-10 pointer-events-none" />
 
                     {/* Marquee container */}
                     <div className="flex overflow-hidden">
@@ -96,14 +87,14 @@ export const CelebritiesMarquee = () => {
                                                 />
                                             </div>
                                             {/* Verified badge */}
-                                            <div className="absolute -bottom-1 -right-1 bg-black rounded-full p-0.5">
+                                            <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5">
                                                 <CheckBadgeIcon className="w-5 h-5 md:w-6 md:h-6 text-[#1DA1F2]" />
                                             </div>
                                         </div>
 
                                         {/* Name and role */}
                                         <div className="text-center">
-                                            <p className="text-white font-semibold text-sm md:text-base whitespace-nowrap">
+                                            <p className="text-foreground font-semibold text-sm md:text-base whitespace-nowrap">
                                                 {celebrity.name}
                                             </p>
                                             <p className="text-[#1DA1F2] text-xs md:text-sm whitespace-nowrap">
@@ -123,9 +114,9 @@ export const CelebritiesMarquee = () => {
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.4, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-                    className="text-center mt-12 md:mt-16 text-sm md:text-base text-white/50 font-light tracking-wide"
+                    className="text-center mt-12 md:mt-16 text-sm md:text-base text-foreground/50 font-light tracking-wide"
                 >
-                    Confiado por profesionales y celebridades alrededor del mundo
+                    Influencers de belleza y expertos en skincare alrededor del mundo recomiendan PDRN
                 </motion.p>
             </div>
         </section>

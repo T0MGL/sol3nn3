@@ -83,7 +83,7 @@ export const ExitIntentModal = ({ isOpen, onClose }: ExitIntentModalProps) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-background/80 z-[200] flex items-center justify-center p-4"
           onClick={handleClose}
         >
           <motion.div
@@ -92,7 +92,7 @@ export const ExitIntentModal = ({ isOpen, onClose }: ExitIntentModalProps) => {
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[500px] bg-gradient-to-b from-secondary to-black border border-primary/30 rounded-xl p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(239,68,68,0.3)] max-h-[90dvh] overflow-y-auto"
+            className="relative w-full max-w-[500px] bg-gradient-to-b from-secondary to-background border border-primary/30 rounded-xl p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(192,139,122,0.3)] max-h-[90dvh] overflow-y-auto"
           >
             {/* Close Button */}
             <button

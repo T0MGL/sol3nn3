@@ -77,7 +77,7 @@ export const StickyBuyButton = ({ onBuyClick }: StickyBuyButtonProps) => {
       className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
     >
       <div className="w-full px-4 md:px-6 pb-4 md:pb-6">
-        <div className="bg-black/95 backdrop-blur-xl border-t border-border/30 p-4 md:p-5 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] pointer-events-auto">
+        <div className="bg-background/95 backdrop-blur-xl border-t border-border/30 p-4 md:p-5 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] pointer-events-auto">
           <div className="flex flex-col gap-4">
             {/* Precio y detalles */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
@@ -85,7 +85,7 @@ export const StickyBuyButton = ({ onBuyClick }: StickyBuyButtonProps) => {
                 <p className="text-xs md:text-sm text-muted-foreground">
                   <span className="line-through text-foreground/40">Gs. 239.000</span>
                   {" "}
-                  <span className="text-xl md:text-2xl font-bold text-white ml-2">Gs. 199.000</span>
+                  <span className="text-xl md:text-2xl font-bold text-foreground ml-2">Gs. 199.000</span>
                 </p>
                 <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
                   <TruckIcon className="w-4 h-4 text-gold/90" />

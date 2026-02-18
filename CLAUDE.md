@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-NOCTE is a landing page for red-tinted blue-light blocking glasses designed to improve sleep quality. This is a React-based single-page application built with Vite, TypeScript, and shadcn-ui components.
+SOLENNE is a landing page for multi-category beauty and personal care products designed for women who want to look and feel better. This is a React-based single-page application built with Vite, TypeScript, and shadcn-ui components. The design is minimal, aspirational, and elegant with a light theme and warm terracota accents.
 
 ## Commands
 
@@ -71,10 +71,11 @@ Path alias `@/` is configured to resolve to `src/`:
 ### Styling Patterns
 
 - Uses Tailwind CSS with a mobile-first responsive approach
-- Color scheme: Dark theme (black background) with red/primary accent
+- Color scheme: Light theme (cream background) with warm rose-gold accent
 - Custom Tailwind configuration in `tailwind.config.ts`
 - CSS variables defined for theme colors (see `src/index.css`)
 - Responsive breakpoints: sm, md, lg (follow Tailwind defaults)
+- **Typography**: Cormorant Garamond (serif) for headings, Jost (sans-serif) for body
 
 ### shadcn-ui Configuration
 
@@ -98,11 +99,15 @@ When adding new features:
 
 ## Design System
 
-**Colors** (Exact hex values in CSS variables):
-- Primary Red: `#EF4444` (HSL: 0 91% 59%)
-- Gold/Accent: `#D4AF37` (HSL: 43 74% 52%)
-- Background: `#0F172A` (HSL: 222 47% 11%)
-- Secondary: `#1F2937` (HSL: 217 33% 17%)
+**Colors** (SOLENNE Palette - Exact hex values in CSS variables):
+- **Primary Rose-Gold**: `#C08B7A` (HSL: 18 32% 65%) - Main accent & CTAs
+- **Deep Rose**: `#A67265` (HSL: 18 26% 50%) - Hover/active states
+- **Blush**: `#D4A99A` (HSL: 21 48% 75%) - Soft accent
+- **Background (Cream)**: `#F2EDE4` (HSL: 22 24% 95%)
+- **Foreground (Text Dark)**: `#2C2420` (HSL: 16 15% 16%)
+- **Text Light**: `#6B4F47` (HSL: 18 20% 37%) - Secondary text
+- **Warm Beige (Secondary)**: `#E8DDD4` (HSL: 25 28% 87%)
+- **Card**: `#F2EDE4` (HSL: 22 24% 95%)
 
 **Spacing Scale**:
 - xs: 8px
@@ -118,14 +123,15 @@ When adding new features:
 - Hover: `hover:shadow-lg`
 
 **Buttons**:
-- Professional gradients: `from-[#EF4444] to-[#DC2626]`
+- Professional gradients: `from-[#C08B7A] to-[#A67265]` (rose-gold to deep-rose)
 - Smooth 300ms transitions
-- Subtle shadows, not neon glows
+- Subtle shadows (not neon glows)
 - Active state: `active:scale-[0.98]`
+- Hover: `from-[#A67265] to-[#9B6B5A]` (deepens on hover)
 
 **Cards**:
-- Border: `border-gold/30` (1px with 30% opacity)
-- Background: `bg-secondary/30` with backdrop blur
+- Border: `border-primary/30` (1px with 30% opacity)
+- Background: `bg-card` (warm cream with subtle depth)
 - Hover: Transition shadow only (duration-300)
 
 **Typography**:
@@ -143,11 +149,15 @@ When adding new features:
 - Use `@heroicons/react/24/outline` for line icons
 - Use `@heroicons/react/24/solid` for filled icons (stars, etc.)
 - Consistent size: `w-6 h-6` for most contexts
-- Colors: Primary red or Gold accent
+- Colors: Primary terracota or Gold accent
 
 ## Important Notes
 
 - Development server runs on port 8080 (not the default Vite 5173)
 - Uses SWC for faster compilation
+- **Light theme with warm aesthetic**: Cream background (#F2EDE4) with rose-gold accents (#C08B7A)
+- **Typography**: Serif (Cormorant Garamond) headings for elegance, Jost (sans-serif) body for clarity and warmth
 - Professional design: NO bright neon glows, NO extreme border-radius, NO emojis
 - All animations should be subtle and smooth (600ms max duration)
+- **SOLENNE Aesthetic**: Minimal, aspirational, elegant — focus on clean lines, warm textures, and sophisticated color harmony
+- Color palette inspired by luxury beauty & lifestyle brands: soft, sophisticated, timeless

@@ -5,6 +5,8 @@ import { HeroSection } from "@/components/HeroSection";
 import { StickyBuyButton } from "@/components/StickyBuyButton";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { OfferCTA } from "@/components/OfferCTA";
+import { CustomCursor } from "@/components/CustomCursor";
+import { ScrollProgress } from "@/components/ScrollProgress";
 import { sendOrderInBackground, generateOrderNumber } from "@/services/orderService";
 import {
   trackInitiateCheckout,
@@ -17,10 +19,13 @@ const CelebritiesMarquee = lazy(() => import("@/components/CelebritiesMarquee"))
 const ProductGallery = lazy(() => import("@/components/ProductGallery"));
 const ProductVideo = lazy(() => import("@/components/ProductVideo"));
 const ScienceSection = lazy(() => import("@/components/ScienceSection"));
+const ResultsTimeline = lazy(() => import("@/components/ResultsTimeline"));
 const BenefitsSection = lazy(() => import("@/components/BenefitsSection"));
 const LifestyleSection = lazy(() => import("@/components/LifestyleSection"));
 const ComparisonTable = lazy(() => import("@/components/ComparisonTable"));
 const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection"));
+const BeforeAfterSection = lazy(() => import("@/components/BeforeAfterSection"));
+const StatsSection = lazy(() => import("@/components/StatsSection"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
 const GuaranteeSection = lazy(() => import("@/components/GuaranteeSection"));
 
@@ -33,12 +38,12 @@ const StripeCheckoutModal = lazy(() => import("@/components/checkout/StripeCheck
 
 // Skeleton loader for lazy-loaded sections - prevents layout shift
 const SectionSkeleton = memo(({ height }: { height: string }) => (
-  <div className={`${height} bg-black animate-pulse`}>
+  <div className={`${height} bg-background animate-pulse`}>
     <div className="container max-w-[1400px] mx-auto px-4 py-12 md:py-20">
-      <div className="h-8 md:h-10 w-48 md:w-64 bg-secondary/30 rounded mx-auto mb-8" />
+      <div className="h-8 md:h-10 w-48 md:w-64 bg-secondary/50 rounded mx-auto mb-8" />
       <div className="space-y-4">
-        <div className="h-4 bg-secondary/20 rounded w-3/4 mx-auto" />
-        <div className="h-4 bg-secondary/20 rounded w-1/2 mx-auto" />
+        <div className="h-4 bg-secondary/30 rounded w-3/4 mx-auto" />
+        <div className="h-4 bg-secondary/30 rounded w-1/2 mx-auto" />
       </div>
     </div>
   </div>
@@ -98,11 +103,11 @@ const Index = () => {
     if (showPhoneForm && checkoutData.quantity > 0) {
       trackInitiateCheckout({
         content_name: checkoutData.quantity === 1
-          ? 'NOCTE® Red Light Blocking Glasses'
-          : `NOCTE® Red Light Blocking Glasses - Pack x${checkoutData.quantity}`,
+          ? 'SOLENNE Beauty & Personal Care'
+          : `SOLENNE Beauty & Personal Care - Pack x${checkoutData.quantity}`,
         content_ids: checkoutData.quantity === 1
-          ? ['nocte-red-glasses']
-          : [`nocte-red-glasses-${checkoutData.quantity}pack`],
+          ? ['solenne-products']
+          : [`solenne-products-${checkoutData.quantity}pack`],
         num_items: checkoutData.quantity,
         value: checkoutData.totalPrice,
         currency: 'PYG',
@@ -126,11 +131,11 @@ const Index = () => {
     // Track AddToCart when user selects quantity
     trackAddToCart({
       content_name: quantity === 1
-        ? 'NOCTE® Red Light Blocking Glasses'
-        : `NOCTE® Red Light Blocking Glasses - Pack x${quantity}`,
+        ? 'SOLENNE Beauty & Personal Care'
+        : `SOLENNE Beauty & Personal Care - Pack x${quantity}`,
       content_ids: quantity === 1
-        ? ['nocte-red-glasses']
-        : [`nocte-red-glasses-${quantity}pack`],
+        ? ['solenne-products']
+        : [`solenne-products-${quantity}pack`],
       num_items: quantity,
       value: totalPrice,
       currency: 'PYG',
@@ -173,11 +178,11 @@ const Index = () => {
         value: result.finalTotal,
         currency: 'PYG',
         content_name: prev.quantity === 1
-          ? 'NOCTE® Red Light Blocking Glasses'
-          : `NOCTE® Red Light Blocking Glasses - Pack x${prev.quantity}`,
+          ? 'SOLENNE Beauty & Personal Care'
+          : `SOLENNE Beauty & Personal Care - Pack x${prev.quantity}`,
         content_ids: prev.quantity === 1
-          ? ['nocte-red-glasses']
-          : [`nocte-red-glasses-${prev.quantity}pack`],
+          ? ['solenne-products']
+          : [`solenne-products-${prev.quantity}pack`],
         num_items: prev.quantity,
         order_id: prev.orderNumber,
       });
@@ -298,7 +303,7 @@ const Index = () => {
 
     return {
       orderNumber: checkoutData.orderNumber,
-      products: `${checkoutData.quantity}x NOCTE® Red Light Blocking Glasses`,
+      products: `${checkoutData.quantity}x SOLENNE Beauty & Personal Care`,
       total: `${checkoutData.totalPrice.toLocaleString('es-PY')} Gs`,
       location: checkoutData.location,
       phone: checkoutData.phone,
@@ -355,7 +360,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-foreground">
+    <div className="grain-overlay min-h-screen bg-background text-foreground">
       {/* Delivery Banner */}
       <DeliveryBanner />
 
@@ -367,7 +372,7 @@ const Index = () => {
         {/* We want the header to be transparent. bg-transparent. */}
         <div className="w-full">
           <div className="container max-w-[1400px] mx-auto px-4 md:px-6 lg:px-12 py-2 md:py-3 flex items-center justify-between">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tighter mix-blend-difference text-white">NOCTE<sup className="text-[0.5em] ml-0.5">®</sup> PARAGUAY</h1>
+            <h1 className="text-2xl md:text-3xl font-serif font-semibold tracking-tighter text-foreground">SOLENNE</h1>
             <button
               onClick={handleBuyClick}
               className="text-primary hover:text-primary/80 font-medium text-sm md:text-base transition-colors tracking-tight mix-blend-difference"
@@ -399,6 +404,10 @@ const Index = () => {
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
+          <ResultsTimeline />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <BenefitsSection />
         </Suspense>
 
@@ -420,8 +429,16 @@ const Index = () => {
           <TestimonialsSection />
         </Suspense>
 
+        <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
+          <BeforeAfterSection />
+        </Suspense>
+
         {/* CTA 3: After Testimonials (minimal) */}
         <OfferCTA onBuyClick={handleBuyClick} variant="minimal" />
+
+        <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
+          <StatsSection />
+        </Suspense>
 
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <FAQSection />
@@ -432,11 +449,17 @@ const Index = () => {
         </Suspense>
       </main>
 
+      {/* Scroll Progress Indicator */}
+      <ScrollProgress />
+
       {/* Sticky Buy Button */}
       <StickyBuyButton onBuyClick={handleBuyClick} />
 
       {/* WhatsApp Button */}
       <WhatsAppButton />
+
+      {/* Custom Cursor (Premium Desktop Only) */}
+      <CustomCursor />
 
       {/* Checkout Modals - Lazy loaded */}
       {showQuantitySelector && (
@@ -496,32 +519,32 @@ const Index = () => {
       )}
 
       {/* Footer */}
-      <footer className="bg-black border-t border-border/30 py-12 md:py-16 px-4 md:px-6 pb-32 md:pb-40">
+      <footer className="bg-background border-t border-border/30 py-12 md:py-16 px-4 md:px-6 pb-32 md:pb-40">
         <div className="container max-w-[1400px] mx-auto text-center space-y-5 md:space-y-6">
-          <p className="text-2xl font-bold tracking-tighter opacity-70">NOCTE<sup className="text-[0.5em] ml-0.5">®</sup></p>
+          <p className="text-2xl font-serif font-semibold tracking-tighter text-primary">SOLENNE</p>
           <p className="text-muted-foreground font-light text-xs md:text-sm">
-            Úsalos antes de dormir. Dormí profundo.
+            Verse mejor. Sentirse mejor.
           </p>
 
           {/* Legal Links */}
           <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground/60">
             <Link
               to="/terminos-y-condiciones"
-              className="hover:text-white transition-colors"
+              className="hover:text-foreground transition-colors"
             >
               Términos y Condiciones
             </Link>
             <span className="text-muted-foreground/30">|</span>
             <Link
               to="/politica-de-privacidad"
-              className="hover:text-white transition-colors"
+              className="hover:text-foreground transition-colors"
             >
               Política de Privacidad
             </Link>
           </div>
 
           <p className="text-[10px] md:text-xs text-muted-foreground/60 font-light">
-            © {new Date().getFullYear()} NOCTE® Todos los Derechos Reservados
+            © {new Date().getFullYear()} SOLENNE Todos los Derechos Reservados
           </p>
         </div>
       </footer>

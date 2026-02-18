@@ -28,11 +28,11 @@ export const LivePurchaseNotification = ({
                 <CheckCircleIcon className="w-6 h-6 text-green-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-foreground">
                   {buyerName} de {buyerCity}
                 </p>
                 <p className="text-xs text-foreground/60 mt-0.5">
-                  acaba de comprar NOCTE
+                  acaba de comprar el PDRN Serum
                 </p>
               </div>
               <span className="text-xs text-foreground/40 flex-shrink-0">
@@ -46,11 +46,11 @@ export const LivePurchaseNotification = ({
   );
 };
 
-// Paraguayan names
+// Paraguayan women's names
 const PARAGUAYAN_NAMES = [
-  "María", "Carlos", "Ana", "José", "Lucía", "Diego", "Sofía", "Marcos",
-  "Valentina", "Gabriel", "Camila", "Rodrigo", "Florencia", "Matías",
-  "Paula", "Laura", "Fernando", "Daniela", "Martín", "Carolina",
+  "María", "Ana", "Lucía", "Sofía", "Valentina", "Camila", "Florencia",
+  "Paula", "Laura", "Daniela", "Carolina", "Mariana", "Gabriela", "Romina",
+  "Verónica", "Leticia", "Silvia", "Andrea", "Natalia", "Fernanda",
 ];
 
 export const getRandomBuyer = () => {

@@ -35,12 +35,12 @@ export const SuccessPage = ({ isOpen, orderData, onClose }: SuccessPageProps) =>
     }
 
     const message = encodeURIComponent(
-      `Hola *NOCTE®* 👋
+      `Hola *SOLENNE* 👋
 
 Acabo de completar mi pedido!
 
 Orden: ${orderData.orderNumber}
-🔴 ${orderData.products}
+✨ ${orderData.products}
 💰 ${orderData.total}
 
 Mis datos:
@@ -61,14 +61,14 @@ Quedo atento a la confirmación de envío. ¡Gracias! 🙌`
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-background/50 z-[100] flex items-center justify-center p-4"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="relative w-full max-w-[550px] bg-gradient-to-b from-secondary to-black border-2 border-[#4ADE80] rounded-2xl p-6 md:p-8 shadow-[0_20px_25px_-5px_rgba(74,222,128,0.2)] max-h-[90dvh] overflow-y-auto"
+            className="relative w-full max-w-[550px] bg-gradient-to-b from-secondary to-background border-2 border-[#4ADE80] rounded-2xl p-6 md:p-8 shadow-[0_20px_25px_-5px_rgba(74,222,128,0.2)] max-h-[90dvh] overflow-y-auto"
           >
             <div className="space-y-6 text-center">
               {/* Success Icon */}
@@ -156,7 +156,7 @@ Quedo atento a la confirmación de envío. ¡Gracias! 🙌`
 
               {/* Extra Info */}
               <p className="text-xs md:text-sm text-muted-foreground leading-relaxed px-2">
-                Nos pondremos en contacto para coordinar la entrega. ¡Gracias por confiar en NOCTE<sup className="text-[0.3em]">®</sup>!
+                Nos pondremos en contacto para coordinar la entrega. ¡Gracias por confiar en SOLENNE!
               </p>
             </div>
           </motion.div>

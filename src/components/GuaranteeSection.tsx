@@ -9,8 +9,8 @@ interface GuaranteeSectionProps {
 export const GuaranteeSection = ({ onBuyClick }: GuaranteeSectionProps) => {
   return (
     <>
-      <section className="py-8 md:py-16 px-4 md:px-6 bg-black relative overflow-hidden" id="comprar">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.08),transparent_60%)]" />
+      <section className="py-8 md:py-16 px-4 md:px-6 bg-background relative overflow-hidden" id="comprar">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192,139,122,0.08),transparent_60%)]" />
 
         <div className="container max-w-[900px] mx-auto relative z-10">
           <motion.div
@@ -22,8 +22,11 @@ export const GuaranteeSection = ({ onBuyClick }: GuaranteeSectionProps) => {
           >
             <div className="flex justify-center">
               <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl" />
-                <div className="relative w-16 h-16 md:w-20 md:h-20 bg-black border border-primary/30 rounded-full flex items-center justify-center">
+                {/* Outer ambient glow — breathing */}
+                <div className="absolute inset-0 bg-primary/25 rounded-full blur-3xl animate-glow-breathe" />
+                {/* Inner contact glow */}
+                <div className="absolute inset-[20%] bg-primary/15 rounded-full blur-xl" />
+                <div className="relative w-16 h-16 md:w-20 md:h-20 bg-background border border-primary/30 rounded-full flex items-center justify-center">
                   <ShieldCheckIcon className="w-8 h-8 md:w-10 md:h-10 text-primary" strokeWidth={1.5} />
                 </div>
               </div>
@@ -40,7 +43,7 @@ export const GuaranteeSection = ({ onBuyClick }: GuaranteeSectionProps) => {
 
             <div className="max-w-2xl mx-auto space-y-6 md:space-y-8 py-4 md:py-8">
               <p className="text-base md:text-lg text-foreground/80 leading-relaxed font-light px-4">
-                Prueba NOCTE<sup className="text-[0.3em]">®</sup> durante 30 días completos. Si no notas mejora en tu sueño,
+                Prueba PDRN Pink Peptide Serum durante 30 días completos. Si no notas mejora en tu piel,
                 te devolvemos el 100% de tu dinero. Sin preguntas, sin complicaciones.
               </p>
 
@@ -49,7 +52,7 @@ export const GuaranteeSection = ({ onBuyClick }: GuaranteeSectionProps) => {
                   data-guarantee-cta
                   variant="hero"
                   size="xl"
-                  className="w-full sm:w-auto sm:min-w-[300px] shadow-[0_0_50px_rgba(239,68,68,0.4)] text-base md:text-lg h-14 md:h-16"
+                  className="w-full sm:w-auto sm:min-w-[300px] shadow-[0_0_50px_rgba(192,139,122,0.4)] text-base md:text-lg h-14 md:h-16"
                   onClick={onBuyClick}
                 >
                   Comprar Ahora

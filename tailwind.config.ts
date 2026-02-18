@@ -47,8 +47,15 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        gold: "hsl(var(--gold))",
-        neon: "hsl(var(--neon))",
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          light: "hsl(38 65% 72%)",
+          dark: "hsl(38 55% 42%)",
+        },
+      },
+      fontFamily: {
+        serif: ['Cormorant Garamond', 'serif'],
+        sans: ['Jost', 'sans-serif'],
       },
       spacing: {
         'xs': '8px',
@@ -84,10 +91,39 @@ export default {
             height: "0",
           },
         },
+        "shimmer-sweep": {
+          "0%": {
+            transform: "translateX(-100%) skewX(-12deg)",
+          },
+          "100%": {
+            transform: "translateX(250%) skewX(-12deg)",
+          },
+        },
+        "float-gentle": {
+          "0%, 100%": {
+            transform: "translateY(0px)",
+          },
+          "50%": {
+            transform: "translateY(-8px)",
+          },
+        },
+        "glow-breathe": {
+          "0%, 100%": {
+            opacity: "0.6",
+            transform: "scale(1)",
+          },
+          "50%": {
+            opacity: "1",
+            transform: "scale(1.08)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "shimmer": "shimmer-sweep 0.65s ease-in-out",
+        "float": "float-gentle 5s ease-in-out infinite",
+        "glow": "glow-breathe 4s ease-in-out infinite",
       },
     },
   },

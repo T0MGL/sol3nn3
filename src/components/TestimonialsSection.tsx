@@ -3,28 +3,28 @@ import { motion } from "framer-motion";
 
 const testimonials = [
   {
-    name: "Juan López",
-    role: "Founder, Asunción",
+    name: "María José",
+    role: "Asunción",
     rating: 5,
-    quote: "Trabajo hasta las 2-3AM y antes no podía dormir hasta las 6. Con NOCTE me duermo a las 4AM sin problemas. Game changer total.",
+    quote: "Mi piel nunca estuvo tan hidratada. Lo uso hace 3 semanas y ya noto una diferencia enorme en la textura.",
   },
   {
-    name: "María Fernández",
-    role: "Desarrolladora, Remoto",
+    name: "Valentina",
+    role: "Encarnación",
     rating: 5,
-    quote: "Los uso mientras trabajo de 8PM a 1AM. Termino mi día y me duermo en 15 minutos. Antes tardaba 2 horas dando vueltas. Es real.",
+    quote: "Empecé a ver resultados en 5 días. La piel más luminosa y los poros visiblemente reducidos. Vale cada guaraní.",
   },
   {
-    name: "Carlos Gómez",
-    role: "Emprendedor Tech, Fernando de la Mora",
+    name: "Camila",
+    role: "CDE",
     rating: 5,
-    quote: "No son mágicos, pero funcionan. Los uso 3 horas antes de dormir mientras trabajo en mi laptop. Duermo profundo y despierto descansado.",
+    quote: "Soy fanática del K-beauty y este es de los mejores sueros que probé. Que lo traigan a Paraguay fue un regalo.",
   },
   {
-    name: "Andrea Pérez",
-    role: "Consultora, Encarnación",
+    name: "Sofía",
+    role: "Villarrica",
     rating: 5,
-    quote: "Pensé que era marketing. Pero después de 2 semanas usándolos en mis sesiones nocturnas, duermo como nunca. 100% recomendado.",
+    quote: "Después de 2 semanas mi piel estaba completamente transformada. Ahora es mi producto estrella.",
   },
 ];
 
@@ -33,42 +33,43 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
+      staggerChildren: 0.06,
+      delayChildren: 0.05,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
+  hidden: { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.3,
+      duration: 0.35,
       ease: [0.25, 0.1, 0.25, 1],
     },
   },
 };
 
+
 export const TestimonialsSection = () => {
   return (
-    <section className="py-8 md:py-16 px-4 md:px-6 bg-black relative">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(239,68,68,0.08),transparent_50%)]" />
+    <section className="py-8 md:py-16 px-4 md:px-6 bg-background relative">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(192,139,122,0.08),transparent_50%)]" />
 
       <div className="container max-w-[1200px] mx-auto relative z-10">
         <div className="text-center mb-8 md:mb-12 space-y-3 md:space-y-4">
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold px-4">
-            Trabajan de noche. Duermen profundo.
+            Resultados reales. Piel transformada.
           </h2>
           <p className="text-base md:text-xl text-muted-foreground px-4">
-            Emprendedores paraguayos que no sacrifican su sueño
+            Clientas paraguayas que ya lo viven
           </p>
         </div>
 
         {/* Rating Summary Banner */}
         <div className="max-w-3xl mx-auto mb-12 md:mb-16">
-          <div className="bg-gradient-to-b from-secondary/40 to-secondary/20 backdrop-blur-sm border border-accent/30 rounded-lg p-8 md:p-10 shadow-[0_4px_6px_rgba(0,0,0,0.1)]">
+          <div className="bg-gradient-to-b from-secondary/40 to-secondary/20 backdrop-blur-sm border border-accent/30 rounded-lg p-8 md:p-10 shadow-[0_4px_6px_rgba(0,0,0,0.08),0_0_40px_rgba(192,139,122,0.12)]">
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10">
               {/* Star Rating Display */}
               <div className="flex flex-col items-center gap-3">
@@ -78,7 +79,7 @@ export const TestimonialsSection = () => {
                   ))}
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl md:text-5xl font-bold text-accent">4.7</span>
+                  <span className="text-4xl md:text-5xl font-bold text-accent">4.8</span>
                   <span className="text-lg md:text-xl text-muted-foreground font-light">de 5</span>
                 </div>
               </div>
@@ -88,7 +89,7 @@ export const TestimonialsSection = () => {
 
               {/* Customer Count */}
               <div className="flex flex-col items-center gap-2 text-center">
-                <p className="text-3xl md:text-4xl font-bold text-foreground">1,174</p>
+                <p className="text-3xl md:text-4xl font-bold text-foreground">2,847</p>
                 <p className="text-base md:text-lg text-muted-foreground font-light">
                   clientes satisfechos
                 </p>
@@ -111,7 +112,7 @@ export const TestimonialsSection = () => {
             <motion.div
               key={index}
               variants={itemVariants}
-              className="group p-6 md:p-8 bg-gradient-to-b from-card to-black border border-border/50 hover:border-primary/30 transition-all duration-300"
+              className="group p-6 md:p-8 bg-gradient-to-b from-card to-background border border-border/50 hover:border-primary/30 transition-all duration-300 shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(192,139,122,0.14),0_2px_6px_rgba(0,0,0,0.05)]"
             >
               <div className="space-y-5 md:space-y-6">
                 <div className="flex gap-0.5">
