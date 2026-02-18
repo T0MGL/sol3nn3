@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { SunIcon, MoonIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
-import serumCloseupImage from "@/assets/products/serum-closeup.webp";
+import lifestyleImage from "@/assets/branding/lifestyle2.webp";
+import lifestyleProduct from "@/assets/branding/lifestyle.webp";
 
 const useCases = [
   {
@@ -66,7 +67,7 @@ export const LifestyleSection = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center">
-          {/* Image Side - Placeholder for product image */}
+          {/* Image Side */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -76,22 +77,38 @@ export const LifestyleSection = () => {
           >
             <div className="absolute inset-0 bg-primary/10 rounded-full blur-[100px] scale-75" />
             <div className="relative max-w-[500px] mx-auto">
+              {/* Main lifestyle image - model */}
               <motion.div
                 animate={{ y: [0, -8, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="w-full aspect-square rounded-lg shadow-lg drop-shadow-[0_8px_16px_rgba(192,139,122,0.25)] overflow-hidden"
+                className="w-full aspect-[3/4] rounded-2xl shadow-lg drop-shadow-[0_8px_16px_rgba(192,139,122,0.25)] overflow-hidden"
               >
                 <img
-                  src={serumCloseupImage}
+                  src={lifestyleImage}
+                  alt="Piel luminosa con PDRN Serum"
+                  className="w-full h-full object-cover object-top"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </motion.div>
+              {/* Floating product card */}
+              <motion.div
+                animate={{ y: [0, 6, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute -bottom-6 -right-4 md:-right-8 w-28 md:w-36 aspect-square rounded-xl overflow-hidden border-2 border-primary/40 shadow-[0_8px_24px_rgba(192,139,122,0.3)] bg-background"
+              >
+                <img
+                  src={lifestyleProduct}
                   alt="PDRN Pink Peptide Serum"
                   className="w-full h-full object-cover"
                   loading="lazy"
                   decoding="async"
                 />
               </motion.div>
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-primary/90 backdrop-blur-sm px-6 py-3 rounded-lg border border-primary/50 shadow-lg">
-                <p className="text-sm md:text-base font-bold text-foreground text-center">
-                  PDRN Pink Peptide Serum 30ml
+              {/* Label */}
+              <div className="absolute -bottom-6 left-4 bg-primary/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-primary/50 shadow-lg">
+                <p className="text-xs md:text-sm font-bold text-foreground text-center">
+                  PDRN Pink Peptide Serum
                 </p>
               </div>
             </div>
