@@ -15,8 +15,6 @@ import serumCloseupImage from "@/assets/products/serum-closeup.webp";
 import serumBenefitsImage from "@/assets/products/serum-benefits.webp";
 import firmskinImage from "@/assets/products/firmskin.webp";
 import beforeAfterImage from "@/assets/products/serumbeforeafter.webp";
-import { StripePaymentButton } from "@/components/StripePaymentButton";
-import { PaymentSuccessModal } from "@/components/PaymentSuccessModal";
 import { LivePurchaseNotification, getRandomBuyer } from "@/components/LivePurchaseNotification";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { getDeliveryDates } from "@/lib/delivery-utils";
@@ -26,11 +24,6 @@ interface HeroSectionProps {
 }
 
 export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
-  const [showStripeSuccess, setShowStripeSuccess] = useState(false);
-  const [useStripe] = useState(() => {
-    // Only enable Stripe if API key is configured
-    return !!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-  });
   const [currentSlide, setCurrentSlide] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -411,33 +404,6 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
 
             {/* CTA Button */}
             <div className="space-y-3">
-              {useStripe ? (
-                <motion.div
-                  animate={{
-                    scale: [1, 1.015, 1],
-                  }}
-                  transition={{
-                    duration: 2.5,
-                    repeat: Infinity,
-                    repeatType: "loop",
-                    ease: "easeInOut"
-                  }}
-                >
-                  <StripePaymentButton
-                    onSuccess={() => setShowStripeSuccess(true)}
-                    onError={(error) => {
-                      console.error('Stripe error:', error);
-                      onBuyClick();
-                    }}
-                    className="w-full h-14 md:h-16 text-base md:text-lg font-bold shadow-[0_8px_24px_rgba(192,139,122,0.4)] tracking-[0.15em] rounded-[2px]"
-                    style={{
-                      background: "#C08B7A",
-                    }}
-                  >
-                    COMPRAR AHORA — Gs. 229.000
-                  </StripePaymentButton>
-                </motion.div>
-              ) : (
                 <motion.div
                   animate={{
                     scale: [1, 1.015, 1],
@@ -462,7 +428,6 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                     COMPRAR AHORA — Gs. 229.000
                   </Button>
                 </motion.div>
-              )}
 
               {/* Dynamic Delivery Date */}
               <p className="text-sm text-center text-accent font-medium">
@@ -488,10 +453,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
       </div>
 
       {/* Stripe Payment Success Modal */}
-      <PaymentSuccessModal
-        open={showStripeSuccess}
-        onClose={() => setShowStripeSuccess(false)}
-      />
+
 
       {/* Live Purchase Notification */}
       <LivePurchaseNotification

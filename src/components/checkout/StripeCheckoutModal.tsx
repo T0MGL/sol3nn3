@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, PaymentElement, useStripe, useElements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 import { XMarkIcon, CreditCardIcon, DevicePhoneMobileIcon, BanknotesIcon, CheckIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { getStripe, formatPrice } from '@/lib/stripe';
 import { Button } from '@/components/ui/button';
@@ -45,8 +45,10 @@ const CheckoutForm = ({
   currency,
   customerData,
   onCloseAttempt,
+  clientSecret, // Add clientSecret prop
 }: Omit<StripeCheckoutModalProps, 'isOpen'> & {
   onCloseAttempt: () => void;
+  clientSecret: string;
 }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -57,6 +59,71 @@ const CheckoutForm = ({
 
   // Calculate final total including priority shipping
   const finalTotal = amount + (isPriorityShipping ? PRIORITY_SHIPPING_COST : 0);
+
+  // Payment Request state for Apple Pay / Google Pay
+  const [paymentRequest, setPaymentRequest] = useState<any>(null);
+
+  useEffect(() => {
+    if (!stripe || !amount || !currency) return;
+
+    const pr = stripe.paymentRequest({
+      country: 'PY',
+      currency: currency.toLowerCase(),
+      total: {
+        label: 'SOLENNE',
+        amount: finalTotal,
+      },
+      requestPayerName: true,
+      requestPayerEmail: true,
+      // We already have shipping info from previous step, but Apple Pay requires it or we can pass it
+      // For simplicity, let's ask for it to ensure consistency or just payment.
+      // If we don't request shipping, it's just a payment sheet.
+      requestShipping: false,
+    });
+
+    // Check if the Browser supports the Payment Request API
+    pr.canMakePayment().then((result) => {
+      if (result) {
+        setPaymentRequest(pr);
+      }
+    });
+
+    pr.on('paymentmethod', async (ev) => {
+      if (!clientSecret) {
+        ev.complete('fail');
+        return;
+      }
+
+      // Confirm the PaymentIntent with the payment method returned by the Payment Request
+      const { paymentIntent, error: confirmError } = await stripe.confirmCardPayment(
+        clientSecret,
+        { payment_method: ev.paymentMethod.id },
+        { handleActions: false }
+      );
+
+      if (confirmError) {
+        // Report to the browser that the payment failed
+        ev.complete('fail');
+        setErrorMessage(confirmError.message || 'Error con Apple Pay / Google Pay');
+      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        // Report to the browser that the confirmation was successful
+        ev.complete('success');
+        // Handle success in your app
+        onSuccess({
+          paymentIntentId: paymentIntent.id,
+          paymentType: 'Card',
+          isPaid: true,
+          deliveryType: isPriorityShipping ? 'premium' : 'común',
+          finalTotal,
+        });
+      } else {
+        ev.complete('fail');
+        setErrorMessage('El pago no se pudo completar.');
+      }
+    });
+
+  }, [stripe, amount, currency, finalTotal, clientSecret, onSuccess, isPriorityShipping]);
+
 
   // Refs to track AddPaymentInfo events and prevent duplicates
   const initialTrackDoneRef = useRef(false);
@@ -440,8 +507,28 @@ const CheckoutForm = ({
         >
           Cancelar
         </Button>
+
+
+        {/* Apple Pay / Google Pay Button */}
+        {paymentMethod === 'card' && paymentRequest && (
+          <div className="pt-2">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/50" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  O paga con
+                </span>
+              </div>
+            </div>
+            <div className="mt-4">
+              <PaymentRequestButtonElement options={{ paymentRequest }} />
+            </div>
+          </div>
+        )}
       </div>
-    </form>
+    </form >
   );
 };
 
@@ -692,6 +779,7 @@ export const StripeCheckoutModal = ({
                     currency={currency}
                     customerData={customerData}
                     onCloseAttempt={handleCloseAttempt}
+                    clientSecret={clientSecret}
                   />
                 </Elements>
               </>
