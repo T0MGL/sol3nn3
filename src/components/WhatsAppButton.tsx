@@ -41,7 +41,7 @@ export const WhatsAppButton = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const message = encodeURIComponent("Hola Nocte, vi los lentes en la web y tengo una consulta...");
+  const message = encodeURIComponent("Hola SOLENNE, vi el PDRN Serum en la web y tengo una consulta...");
   const whatsappUrl = `https://wa.me/595991893587?text=${message}`;
 
   return (
@@ -49,7 +49,7 @@ export const WhatsAppButton = () => {
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className={`fixed right-4 z-[100] bg-[#25D366] hover:bg-[#20BD5A] text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:scale-110 ${
+      className={`fixed right-4 z-[100] bg-[#25D366] hover:bg-[#20BD5A] text-foreground rounded-full p-4 shadow-lg transition-all duration-300 hover:scale-110 ${
         stickyButtonVisible ? "bottom-32 md:bottom-36" : "bottom-6 md:bottom-8"
       } ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"

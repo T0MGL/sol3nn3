@@ -13,13 +13,13 @@ export const OfferCTA = ({ onBuyClick, variant = "default" }: OfferCTAProps) => 
     return (
       <motion.section
         {...fadeInUpView}
-        className="py-6 md:py-8 px-4 md:px-6 bg-gradient-to-b from-black via-primary/5 to-black"
+        className="py-6 md:py-8 px-4 md:px-6 bg-gradient-to-b from-background via-primary/5 to-background"
       >
         <div className="container max-w-[800px] mx-auto text-center">
           <Button
             variant="hero"
             size="xl"
-            className="w-full md:w-auto md:min-w-[320px] shadow-[0_0_50px_rgba(239,68,68,0.4)] text-base md:text-lg h-14 md:h-16"
+            className="w-full md:w-auto md:min-w-[320px] shadow-[0_0_50px_rgba(192,139,122,0.4)] text-base md:text-lg h-14 md:h-16"
             onClick={onBuyClick}
           >
             Aprovechar Oferta
@@ -32,13 +32,13 @@ export const OfferCTA = ({ onBuyClick, variant = "default" }: OfferCTAProps) => 
   return (
     <motion.section
       {...fadeInUpView}
-      className="py-12 md:py-16 px-4 md:px-6 bg-gradient-to-b from-black via-primary/5 to-black"
+      className="py-12 md:py-16 px-4 md:px-6 bg-gradient-to-b from-background via-primary/5 to-background"
     >
       <div className="container max-w-[800px] mx-auto text-center">
         <Button
           variant="hero"
           size="xl"
-          className="w-full md:w-auto md:min-w-[320px] shadow-[0_0_50px_rgba(239,68,68,0.4)] text-base md:text-lg h-14 md:h-16"
+          className="w-full md:w-auto md:min-w-[320px] shadow-[0_0_50px_rgba(192,139,122,0.4)] text-base md:text-lg h-14 md:h-16"
           onClick={onBuyClick}
         >
           Aprovechar Oferta

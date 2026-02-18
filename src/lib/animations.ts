@@ -52,20 +52,20 @@ export const staggerContainerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: REDUCED_MOTION ? 0 : 0.08,
-      delayChildren: 0.1,
+      staggerChildren: REDUCED_MOTION ? 0 : 0.05,
+      delayChildren: 0.05,
     },
   },
 };
 
 // Stagger item variants (use with variants prop, NOT spread)
 export const staggerItemVariants = {
-  hidden: { opacity: 0, y: REDUCED_MOTION ? 0 : 20 },
+  hidden: { opacity: 0, y: REDUCED_MOTION ? 0 : 10 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: REDUCED_MOTION ? 0 : DURATION.normal,
+      duration: REDUCED_MOTION ? 0 : DURATION.fast,
       ease: EASING,
     },
   },
@@ -102,6 +102,40 @@ export const fadeInRight = {
   viewport: { once: true, amount: 0.3 },
   transition: {
     duration: REDUCED_MOTION ? 0 : DURATION.fast,
+    ease: EASING,
+  },
+};
+
+// Float animation (for product images creating depth)
+export const floatVariant = {
+  animate: REDUCED_MOTION ? {} : {
+    y: [0, -8, 0],
+    transition: {
+      duration: 5,
+      repeat: Infinity,
+      ease: "easeInOut" as const,
+    },
+  },
+};
+
+// Text reveal animation (clip-path "curtain" effect - luxury feel)
+export const textRevealVariants = {
+  initial: { clipPath: 'inset(0 100% 0 0)' },
+  whileInView: { clipPath: 'inset(0 0% 0 0)' },
+  viewport: { once: true, amount: 0.3 },
+  transition: {
+    duration: REDUCED_MOTION ? 0 : 0.8,
+    ease: "easeOut" as const,
+  },
+};
+
+// Counter animation (number counting up)
+export const counterVariants = {
+  initial: { opacity: 0, y: REDUCED_MOTION ? 0 : 10 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.5 },
+  transition: {
+    duration: REDUCED_MOTION ? 0 : DURATION.normal,
     ease: EASING,
   },
 };

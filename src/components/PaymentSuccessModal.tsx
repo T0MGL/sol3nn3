@@ -62,7 +62,7 @@ export const PaymentSuccessModal = ({
 
           {/* Order Details */}
           {orderDetails && (
-            <div className="bg-black/30 rounded-lg p-4 space-y-3 border border-gold/20">
+            <div className="bg-background/30 rounded-lg p-4 space-y-3 border border-gold/20">
               {orderDetails.email && (
                 <div className="flex justify-between text-sm">
                   <span className="text-foreground/60">Email de confirmación:</span>
@@ -93,7 +93,7 @@ export const PaymentSuccessModal = ({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="w-full bg-gradient-to-r from-primary to-primary/80 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-lg transition-all duration-300 active:scale-[0.98]"
+            className="w-full bg-gradient-to-r from-primary to-primary/80 text-foreground font-semibold py-3 px-6 rounded-lg hover:shadow-lg transition-all duration-300 active:scale-[0.98]"
           >
             Continuar
           </button>

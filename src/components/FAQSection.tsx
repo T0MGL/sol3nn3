@@ -8,30 +8,22 @@ import { motion } from "framer-motion";
 
 const faqs = [
   {
-    question: "¿Los uso para dormir o para trabajar?",
-    answer: "Para trabajar/usar pantallas de noche. No son lentes para ponerte a dormir. Los usas mientras trabajas, estudias o scrolleas de noche (2-3 horas antes de dormir). Bloquean la luz azul que le dice a tu cerebro 'despierta', permitiendo que tu cuerpo produzca melatonina naturalmente. Resultado: cuando terminas tu sesión y vas a dormir, te dormís rápido y profundo.",
+    question: "¿Para qué tipo de piel es el PDRN Serum?",
+    answer: "Es apto para todo tipo de piel, incluyendo piel sensible. Formulado y dermatológicamente testeado para uso diario.",
   },
   {
-    question: "¿Cuál es la garantía de NOCTE?",
-    answer: "30 días completos. Si después de usar NOCTE durante tus sesiones nocturnas no dormís mejor en 30 días, devolvemos 100% de tu dinero. Sin preguntas, sin sorpresas. Garantía clara y honesta.",
+    question: "¿Cuándo veo resultados?",
+    answer: "La mayoría de nuestras clientas notan mejoras en hidratación desde la primera semana. Resultados óptimos a las 4 semanas de uso constante.",
   },
   {
-    question: "¿Cuánto tarda en llegar NOCTE?",
-    answer: "Envío GRATIS a Asunción y Departamento Central. 1-2 días hábiles después de comprar. Packaging premium incluido.",
-  },
-  {
-    question: "¿Funcionan si trabajo hasta las 2-3AM?",
-    answer: "Sí, justamente para eso están diseñados. Úsalos durante tus sesiones nocturnas de trabajo (aunque sea hasta las 5AM). Tu cerebro producirá melatonina como si fuera de noche, permitiéndote dormir cuando termines tu día. Muchos emprendedores nocturnos reportan resultados increíbles.",
-  },
-  {
-    question: "¿Qué incluye la caja de NOCTE?",
-    answer: "1 par de lentes rojos NOCTE con garantía de 30 días.",
+    question: "¿Cómo es el envío en Paraguay?",
+    answer: "Delivery gratis a Asunción y Departamento Central. 1-2 días hábiles. Packaging premium incluido.",
   },
 ];
 
 export const FAQSection = () => {
   return (
-    <section className="py-8 md:py-16 px-4 md:px-6 bg-gradient-to-b from-black via-card/20 to-black">
+    <section className="py-8 md:py-16 px-4 md:px-6 bg-background">
       <div className="container max-w-[900px] mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -50,7 +42,7 @@ export const FAQSection = () => {
             <AccordionItem
               key={index}
               value={`item-${index}`}
-              className="border border-border/50 bg-black/50 backdrop-blur-sm px-5 md:px-8 hover:border-primary/30 transition-colors"
+              className="border border-border/50 bg-background/50 backdrop-blur-sm px-5 md:px-8 hover:border-primary/30 transition-colors"
             >
               <AccordionTrigger className="text-left text-sm md:text-base lg:text-lg font-medium hover:text-primary py-5 md:py-6">
                 {faq.question}

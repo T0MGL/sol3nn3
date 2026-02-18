@@ -1,9 +1,46 @@
 import { motion } from "framer-motion";
+import { SparklesIcon, BeakerIcon, ShieldCheckIcon, HeartIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
+import ingredientsImage from "@/assets/products/ingredients-info.webp";
+
+const ingredients = [
+  {
+    icon: SparklesIcon,
+    name: "PDRN (Sodium DNA) 1%",
+    concentration: "1%",
+    description: "Salmon DNA extraído. Regeneración celular activa. Estimula la producción de colágeno y elastina naturalmente.",
+    benefit: "Revitaliza células dañadas",
+    clinical: true
+  },
+  {
+    icon: BeakerIcon,
+    name: "5 Types Peptide Complex",
+    concentration: "5%",
+    description: "Péptidos bioactivos derivados de aminoácidos. Mejora firmeza, elasticidad y textura de la piel.",
+    benefit: "Glass skin effect",
+    clinical: true
+  },
+  {
+    icon: HeartIcon,
+    name: "Hyaluronic Acid",
+    concentration: "3%",
+    description: "Hidratación profunda de múltiples capas de la epidermis. Retiene humedad 24 horas.",
+    benefit: "Piel suave y plumosa",
+    clinical: true
+  },
+  {
+    icon: ShieldCheckIcon,
+    name: "Niacinamide",
+    concentration: "4%",
+    description: "Vitamina B3. Unifica el tono, minimiza poros y refuerza la barrera cutánea.",
+    benefit: "Piel más clara y resistente",
+    clinical: true
+  }
+];
 
 export const ScienceSection = () => {
   return (
-    <section className="py-8 md:py-16 px-4 md:px-6 bg-gradient-to-b from-black to-black relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.08),transparent_60%)]" />
+    <section className="py-8 md:py-16 px-4 md:px-6 bg-background relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(192,139,122,0.08),transparent_60%)]" />
 
       <div className="container max-w-[1200px] mx-auto relative z-10">
         <motion.div
@@ -14,221 +51,128 @@ export const ScienceSection = () => {
           className="text-center mb-16 md:mb-20 space-y-6 md:space-y-8"
         >
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter px-4 leading-tight">
-            Por qué los lentes rojos, no transparentes.
+            La ciencia detrás del PDRN Serum
           </h2>
           <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground font-light max-w-4xl mx-auto px-4 leading-relaxed">
-            Los lentes "anti-luz azul" transparentes bloquean apenas el 20-30%. <span className="text-foreground font-medium">No es suficiente.</span> Los lentes rojos de NOCTE bloquean el 99% del espectro 400-550nm—la luz que literalmente le grita a tu cerebro "¡despierta!" mientras trabajas de noche. Úsalos durante tus sesiones nocturnas, y tu cuerpo producirá melatonina como si fuera de noche... porque para tu cerebro, lo es.
+            Formulado con ingredientes K-beauty auténticos, clínicamente probados.
+            <span className="text-foreground font-medium"> PDRN + Péptidos + Hyaluronic Acid</span> —
+            la trilogía que regenera tu piel desde adentro.
           </p>
         </motion.div>
 
+        {/* Ingredients Grid */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-          className="relative"
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 md:mb-16"
         >
-          {/* Desktop/Tablet: Side by side comparison */}
-          <div className="hidden md:grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Without Glasses */}
-            <div className="space-y-6">
-              <div className="bg-card/50 border border-border/50 p-6 lg:p-8">
-                <h3 className="text-xl lg:text-2xl font-bold mb-6 text-center">Sin Lentes</h3>
-                <div className="relative h-64 lg:h-80">
-                  {/* Blue light wave - Full spectrum */}
-                  <svg viewBox="0 0 400 300" className="w-full h-full">
-                    {/* Grid background */}
-                    <line x1="0" y1="260" x2="400" y2="260" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                    <line x1="0" y1="200" x2="400" y2="200" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                    <line x1="0" y1="140" x2="400" y2="140" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                    <line x1="0" y1="80" x2="400" y2="80" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                    <line x1="0" y1="20" x2="400" y2="20" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+          {ingredients.map((ingredient, index) => {
+            const Icon = ingredient.icon;
+            const concentrationValue = parseInt(ingredient.concentration) * 10;
+            return (
+              <div
+                key={index}
+                className="bg-card border border-border/50 rounded-lg p-6 space-y-4 hover:border-primary/30 transition-all duration-300 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_20px_rgba(192,139,122,0.12)]"
+              >
+                {/* Clinical Badge */}
+                {ingredient.clinical && (
+                  <div className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+                    <CheckBadgeIcon className="w-3.5 h-3.5" />
+                    Clínicamente Probado
+                  </div>
+                )}
 
-                    {/* Blue light curve (400-500nm) - HIGH */}
-                    <defs>
-                      <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="rgba(59, 130, 246, 0.6)" />
-                        <stop offset="100%" stopColor="rgba(59, 130, 246, 0)" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M 50 260 Q 100 20 150 260"
-                      fill="url(#blueGradient)"
-                      stroke="rgb(59, 130, 246)"
-                      strokeWidth="2"
-                    />
-
-                    {/* Other light spectrum */}
-                    <defs>
-                      <linearGradient id="spectrumGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="rgba(34, 197, 94, 0.3)" />
-                        <stop offset="50%" stopColor="rgba(234, 179, 8, 0.3)" />
-                        <stop offset="100%" stopColor="rgba(239, 68, 68, 0.3)" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M 150 260 Q 200 120 250 260 Q 300 140 350 260"
-                      fill="url(#spectrumGradient)"
-                      stroke="rgba(255,255,255,0.3)"
-                      strokeWidth="2"
-                    />
-
-                    {/* Wavelength labels */}
-                    <text x="100" y="290" fill="rgba(255,255,255,0.5)" fontSize="12" textAnchor="middle">400nm</text>
-                    <text x="200" y="290" fill="rgba(255,255,255,0.5)" fontSize="12" textAnchor="middle">500nm</text>
-                    <text x="300" y="290" fill="rgba(255,255,255,0.5)" fontSize="12" textAnchor="middle">600nm</text>
-
-                    {/* Y-axis label */}
-                    <text x="10" y="30" fill="rgba(255,255,255,0.5)" fontSize="11">100</text>
-                    <text x="10" y="270" fill="rgba(255,255,255,0.5)" fontSize="11">0</text>
-                  </svg>
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Icon className="w-6 h-6 text-primary" strokeWidth={1.5} />
                 </div>
-                <p className="text-sm text-center text-primary font-semibold mt-4">
-                  Luz azul al 100% = Cerebro en modo día
-                </p>
-              </div>
-            </div>
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-bold text-foreground">
+                      {ingredient.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground pt-1">
+                      Concentración: {ingredient.concentration}
+                    </p>
+                  </div>
 
-            {/* With Glasses */}
-            <div className="space-y-6">
-              <div className="bg-primary/10 border border-primary/50 p-6 lg:p-8">
-                <h3 className="text-xl lg:text-2xl font-bold mb-6 text-center text-primary">Con NOCTE</h3>
-                <div className="relative h-64 lg:h-80">
-                  <svg viewBox="0 0 400 300" className="w-full h-full">
-                    {/* Grid background */}
-                    <line x1="0" y1="260" x2="400" y2="260" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                    <line x1="0" y1="200" x2="400" y2="200" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                    <line x1="0" y1="140" x2="400" y2="140" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                    <line x1="0" y1="80" x2="400" y2="80" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                    <line x1="0" y1="20" x2="400" y2="20" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-
-                    {/* Blue light curve - BLOCKED (minimal) */}
-                    <path
-                      d="M 50 260 Q 100 250 150 260"
-                      fill="rgba(59, 130, 246, 0.1)"
-                      stroke="rgba(59, 130, 246, 0.3)"
-                      strokeWidth="2"
-                      strokeDasharray="4,4"
+                  {/* Concentration Bar */}
+                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-primary to-accent"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${concentrationValue}%` }}
+                      transition={{ duration: 0.8, delay: index * 0.15 }}
+                      viewport={{ once: true, amount: 0.3 }}
                     />
+                  </div>
 
-                    {/* Other light spectrum - passes through */}
-                    <path
-                      d="M 150 260 Q 200 120 250 260 Q 300 140 350 260"
-                      fill="url(#spectrumGradient)"
-                      stroke="rgba(255,255,255,0.3)"
-                      strokeWidth="2"
-                    />
-
-                    {/* Block indicator */}
-                    <line x1="50" y1="240" x2="150" y2="240" stroke="rgb(239, 68, 68)" strokeWidth="3" />
-                    <text x="100" y="235" fill="rgb(239, 68, 68)" fontSize="12" textAnchor="middle" fontWeight="bold">BLOQUEADO 99%</text>
-
-                    {/* Wavelength labels */}
-                    <text x="100" y="290" fill="rgba(255,255,255,0.5)" fontSize="12" textAnchor="middle">400nm</text>
-                    <text x="200" y="290" fill="rgba(255,255,255,0.5)" fontSize="12" textAnchor="middle">500nm</text>
-                    <text x="300" y="290" fill="rgba(255,255,255,0.5)" fontSize="12" textAnchor="middle">600nm</text>
-
-                    {/* Y-axis label */}
-                    <text x="10" y="30" fill="rgba(255,255,255,0.5)" fontSize="11">100</text>
-                    <text x="10" y="270" fill="rgba(255,255,255,0.5)" fontSize="11">0</text>
-                  </svg>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {ingredient.description}
+                  </p>
+                  <p className="text-xs text-primary font-semibold pt-1">
+                    ✓ {ingredient.benefit}
+                  </p>
                 </div>
-                <p className="text-sm text-center text-primary font-semibold mt-4">
-                  99% bloqueado = Tu cerebro puede descansar
-                </p>
               </div>
-            </div>
-          </div>
-
-          {/* Mobile: Before/After slider simulation */}
-          <div className="md:hidden space-y-10">
-            <div className="bg-card/50 border border-border/50 p-8">
-              <h3 className="text-2xl font-bold mb-6 text-center">Sin Lentes</h3>
-              <div className="relative h-72">
-                <svg viewBox="0 0 400 300" className="w-full h-full">
-                  {/* Grid */}
-                  <line x1="0" y1="260" x2="400" y2="260" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
-                  <line x1="0" y1="20" x2="400" y2="20" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
-
-                  {/* Blue light - HIGH */}
-                  <path
-                    d="M 50 260 Q 100 20 150 260"
-                    fill="url(#blueGradient)"
-                    stroke="rgb(59, 130, 246)"
-                    strokeWidth="3"
-                  />
-                  <path
-                    d="M 150 260 Q 200 120 250 260 Q 300 140 350 260"
-                    fill="url(#spectrumGradient)"
-                    stroke="rgba(255,255,255,0.3)"
-                    strokeWidth="3"
-                  />
-                  <text x="100" y="290" fill="rgba(255,255,255,0.7)" fontSize="14" textAnchor="middle" fontWeight="bold">400nm</text>
-                  <text x="300" y="290" fill="rgba(255,255,255,0.7)" fontSize="14" textAnchor="middle" fontWeight="bold">600nm</text>
-
-                  {/* Y-axis labels */}
-                  <text x="20" y="30" fill="rgba(255,255,255,0.5)" fontSize="13">100</text>
-                  <text x="20" y="270" fill="rgba(255,255,255,0.5)" fontSize="13">0</text>
-                </svg>
-              </div>
-              <p className="text-base text-center text-primary font-bold mt-6 leading-relaxed">
-                Luz azul 100%<br />
-                <span className="text-sm text-muted-foreground font-normal">Tu cerebro piensa que es de día</span>
-              </p>
-            </div>
-
-            <div className="bg-primary/10 border border-primary/50 p-8">
-              <h3 className="text-2xl font-bold mb-6 text-center text-primary">Con NOCTE</h3>
-              <div className="relative h-72">
-                <svg viewBox="0 0 400 300" className="w-full h-full">
-                  {/* Grid */}
-                  <line x1="0" y1="260" x2="400" y2="260" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
-                  <line x1="0" y1="20" x2="400" y2="20" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
-
-                  {/* Blue light - BLOCKED */}
-                  <path
-                    d="M 50 260 Q 100 250 150 260"
-                    fill="rgba(59, 130, 246, 0.1)"
-                    stroke="rgba(59, 130, 246, 0.3)"
-                    strokeWidth="3"
-                    strokeDasharray="6,6"
-                  />
-                  <path
-                    d="M 150 260 Q 200 120 250 260 Q 300 140 350 260"
-                    fill="url(#spectrumGradient)"
-                    stroke="rgba(255,255,255,0.3)"
-                    strokeWidth="3"
-                  />
-                  <line x1="50" y1="230" x2="150" y2="230" stroke="rgb(239, 68, 68)" strokeWidth="4" />
-                  <text x="100" y="220" fill="rgb(239, 68, 68)" fontSize="14" textAnchor="middle" fontWeight="bold">99% BLOQUEADO</text>
-                  <text x="100" y="290" fill="rgba(255,255,255,0.7)" fontSize="14" textAnchor="middle" fontWeight="bold">400nm</text>
-                  <text x="300" y="290" fill="rgba(255,255,255,0.7)" fontSize="14" textAnchor="middle" fontWeight="bold">600nm</text>
-
-                  {/* Y-axis labels */}
-                  <text x="20" y="30" fill="rgba(255,255,255,0.5)" fontSize="13">100</text>
-                  <text x="20" y="270" fill="rgba(255,255,255,0.5)" fontSize="13">0</text>
-                </svg>
-              </div>
-              <p className="text-base text-center text-primary font-bold mt-6 leading-relaxed">
-                99% bloqueado<br />
-                <span className="text-sm text-foreground/80 font-normal">Tu cerebro puede prepararse para dormir</span>
-              </p>
-            </div>
-          </div>
+            );
+          })}
         </motion.div>
 
-        {/* Bottom explanation */}
+        {/* Clinical Results */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.4, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-          className="mt-12 md:mt-16 text-center"
+          className="mt-12 md:mt-16 text-center max-w-3xl mx-auto px-4"
         >
-          <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-4 leading-relaxed">
-            Longitud de onda (nm) - La luz azul entre 400-500nm es la que más afecta tu sueño.
-            Los lentes rojos NOCTE bloquean el 99% de este rango crítico.
-          </p>
+          <div className="bg-gradient-to-b from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-8 md:p-10 space-y-4">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+              Resultados Clínicos Probados
+            </h3>
+            <div className="grid grid-cols-3 gap-4 pt-4">
+              <div>
+                <p className="text-2xl md:text-3xl font-bold text-primary">99%</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Hidratación mejorada en 7 días
+                </p>
+              </div>
+              <div>
+                <p className="text-2xl md:text-3xl font-bold text-primary">4+</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Semanas para resultados óptimos
+                </p>
+              </div>
+              <div>
+                <p className="text-2xl md:text-3xl font-bold text-primary">All</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tipos de piel compatibles
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground pt-4">
+              Dermatológicamente testeado. Fórmula coreana auténtica con 30 años de investigación K-beauty.
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Ingredients Visual */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+          className="mt-16 md:mt-24"
+        >
+          <img
+            src={ingredientsImage}
+            alt="Ingredientes del PDRN Serum - PDRN, Niacinamide, Péptidos"
+            className="w-full max-w-4xl mx-auto rounded-xl shadow-[0_10px_40px_rgba(192,139,122,0.2)]"
+            loading="lazy"
+            decoding="async"
+          />
         </motion.div>
       </div>
     </section>

@@ -1,29 +1,29 @@
-import { EyeIcon, BoltIcon, MoonIcon } from "@heroicons/react/24/outline";
+import { ArrowPathIcon, BeakerIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { staggerContainerVariants, staggerItemVariants } from "@/lib/animations";
 
 const benefits = [
   {
-    icon: EyeIcon,
-    title: "Trabaja sin fatiga ocular",
-    description: "Úsalos durante tus sesiones nocturnas de trabajo. Bloquean la luz azul (400-550nm) que quema tus ojos después de 8+ horas de pantalla. Termina tu día sin ojos rojos ni cansancio visual.",
+    icon: ArrowPathIcon,
+    title: "Regeneración Celular Activa",
+    description: "El PDRN (Salmon DNA) estimula la producción natural de colágeno y elastina. Actúa en capas profundas de la piel para revitalizar células dañadas y restaurar su juventud. Resultados visibles desde la primera semana.",
   },
   {
-    icon: BoltIcon,
-    title: "Cero dolores de cabeza",
-    description: "La luz azul de las pantallas causa tensión que termina en migrañas. Con NOCTE, trabajas tranquilo. El 70% de nuestros usuarios reportan eliminación total de dolores de cabeza nocturnos.",
+    icon: BeakerIcon,
+    title: "Glass Skin Effect",
+    description: "Los 5 tipos de péptidos trabajan en sinergia para mejorar la firmeza, elasticidad y textura. Tu piel se vuelve más suave, luminosa y con ese brillo característico del glass skin coreano.",
   },
   {
-    icon: MoonIcon,
-    title: "Dormí profundo (el beneficio real)",
-    description: "Úsalos mientras trabajas o scrolleas de noche. Tu cerebro producirá melatonina naturalmente como si fuera de noche. Resultado: te dormís más rápido y despiertas descansado. No magic pills, solo ciencia.",
+    icon: ClockIcon,
+    title: "Hidratación Profunda 24hs",
+    description: "El Hyaluronic Acid penetra hasta las capas más profundas de la epidermis, manteniendo tu piel hidratada todo el día. Niacinamide unifica el tono y minimiza poros visiblemente.",
   },
 ];
 
 export const BenefitsSection = () => {
   return (
-    <section className="py-8 md:py-16 px-4 md:px-6 bg-black relative">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(239,68,68,0.08),transparent_50%)]" />
+    <section className="py-8 md:py-16 px-4 md:px-6 bg-background relative">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(192,139,122,0.08),transparent_50%)]" />
 
       <div className="container max-w-[1200px] mx-auto relative z-10">
         <motion.div
@@ -34,10 +34,10 @@ export const BenefitsSection = () => {
           className="text-center mb-12 md:mb-20 space-y-3 md:space-y-4"
         >
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold px-4">
-            Trabaja de noche sin sacrificar tu sueño
+            Tu piel, transformada desde adentro
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground font-light max-w-2xl mx-auto">
-            NOCTE no es un accesorio. Es tu protección contra la luz azul que te mantiene despierto cuando deberías estar durmiendo.
+            PDRN (Sodium DNA) + Péptidos actúan en capas profundas de la piel para resultados visibles.
           </p>
         </motion.div>
 
@@ -54,9 +54,13 @@ export const BenefitsSection = () => {
               <motion.div
                 key={index}
                 variants={staggerItemVariants}
-                className="group relative p-8 md:p-10 bg-gradient-to-b from-card to-black border border-border/50 hover:border-primary/50 transition-all duration-300"
+                className="group relative p-8 md:p-10 bg-gradient-to-b from-card to-secondary/30 border border-border/50 hover:border-primary/40 transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:-translate-y-1.5 hover:shadow-[0_12px_32px_rgba(192,139,122,0.18),0_4px_8px_rgba(0,0,0,0.06)]"
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                {/* Shimmer sweep on hover */}
+                <div className="absolute inset-0 -z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/8 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                </div>
 
                 <div className="relative space-y-5 md:space-y-6">
                   <div className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center">

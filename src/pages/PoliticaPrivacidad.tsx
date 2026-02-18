@@ -3,9 +3,9 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 const PoliticaPrivacidad = () => {
   return (
-    <div className="min-h-screen bg-black text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-black/95 backdrop-blur-xl border-b border-border/30">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/30">
         <div className="container max-w-[900px] mx-auto px-4 md:px-6 py-4">
           <Link
             to="/"
@@ -28,7 +28,7 @@ const PoliticaPrivacidad = () => {
           {/* Introducción */}
           <section className="space-y-4">
             <p className="text-muted-foreground leading-relaxed">
-              NOCTE® ("nosotros", "nuestro" o "la empresa") se compromete a proteger la privacidad de sus datos personales
+              SOLENNE® ("nosotros", "nuestro" o "la empresa") se compromete a proteger la privacidad de sus datos personales
               de conformidad con la <strong>Ley N° 6534/2020 de Protección de Datos Personales Crediticios</strong> de la
               República del Paraguay y demás normativas aplicables.
             </p>
@@ -42,14 +42,14 @@ const PoliticaPrivacidad = () => {
           <section className="space-y-4">
             <h2 className="text-xl md:text-2xl font-semibold text-white">1. Responsable del Tratamiento de Datos</h2>
             <p className="text-muted-foreground leading-relaxed">
-              El responsable del tratamiento de sus datos personales es NOCTE®, con domicilio en Asunción, Paraguay.
+              El responsable del tratamiento de sus datos personales es SOLENNE®, con domicilio en Asunción, Paraguay.
             </p>
             <p className="text-muted-foreground leading-relaxed">
               Para cualquier consulta relacionada con el tratamiento de sus datos personales, puede contactarnos a través de:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-              <li>WhatsApp: +595 971 000000</li>
-              <li>Instagram: @nocte.paraguay</li>
+              <li>WhatsApp: +595 991 893587</li>
+              <li>Instagram: @noctepy</li>
             </ul>
           </section>
 
@@ -210,8 +210,8 @@ const PoliticaPrivacidad = () => {
               puede contactarnos a través de:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-              <li>WhatsApp: +595 971 000000</li>
-              <li>Instagram: @nocte.paraguay</li>
+              <li>WhatsApp: +595 991 893587</li>
+              <li>Instagram: @noctepy</li>
             </ul>
           </section>
 
@@ -228,11 +228,11 @@ const PoliticaPrivacidad = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-black border-t border-border/30 py-8 px-4">
+      <footer className="bg-background border-t border-border/30 py-8 px-4">
         <div className="container max-w-[900px] mx-auto text-center">
-          <p className="text-2xl font-bold tracking-tighter opacity-70">NOCTE<sup className="text-[0.5em] ml-0.5">®</sup></p>
+          <p className="text-2xl font-bold tracking-tighter opacity-70">SOLENNE<sup className="text-[0.5em] ml-0.5">®</sup></p>
           <p className="text-[10px] md:text-xs text-muted-foreground/60 font-light mt-4">
-            © {new Date().getFullYear()} NOCTE® Todos los Derechos Reservados
+            © {new Date().getFullYear()} SOLENNE® Todos los Derechos Reservados
           </p>
         </div>
       </footer>

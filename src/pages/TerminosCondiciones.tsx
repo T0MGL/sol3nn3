@@ -3,9 +3,9 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 const TerminosCondiciones = () => {
   return (
-    <div className="min-h-screen bg-black text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-black/95 backdrop-blur-xl border-b border-border/30">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/30">
         <div className="container max-w-[900px] mx-auto px-4 md:px-6 py-4">
           <Link
             to="/"
@@ -28,7 +28,7 @@ const TerminosCondiciones = () => {
           {/* Introducción */}
           <section className="space-y-4">
             <p className="text-muted-foreground leading-relaxed">
-              Bienvenido a NOCTE® Paraguay. Los presentes Términos y Condiciones regulan el uso de nuestro sitio web
+              Bienvenido a SOLENNE. Los presentes Términos y Condiciones regulan el uso de nuestro sitio web
               y la compra de nuestros productos. Al realizar una compra, usted acepta estos términos en su totalidad.
             </p>
             <p className="text-muted-foreground leading-relaxed">
@@ -41,9 +41,9 @@ const TerminosCondiciones = () => {
           <section className="space-y-4">
             <h2 className="text-xl md:text-2xl font-semibold text-white">1. Identificación del Vendedor</h2>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-              <li><strong>Nombre comercial:</strong> NOCTE® Paraguay</li>
+              <li><strong>Nombre comercial:</strong> SOLENNE</li>
               <li><strong>Domicilio:</strong> Asunción, Paraguay</li>
-              <li><strong>Contacto:</strong> WhatsApp +595 971 000000 | Instagram @nocte.paraguay</li>
+              <li><strong>Contacto:</strong> WhatsApp +595 991 893587 | Instagram @noctepy</li>
             </ul>
           </section>
 
@@ -51,14 +51,14 @@ const TerminosCondiciones = () => {
           <section className="space-y-4">
             <h2 className="text-xl md:text-2xl font-semibold text-white">2. Productos y Descripción</h2>
             <p className="text-muted-foreground leading-relaxed">
-              NOCTE® comercializa lentes con tecnología de bloqueo de luz azul diseñados para uso nocturno.
+              SOLENNE® comercializa lentes con tecnología de bloqueo de luz azul diseñados para uso nocturno.
               Las características y especificaciones de los productos se detallan en nuestro sitio web.
             </p>
             <p className="text-muted-foreground leading-relaxed">
               <strong>Contenido del producto:</strong>
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-              <li>1 par de lentes rojos NOCTE®</li>
+              <li>1 par de lentes rojos SOLENNE®</li>
               <li>Garantía de 30 días</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4">
@@ -129,7 +129,7 @@ const TerminosCondiciones = () => {
           <section className="space-y-4">
             <h2 className="text-xl md:text-2xl font-semibold text-white">6. Garantía de Satisfacción</h2>
             <p className="text-muted-foreground leading-relaxed">
-              NOCTE® ofrece una <strong>garantía de satisfacción de 30 días</strong> a partir de la fecha de entrega.
+              SOLENNE® ofrece una <strong>garantía de satisfacción de 30 días</strong> a partir de la fecha de entrega.
             </p>
             <p className="text-muted-foreground leading-relaxed">
               <strong>Cobertura de la garantía:</strong>
@@ -179,7 +179,7 @@ const TerminosCondiciones = () => {
           <section className="space-y-4">
             <h2 className="text-xl md:text-2xl font-semibold text-white">8. Limitación de Responsabilidad</h2>
             <p className="text-muted-foreground leading-relaxed">
-              NOCTE® no será responsable por:
+              SOLENNE® no será responsable por:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
               <li>Uso incorrecto del producto contrario a las instrucciones proporcionadas</li>
@@ -188,7 +188,7 @@ const TerminosCondiciones = () => {
               <li>Errores en los datos de entrega proporcionados por el cliente</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4">
-              <strong>Aviso importante:</strong> Los lentes NOCTE® están diseñados para bloquear luz azul
+              <strong>Aviso importante:</strong> Los lentes SOLENNE® están diseñados para bloquear luz azul
               y mejorar la calidad del sueño. No son un dispositivo médico y no sustituyen el tratamiento
               de trastornos del sueño. Consulte a un profesional de la salud si tiene problemas crónicos de sueño.
             </p>
@@ -199,11 +199,11 @@ const TerminosCondiciones = () => {
             <h2 className="text-xl md:text-2xl font-semibold text-white">9. Propiedad Intelectual</h2>
             <p className="text-muted-foreground leading-relaxed">
               Todos los contenidos del sitio web (textos, imágenes, logotipos, diseños) son propiedad de
-              NOCTE® o se utilizan con autorización. Queda prohibida su reproducción, distribución o
+              SOLENNE® o se utilizan con autorización. Queda prohibida su reproducción, distribución o
               modificación sin autorización expresa por escrito.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              NOCTE® es una marca registrada. Su uso no autorizado constituye una violación de los derechos
+              SOLENNE® es una marca registrada. Su uso no autorizado constituye una violación de los derechos
               de propiedad intelectual.
             </p>
           </section>
@@ -224,7 +224,7 @@ const TerminosCondiciones = () => {
           <section className="space-y-4">
             <h2 className="text-xl md:text-2xl font-semibold text-white">11. Modificaciones</h2>
             <p className="text-muted-foreground leading-relaxed">
-              NOCTE® se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento.
+              SOLENNE® se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento.
               Las modificaciones entrarán en vigencia desde su publicación en el sitio web.
               Las compras realizadas antes de la modificación se regirán por los términos vigentes al momento de la compra.
             </p>
@@ -252,8 +252,8 @@ const TerminosCondiciones = () => {
               Para consultas, reclamos o ejercer sus derechos como consumidor:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-              <li><strong>WhatsApp:</strong> +595 971 000000</li>
-              <li><strong>Instagram:</strong> @nocte.paraguay</li>
+              <li><strong>WhatsApp:</strong> +595 991 893587</li>
+              <li><strong>Instagram:</strong> @noctepy</li>
               <li><strong>Horario de atención:</strong> Lunes a Viernes de 9:00 a 18:00</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4">
@@ -273,11 +273,11 @@ const TerminosCondiciones = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-black border-t border-border/30 py-8 px-4">
+      <footer className="bg-background border-t border-border/30 py-8 px-4">
         <div className="container max-w-[900px] mx-auto text-center">
-          <p className="text-2xl font-bold tracking-tighter opacity-70">NOCTE<sup className="text-[0.5em] ml-0.5">®</sup></p>
+          <p className="text-2xl font-bold tracking-tighter opacity-70">SOLENNE<sup className="text-[0.5em] ml-0.5">®</sup></p>
           <p className="text-[10px] md:text-xs text-muted-foreground/60 font-light mt-4">
-            © {new Date().getFullYear()} NOCTE® Todos los Derechos Reservados
+            © {new Date().getFullYear()} SOLENNE® Todos los Derechos Reservados
           </p>
         </div>
       </footer>

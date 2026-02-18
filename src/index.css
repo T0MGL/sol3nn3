@@ -1,50 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here.
+SOLENNE — Minimal, aspirational beauty & personal care brand.
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 98%;
+    /* SOLENNE Color Palette - Refined & Elegant */
+    /* Primary Colors */
+    --solenne-cream: 22 24% 95%;              /* #F2EDE4 - Main background */
+    --solenne-rose-gold: 18 32% 65%;          /* #C08B7A - Primary accent */
+    --solenne-blush: 21 48% 75%;              /* #D4A99A - Softer accent */
+    --solenne-warm-beige: 25 28% 87%;         /* #E8DDD4 - Secondary bg */
 
-    --card: 0 0% 3%;
-    --card-foreground: 0 0% 98%;
+    /* Secondary Colors */
+    --solenne-deep-rose: 18 26% 50%;          /* #A67265 - Deep accent */
+    --solenne-mauve: 21 28% 72%;              /* #C49A8A - Muted rose */
+    --solenne-ivory: 38 40% 97%;              /* #FAF7F2 - Cream/light */
+    --solenne-warm-sand: 26 28% 77%;          /* #D4BDB0 - Warm neutral */
 
-    --popover: 0 0% 3%;
-    --popover-foreground: 0 0% 98%;
+    /* Text Colors */
+    --solenne-text: 16 15% 16%;               /* #2C2420 - Main text */
+    --solenne-text-light: 18 20% 37%;         /* #6B4F47 - Secondary text */
+    --solenne-light-rose: 22 48% 90%;         /* #EDE0DA - Light rose bg */
 
-    --primary: 0 86% 54%;
-    --primary-foreground: 0 0% 100%;
+    /* Tailwind CSS Variables */
+    --background: 22 24% 95%;                 /* solenne-cream */
+    --foreground: 16 15% 16%;                 /* solenne-text */
 
-    --secondary: 0 0% 8%;
-    --secondary-foreground: 0 0% 98%;
+    --card: 22 24% 95%;                       /* solenne-cream */
+    --card-foreground: 16 15% 16%;            /* solenne-text */
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
+    --popover: 38 40% 97%;                    /* solenne-ivory */
+    --popover-foreground: 16 15% 16%;         /* solenne-text */
 
-    --accent: 43 74% 66%;
-    --accent-foreground: 0 0% 0%;
+    --primary: 18 32% 65%;                    /* solenne-rose-gold */
+    --primary-foreground: 0 0% 100%;          /* white */
+
+    --secondary: 25 28% 87%;                  /* solenne-warm-beige */
+    --secondary-foreground: 16 15% 16%;       /* solenne-text */
+
+    --muted: 26 28% 77%;                      /* solenne-warm-sand */
+    --muted-foreground: 18 20% 37%;           /* solenne-text-light */
+
+    --accent: 21 48% 75%;                     /* solenne-blush */
+    --accent-foreground: 0 0% 100%;           /* white */
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 0 86% 54%;
+    --border: 22 24% 88%;                     /* Slightly darker cream */
+    --input: 22 24% 88%;
+    --ring: 18 32% 65%;                       /* solenne-rose-gold */
 
     --radius: 0.75rem;
 
-    --gold: 43 74% 66%;
-    --neon: 190 100% 50%;
-
-    --gradient-red: linear-gradient(135deg, hsl(0 86% 20% / 0.4), transparent);
-    --gradient-red-strong: linear-gradient(180deg, hsl(0 0% 0%), hsl(0 30% 5%), hsl(0 0% 0%));
-    --glow-red: 0 0 80px hsl(0 86% 54% / 0.3);
-    --glow-gold: 0 0 40px hsl(43 74% 66% / 0.3);
+    --gold: 38 65% 58%;                       /* warm antique gold #C8A84B */
 
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -57,58 +73,20 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Jost', sans-serif;
     font-feature-settings: "liga" 1;
     -webkit-font-smoothing: antialiased;
     letter-spacing: -0.01em;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tighter;
+    font-family: 'Cormorant Garamond', serif;
+    @apply font-semibold tracking-tighter;
     letter-spacing: -0.02em;
   }
 }
 
 @layer utilities {
-  .glow-red {
-    box-shadow: var(--glow-red);
-  }
-
-  .glow-gold {
-    box-shadow: var(--glow-gold);
-  }
-
-  .gradient-red-overlay {
-    background: var(--gradient-red);
-  }
-
-  .animate-glow {
-    animation: glow 2s ease-in-out infinite alternate;
-  }
-
-  @keyframes glow {
-    from {
-      box-shadow: 0 0 20px hsl(0 91% 59% / 0.3);
-    }
-    to {
-      box-shadow: 0 0 40px hsl(0 91% 59% / 0.6);
-    }
-  }
-
-  /* GPU-accelerated glow pulse for sticky button */
-  .animate-glow-pulse {
-    animation: glow-pulse 2s ease-in-out infinite;
-    will-change: box-shadow;
-  }
-
-  @keyframes glow-pulse {
-    0%, 100% {
-      box-shadow: 0 0 30px hsl(0 86% 54% / 0.3);
-    }
-    50% {
-      box-shadow: 0 0 40px hsl(0 86% 54% / 0.5);
-    }
-  }
-
   /* Hide scrollbar for carousel */
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -119,51 +97,96 @@ All colors MUST be HSL.
     display: none;
   }
 
-  /* Minimalist animated gradient for CTAs */
-  .animate-gradient-shift {
-    background-size: 200% 100%;
-    animation: gradient-shift 3s ease-in-out infinite;
-    will-change: background-position;
+  /* Premium animations - Shimmer, Float, Glow */
+  @keyframes shimmer-sweep {
+    0% {
+      transform: translateX(-100%) skewX(-12deg);
+    }
+    100% {
+      transform: translateX(250%) skewX(-12deg);
+    }
   }
 
-  @keyframes gradient-shift {
+  @keyframes float-gentle {
     0%, 100% {
-      background-position: 0% 50%;
+      transform: translateY(0px);
     }
     50% {
-      background-position: 100% 50%;
+      transform: translateY(-8px);
     }
   }
 
-  /* Subtle shine effect for premium feel */
-  .animate-shine {
+  @keyframes glow-breathe {
+    0%, 100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+  }
+
+  @keyframes text-reveal {
+    0% {
+      clip-path: inset(0 100% 0 0);
+    }
+    100% {
+      clip-path: inset(0 0% 0 0);
+    }
+  }
+
+  /* Shimmer host with ::after pseudo-element */
+  .shimmer-host {
     position: relative;
     overflow: hidden;
   }
 
-  .animate-shine::before {
+  .shimmer-host::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.1),
-      transparent
+      105deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.18) 50%,
+      transparent 60%
     );
-    animation: shine 3s ease-in-out infinite;
-    will-change: left;
+    transform: translateX(-100%) skewX(-12deg);
+    pointer-events: none;
   }
 
-  @keyframes shine {
-    0% {
-      left: -100%;
-    }
-    50%, 100% {
-      left: 100%;
+  .shimmer-host:hover::after {
+    animation: shimmer-sweep 0.65s ease-in-out;
+  }
+
+  /* Animate utilities */
+  .animate-float {
+    animation: float-gentle 5s ease-in-out infinite;
+  }
+
+  .animate-glow-breathe {
+    animation: glow-breathe 4s ease-in-out infinite;
+  }
+
+  /* Grain texture overlay - Premium paper feel */
+  .grain-overlay::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float,
+    .animate-glow-breathe,
+    .shimmer-host::after {
+      animation: none;
     }
   }
 }

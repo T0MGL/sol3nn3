@@ -244,7 +244,7 @@ const CheckoutForm = ({
             </div>
             {paymentMethod === 'cash_on_delivery' && (
               <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3 h-3 text-foreground" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -279,7 +279,7 @@ const CheckoutForm = ({
             </div>
             {paymentMethod === 'card' && (
               <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3 h-3 text-foreground" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -398,7 +398,7 @@ const CheckoutForm = ({
           className={`
             relative p-4 rounded-xl border cursor-pointer transition-all duration-300 group
             ${isPriorityShipping
-              ? 'bg-primary/5 border-primary/40 shadow-[0_0_20px_-10px_rgba(239,68,68,0.3)]'
+              ? 'bg-primary/5 border-primary/40 shadow-[0_0_20px_-10px_rgba(192,139,122,0.3)]'
               : 'bg-secondary/30 border-border/40 hover:bg-secondary/50 hover:border-border/60'
             }
           `}
@@ -412,7 +412,7 @@ const CheckoutForm = ({
                 : 'border-muted-foreground/40 group-hover:border-primary/50'
               }
             `}>
-              {isPriorityShipping && <CheckIcon className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+              {isPriorityShipping && <CheckIcon className="w-3.5 h-3.5 text-foreground" strokeWidth={3} />}
             </div>
 
             {/* Content */}
@@ -633,7 +633,7 @@ export const StripeCheckoutModal = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 bg-black/60 z-[110] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-background/60 z-[110] flex items-center justify-center p-4"
           onClick={onClose}
         >
           <motion.div
@@ -642,7 +642,7 @@ export const StripeCheckoutModal = ({
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[550px] bg-gradient-to-b from-secondary to-black border border-border/50 rounded-xl p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] max-h-[90dvh] overflow-y-auto"
+            className="relative w-full max-w-[550px] bg-gradient-to-b from-secondary to-background border border-border/50 rounded-xl p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] max-h-[90dvh] overflow-y-auto"
           >
             {/* Close Button */}
             <button
@@ -718,10 +718,10 @@ export const StripeCheckoutModal = ({
                     appearance: {
                       theme: 'night',
                       variables: {
-                        colorPrimary: '#EF4444',
-                        colorBackground: '#000000',
-                        colorText: '#F9FAFB',
-                        colorDanger: '#DC2626',
+                        colorPrimary: '#C08B7A',
+                        colorBackground: '#F2EDE4',
+                        colorText: '#2C2420',
+                        colorDanger: '#A67265',
                         fontFamily: 'system-ui, -apple-system, sans-serif',
                         fontSizeBase: '16px',
                         borderRadius: '8px',
@@ -749,7 +749,7 @@ export const StripeCheckoutModal = ({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-50 flex items-center justify-center bg-black/95 p-6 rounded-xl backdrop-blur-sm"
+                  className="absolute inset-0 z-50 flex items-center justify-center bg-background/95 p-6 rounded-xl backdrop-blur-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="text-center space-y-5 max-w-md w-full">
@@ -828,12 +828,12 @@ export const StripeCheckoutModal = ({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6 rounded-xl backdrop-blur-sm"
+                  className="absolute inset-0 z-[60] flex items-center justify-center bg-background/95 p-6 rounded-xl backdrop-blur-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="text-center space-y-4 max-w-sm w-full">
                     <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
-                    <h3 className="text-xl md:text-2xl font-bold text-white">Procesando tu pedido...</h3>
+                    <h3 className="text-xl md:text-2xl font-bold text-foreground">Procesando tu pedido...</h3>
                     <p className="text-sm text-gray-400 leading-relaxed">
                       Estamos confirmando tu orden y enviando los detalles. Esto tomará solo unos segundos.
                     </p>

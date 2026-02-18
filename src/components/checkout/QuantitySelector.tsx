@@ -25,7 +25,7 @@ const BUNDLES = [
     quantity: 2,
     price: 299000,
     unitPrice: 149500,
-    label: "Pack Pareja",
+    label: "Kit Dúo",
     badge: "🔥 MÁS VENDIDO: Ahorrás Gs. 99.000",
     highlighted: true,
     savings: 99000, // 398.000 - 299.000
@@ -35,7 +35,7 @@ const BUNDLES = [
     quantity: 3,
     price: 429000,
     unitPrice: 143000,
-    label: "Pack Oficina",
+    label: "Kit Familiar",
     badge: "Super Ahorro",
     highlighted: false,
     savings: 168000, // 597.000 - 429.000
@@ -103,7 +103,7 @@ export const QuantitySelector = ({ isOpen, onClose, onContinue }: QuantitySelect
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-background/60 z-[100] flex items-center justify-center p-4"
           onClick={onClose}
         >
           <motion.div
@@ -112,7 +112,7 @@ export const QuantitySelector = ({ isOpen, onClose, onContinue }: QuantitySelect
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[500px] bg-gradient-to-b from-secondary to-black border border-border/50 rounded-xl p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] max-h-[90dvh] overflow-y-auto"
+            className="relative w-full max-w-[500px] bg-gradient-to-b from-secondary to-background border border-border/50 rounded-xl p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] max-h-[90dvh] overflow-y-auto"
           >
             {/* Close Button */}
             <button
@@ -127,7 +127,7 @@ export const QuantitySelector = ({ isOpen, onClose, onContinue }: QuantitySelect
               {/* Headline */}
               <div className="space-y-4 text-center">
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
-                  Elige tu Pack NOCTE<sup className="text-[0.3em]">®</sup>
+                  Elegí tu Pack SOLENNE
                 </h2>
 
                 <p className="text-base text-muted-foreground leading-relaxed">
@@ -168,7 +168,7 @@ export const QuantitySelector = ({ isOpen, onClose, onContinue }: QuantitySelect
                         <div className={`
                           absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap
                           ${bundle.highlighted
-                            ? 'bg-gradient-to-r from-primary to-[#DC2626] text-white shadow-lg'
+                            ? 'bg-gradient-to-r from-primary to-[#A67265] text-foreground shadow-lg'
                             : 'bg-gold text-black'
                           }
                         `}>

@@ -5,18 +5,18 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-lg",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-lg overflow-hidden",
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-b from-[#EF4444] to-[#DC2626] text-primary-foreground shadow-[0_4px_6px_rgba(0,0,0,0.1)] hover:shadow-lg hover:from-[#DC2626] hover:to-[#B91C1C] active:scale-[0.98]",
-        destructive: "bg-destructive text-destructive-foreground shadow-[0_4px_6px_rgba(0,0,0,0.1)] hover:bg-destructive/90 hover:shadow-lg",
-        outline: "border border-gold/30 bg-transparent hover:bg-gold/10 hover:border-gold/50 shadow-sm",
-        secondary: "bg-secondary text-secondary-foreground shadow-[0_4px_6px_rgba(0,0,0,0.1)] hover:bg-secondary/80 hover:shadow-lg",
-        ghost: "hover:bg-muted/50 hover:text-accent-foreground",
+        default: "bg-gradient-to-b from-[#C08B7A] to-[#A67265] text-primary-foreground shadow-[0_4px_6px_rgba(0,0,0,0.05)] hover:shadow-md hover:from-[#A67265] hover:to-[#9B6B5A] active:scale-[0.98]",
+        destructive: "bg-destructive text-destructive-foreground shadow-[0_4px_6px_rgba(0,0,0,0.05)] hover:bg-destructive/90 hover:shadow-md",
+        outline: "border border-primary/40 bg-transparent hover:bg-primary/5 hover:border-primary/60 shadow-sm",
+        secondary: "bg-secondary text-secondary-foreground shadow-[0_4px_6px_rgba(0,0,0,0.05)] hover:bg-secondary/80 hover:shadow-md",
+        ghost: "hover:bg-muted/40 hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline hover:text-primary/80",
-        hero: "bg-gradient-to-r from-[#EF4444] via-[#DC2626] to-[#EF4444] text-white shadow-[0_4px_6px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_16px_rgba(239,68,68,0.3)] active:scale-[0.98] font-semibold animate-gradient-shift animate-shine",
-        premium: "bg-secondary/50 text-card-foreground border border-gold/30 shadow-[0_4px_6px_rgba(0,0,0,0.1)] hover:border-gold/50 hover:bg-secondary/70 hover:shadow-lg",
+        hero: "shimmer-host bg-gradient-to-b from-[#C08B7A] to-[#A67265] text-primary-foreground shadow-[0_4px_6px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_28px_rgba(192,139,122,0.45)] hover:from-[#A67265] hover:to-[#9B6B5A] active:scale-[0.98] font-semibold",
+        premium: "bg-secondary/40 text-foreground border border-primary/30 shadow-[0_4px_6px_rgba(0,0,0,0.05)] hover:border-primary/50 hover:bg-secondary/60 hover:shadow-md",
       },
       size: {
         default: "h-10 px-4 py-2",
