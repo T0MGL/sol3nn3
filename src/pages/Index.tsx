@@ -61,7 +61,7 @@ const Index = () => {
 
   const [checkoutData, setCheckoutData] = useState({
     quantity: 1,
-    totalPrice: 229000, // Default to single unit price
+    totalPrice: 189000, // Default to single unit price
     colors: null as [string, string] | null,
     location: "",
     name: "",
@@ -153,48 +153,49 @@ const Index = () => {
     deliveryType: 'común' | 'premium';
     finalTotal: number;
   }) => {
-    // INSTANT transition - no waiting for API calls
-    setCheckoutData((prev) => {
-      // Send order to backend in background (fire-and-forget)
-      sendOrderInBackground({
-        name: prev.name,
-        phone: prev.phone,
-        location: prev.location,
-        address: prev.address,
-        lat: prev.lat,
-        long: prev.long,
-        quantity: prev.quantity,
-        total: result.finalTotal,
-        orderNumber: prev.orderNumber,
-        paymentIntentId: result.paymentIntentId,
-        email: undefined,
-        paymentType: result.paymentType,
-        isPaid: result.isPaid,
-        deliveryType: result.deliveryType,
-        productName: 'PDRN SERUM',
-      });
+    // Read current checkout data directly (not inside the state setter to avoid side effects in a pure function)
+    const data = checkoutData;
 
-      // Track Purchase conversion event (also non-blocking)
-      trackPurchase({
-        value: result.finalTotal,
-        currency: 'PYG',
-        content_name: prev.quantity === 1
-          ? 'SOLENNE Beauty & Personal Care'
-          : `SOLENNE Beauty & Personal Care - Pack x${prev.quantity}`,
-        content_ids: prev.quantity === 1
-          ? ['solenne-products']
-          : [`solenne-products-${prev.quantity}pack`],
-        num_items: prev.quantity,
-        order_id: prev.orderNumber,
-      });
-
-      return { ...prev, paymentIntentId: result.paymentIntentId, totalPrice: result.finalTotal };
+    // Send order to backend in background (fire-and-forget) - OUTSIDE the state setter
+    sendOrderInBackground({
+      name: data.name,
+      phone: data.phone,
+      location: data.location,
+      address: data.address,
+      lat: data.lat,
+      long: data.long,
+      quantity: data.quantity,
+      total: result.finalTotal,
+      orderNumber: data.orderNumber,
+      paymentIntentId: result.paymentIntentId,
+      email: undefined,
+      paymentType: result.paymentType,
+      isPaid: result.isPaid,
+      deliveryType: result.deliveryType,
+      productName: 'PDRN SERUM',
     });
+
+    // Track Purchase conversion event (also non-blocking)
+    trackPurchase({
+      value: result.finalTotal,
+      currency: 'PYG',
+      content_name: data.quantity === 1
+        ? 'SOLENNE Beauty & Personal Care'
+        : `SOLENNE Beauty & Personal Care - Pack x${data.quantity}`,
+      content_ids: data.quantity === 1
+        ? ['solenne-products']
+        : [`solenne-products-${data.quantity}pack`],
+      num_items: data.quantity,
+      order_id: data.orderNumber,
+    });
+
+    // Pure state update (no side effects inside)
+    setCheckoutData((prev) => ({ ...prev, paymentIntentId: result.paymentIntentId, totalPrice: result.finalTotal }));
 
     // INSTANT UI update - show success immediately
     setShowStripeCheckout(false);
     setShowSuccess(true);
-  }, []);
+  }, [checkoutData]);
 
   const handleBackToPhoneForm = useCallback(() => {
     setShowStripeCheckout(false);

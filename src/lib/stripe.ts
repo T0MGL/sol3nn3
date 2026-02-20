@@ -38,9 +38,11 @@ export const PRODUCT_CONFIG = {
 
 /**
  * API configuration
+ * En producción (Vercel) VITE_API_URL debe estar vacío para usar rutas relativas /api/*.
+ * En desarrollo local apunta a http://localhost:3000.
  */
 export const API_CONFIG = {
-  baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseUrl: import.meta.env.VITE_API_URL ?? '',
 };
 
 /**
