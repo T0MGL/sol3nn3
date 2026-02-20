@@ -83,9 +83,9 @@ export const StickyBuyButton = ({ onBuyClick }: StickyBuyButtonProps) => {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
               <div>
                 <p className="text-xs md:text-sm text-muted-foreground">
-                  <span className="line-through text-foreground/40">Gs. 239.000</span>
+                  <span className="line-through text-foreground/40">Gs. 246.000</span>
                   {" "}
-                  <span className="text-xl md:text-2xl font-bold text-foreground ml-2">Gs. 229.000</span>
+                  <span className="text-xl md:text-2xl font-bold text-foreground ml-2">Gs. 189.000</span>
                 </p>
                 <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
                   <TruckIcon className="w-4 h-4 text-gold/90" />
