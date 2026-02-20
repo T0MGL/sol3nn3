@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { DeliveryBanner } from "@/components/DeliveryBanner";
 import { HeroSection } from "@/components/HeroSection";
 import { StickyBuyButton } from "@/components/StickyBuyButton";
-import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { OfferCTA } from "@/components/OfferCTA";
 import { CustomCursor } from "@/components/CustomCursor";
 import { ScrollProgress } from "@/components/ScrollProgress";
@@ -456,9 +455,6 @@ const Index = () => {
 
       {/* Sticky Buy Button */}
       <StickyBuyButton onBuyClick={handleBuyClick} />
-
-      {/* WhatsApp Button */}
-      <WhatsAppButton />
 
       {/* Custom Cursor (Premium Desktop Only) */}
       <CustomCursor />

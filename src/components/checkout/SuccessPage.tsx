@@ -18,40 +18,6 @@ interface SuccessPageProps {
 }
 
 export const SuccessPage = ({ isOpen, orderData, onClose }: SuccessPageProps) => {
-  const handleWhatsApp = () => {
-    const adminPhoneNumber = "595991893587";
-
-    // Build location line based on available data (priority: GPS > Manual Address > City)
-    let locationLine = '';
-    if (orderData.googleMapsLink) {
-      // If we have GPS coordinates, use the Google Maps link
-      locationLine = `📍 ${orderData.googleMapsLink}`;
-    } else if (orderData.address && orderData.address.trim().length > 0) {
-      // If user entered a manual address, use that
-      locationLine = `📍 ${orderData.address}`;
-    } else if (orderData.location) {
-      // Fallback to just the city/location
-      locationLine = `📍 ${orderData.location}`;
-    }
-
-    const message = encodeURIComponent(
-      `Hola *SOLENNE* 👋
-
-Acabo de completar mi pedido!
-
-Orden: ${orderData.orderNumber}
-✨ ${orderData.products}
-💰 ${orderData.total}
-
-Mis datos:
-👤 ${orderData.name}
-📞 ${orderData.phone}
-${locationLine}
-
-Quedo atento a la confirmación de envío. ¡Gracias! 🙌`
-    );
-    window.open(`https://wa.me/${adminPhoneNumber}?text=${message}`, "_blank");
-  };
 
   return (
     <AnimatePresence>
@@ -135,15 +101,6 @@ Quedo atento a la confirmación de envío. ¡Gracias! 🙌`
 
               {/* CTAs */}
               <div className="space-y-3 pt-4">
-                <Button
-                  onClick={handleWhatsApp}
-                  variant="hero"
-                  size="xl"
-                  className="w-full h-12 md:h-14 text-sm md:text-base font-bold"
-                >
-                  Escribirnos por WhatsApp (Opcional)
-                </Button>
-
                 <Button
                   onClick={onClose}
                   variant="outline"
