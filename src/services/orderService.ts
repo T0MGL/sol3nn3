@@ -1,10 +1,10 @@
 /**
  * Order Service
- * Handles order data submission to backend
- * The backend handles routing to n8n and Ordefy
+ * Llama directamente al webhook de n8n desde el frontend.
+ * Sin backend intermedio.
  */
 
-import { API_CONFIG } from '@/lib/stripe';
+const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || 'https://n8n.thebrightidea.ai/webhook/nocteorder';
 
 export interface OrderData {
   name: string;
@@ -24,152 +24,84 @@ export interface OrderData {
   productName: string;
 }
 
-export interface GeocodeResponse {
-  googleMapsLink: string;
-  address: string;
-  lat?: number;
-  lng?: number;
-  usesFallback: boolean;
-  error?: string;
-}
-
 export interface SendOrderResponse {
   success: boolean;
   message: string;
   orderNumber: string;
-  n8nResponse?: unknown;
-  ordefyResponse?: unknown;
   error?: string;
 }
 
 /**
- * Get Google Maps link for an address
- * Uses backend geocoding API (with Google Maps API if configured)
- */
-export async function getGoogleMapsLink(
-  city: string,
-  address?: string
-): Promise<GeocodeResponse> {
-  try {
-    const response = await fetch(`${API_CONFIG.baseUrl}/api/geocode`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        city,
-        address: address || '',
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Geocoding failed: ${response.status}`);
-    }
-
-    const data: GeocodeResponse = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error getting Google Maps link:', error);
-
-    // Fallback: generate simple link on client side
-    const fullAddress = address ? `${address}, ${city}` : city;
-    const encodedAddress = encodeURIComponent(fullAddress);
-
-    return {
-      googleMapsLink: `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`,
-      address: fullAddress,
-      usesFallback: true,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-}
-
-/**
- * Send order data to backend
- * Backend handles routing to n8n webhook and Ordefy
- * This is called after user completes all checkout steps
+ * Envía la orden directamente al webhook de n8n desde el browser.
  */
 export async function sendOrderToN8N(
   orderData: OrderData
 ): Promise<SendOrderResponse> {
   try {
-    console.log('📦 Sending order to backend...', orderData);
+    console.log('📦 Enviando orden directo a n8n...', orderData);
 
-    // Generate Google Maps link (more precise version)
+    // Google Maps link desde coordenadas GPS si están disponibles
     let googleMapsLink: string | null = null;
-
-    // If we have lat/long from geolocation, use those (most accurate)
     if (orderData.lat && orderData.long) {
       googleMapsLink = `https://www.google.com/maps?q=${orderData.lat},${orderData.long}`;
-      console.log('📍 Google Maps link from coordinates:', googleMapsLink);
     } else if (orderData.address && orderData.location) {
-      // If we have both address and location, use geocoding for precision
-      try {
-        const geocodeResult = await getGoogleMapsLink(
-          orderData.location,
-          orderData.address
-        );
-        
-        // ONLY use the link if it's NOT a fallback (precise location found)
-        if (!geocodeResult.usesFallback) {
-          googleMapsLink = geocodeResult.googleMapsLink;
-          console.log('📍 Google Maps link from geocoding:', googleMapsLink);
-        } else {
-          console.log('⚠️ Geocoding returned fallback link, ignoring for Ordefy to avoid fake location links.');
-        }
-      } catch (error) {
-        console.warn('⚠️ Could not generate Google Maps link:', error);
-        // Continue without link
-      }
-    } else if (orderData.location) {
-      // Fallback: just use location/city - DO NOT generate a map link here
-      // This ensures we send text address to Ordefy instead of a search link
-      console.log('ℹ️ Location only provided, skipping Google Maps search link generation.');
+      const fullAddress = `${orderData.address}, ${orderData.location}`;
+      googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
     }
 
-    // Send to backend (which handles n8n and Ordefy)
-    const response = await fetch(`${API_CONFIG.baseUrl}/api/send-order`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const payload = {
+      orderNumber: orderData.orderNumber,
+      timestamp: new Date().toISOString(),
+      customer: {
+        name: orderData.name,
+        phone: orderData.phone,
+        email: orderData.email || null,
       },
-      body: JSON.stringify({
-        ...orderData,
+      location: {
+        city: orderData.location,
+        address: orderData.address || '',
         googleMapsLink,
-      }),
+      },
+      order: {
+        quantity: orderData.quantity,
+        product: orderData.productName,
+        total: orderData.total,
+        currency: 'PYG',
+        deliveryType: orderData.deliveryType,
+      },
+      payment: {
+        method: orderData.paymentType,
+        status: orderData.isPaid === true || orderData.paymentType === 'Card' ? 'paid' : 'pending',
+        isPaid: orderData.isPaid === true || orderData.paymentType === 'Card',
+        paymentIntentId: orderData.paymentIntentId || null,
+      },
+      source: 'selenne-landing-page',
+    };
+
+    const response = await fetch(N8N_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      throw new Error(`n8n respondió con status: ${response.status}`);
     }
 
-    const result: SendOrderResponse = await response.json();
-    console.log('✅ Order sent successfully:', result);
+    console.log('✅ Orden enviada a n8n exitosamente');
+    return { success: true, message: 'Orden enviada', orderNumber: orderData.orderNumber };
 
-    return result;
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Failed to send order';
-    console.error('❌ Error sending order:', errorMessage);
-
-    return {
-      success: false,
-      message: errorMessage,
-      orderNumber: orderData.orderNumber,
-      error: errorMessage,
-    };
+    const errorMessage = error instanceof Error ? error.message : 'Error al enviar orden';
+    console.error('❌ Error enviando orden a n8n:', errorMessage);
+    return { success: false, message: errorMessage, orderNumber: orderData.orderNumber, error: errorMessage };
   }
 }
 
 /**
- * Fire-and-forget version of sendOrderToN8N
- * Sends order in background without blocking UI
- * Errors are logged but don't affect user flow
+ * Fire-and-forget: envía la orden en background sin bloquear la UI.
  */
 export function sendOrderInBackground(orderData: OrderData): void {
-  // Use setTimeout to ensure this runs after the current call stack clears
-  // This makes the UI transition instant
   setTimeout(() => {
     sendOrderToN8N(orderData).catch((error) => {
       console.error('❌ Background order send failed:', error);
@@ -178,16 +110,13 @@ export function sendOrderInBackground(orderData: OrderData): void {
 }
 
 /**
- * Generate a unique order number
- * Format: #NOC-MMDD-XXXX (e.g., #NOC-0121-5847)
+ * Genera número de orden único.
+ * Formato: #NOC-MMDD-XXXX
  */
 export function generateOrderNumber(): string {
   const date = new Date();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
-  const random = Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, '0');
-
+  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
   return `#NOC-${month}${day}-${random}`;
 }
