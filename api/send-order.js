@@ -29,9 +29,10 @@ function buildOrdefyShippingAddress({ lat, long, address, city, googleMapsLink }
 }
 
 function getSku(quantity) {
-  if (quantity === 1) return 'SELENNE-PACK-1';
-  if (quantity === 2) return 'SELENNE-PACK-2';
-  return `SELENNE-PACK-${quantity}`;
+  if (quantity === 1) return 'SOLENNE-PDRN-30ML';
+  if (quantity === 2) return 'SOLENNE-PDRN-DUO';
+  if (quantity === 3) return 'SOLENNE-PDRN-FAMILIAR';
+  return 'SOLENNE-PDRN-FAMILIAR';
 }
 
 async function sendToOrdefy(orderData) {
@@ -56,7 +57,7 @@ async function sendToOrdefy(orderData) {
   ];
 
   if (isPriority) {
-    items.push({ sku: 'SELENNE-ENVIO-PRIORITARIO', name: 'Envío Prioritario VIP', quantity: 1, price: priorityCost });
+    items.push({ sku: 'SOLENNE-ENVIO-PRIORITARIO', name: 'Envio Prioritario VIP', quantity: 1, price: priorityCost });
   }
 
   const paymentStatus = isPaid === true || paymentType === 'Card' ? 'paid' : 'pending';

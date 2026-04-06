@@ -1,9 +1,10 @@
 /**
  * Order Service
- * Llama directamente al webhook de n8n desde el frontend.
- * Sin backend intermedio.
+ * Envia ordenes al serverless function /api/send-order que forwardea a n8n Y Ordefy.
+ * Fallback: envia directo a n8n si la serverless function falla.
  */
 
+const API_URL = import.meta.env.VITE_API_URL || '';
 const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || 'https://n8n.thebrightidea.ai/webhook/solenneorder';
 
 export interface OrderData {
@@ -32,15 +33,13 @@ export interface SendOrderResponse {
 }
 
 /**
- * Envía la orden directamente al webhook de n8n desde el browser.
+ * Envia la orden via serverless function (n8n + Ordefy en paralelo).
+ * Fallback: envia directo a n8n si /api/send-order no esta disponible.
  */
 export async function sendOrderToN8N(
   orderData: OrderData
 ): Promise<SendOrderResponse> {
   try {
-    console.log('📦 Enviando orden directo a n8n...', orderData);
-
-    // Google Maps link desde coordenadas GPS si están disponibles
     let googleMapsLink: string | null = null;
     if (orderData.lat && orderData.long) {
       googleMapsLink = `https://www.google.com/maps?q=${orderData.lat},${orderData.long}`;
@@ -50,51 +49,63 @@ export async function sendOrderToN8N(
     }
 
     const payload = {
+      name: orderData.name,
+      phone: orderData.phone,
+      email: orderData.email || null,
+      location: orderData.location,
+      address: orderData.address || '',
+      lat: orderData.lat || null,
+      long: orderData.long || null,
+      googleMapsLink,
+      quantity: orderData.quantity,
+      total: orderData.total,
       orderNumber: orderData.orderNumber,
-      timestamp: new Date().toISOString(),
-      customer: {
-        name: orderData.name,
-        phone: orderData.phone,
-        email: orderData.email || null,
-      },
-      location: {
-        city: orderData.location,
-        address: orderData.address || '',
-        googleMapsLink,
-      },
-      order: {
-        quantity: orderData.quantity,
-        product: orderData.productName,
-        total: orderData.total,
-        currency: 'PYG',
-        deliveryType: orderData.deliveryType,
-      },
-      payment: {
-        method: orderData.paymentType,
-        status: orderData.isPaid === true || orderData.paymentType === 'Card' ? 'paid' : 'pending',
-        isPaid: orderData.isPaid === true || orderData.paymentType === 'Card',
-        paymentIntentId: orderData.paymentIntentId || null,
-      },
-      source: 'selenne-landing-page',
+      paymentType: orderData.paymentType,
+      isPaid: orderData.isPaid === true || orderData.paymentType === 'Card',
+      deliveryType: orderData.deliveryType,
+      productName: orderData.productName,
+      paymentIntentId: orderData.paymentIntentId || null,
     };
 
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    // Try serverless function first (sends to both n8n AND Ordefy)
+    const apiEndpoint = `${API_URL}/api/send-order`;
+    const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      throw new Error(`n8n respondió con status: ${response.status}`);
+      throw new Error(`API responded with status: ${response.status}`);
     }
 
-    console.log('✅ Orden enviada a n8n exitosamente');
-    return { success: true, message: 'Orden enviada', orderNumber: orderData.orderNumber };
+    const result = await response.json();
+    return { success: result.success, message: 'Orden enviada', orderNumber: result.orderNumber || orderData.orderNumber };
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Error al enviar orden';
-    console.error('❌ Error enviando orden a n8n:', errorMessage);
-    return { success: false, message: errorMessage, orderNumber: orderData.orderNumber, error: errorMessage };
+    // Fallback: send directly to n8n (email will work, Ordefy won't)
+    try {
+      const fallbackPayload = {
+        orderNumber: orderData.orderNumber,
+        timestamp: new Date().toISOString(),
+        customer: { name: orderData.name, phone: orderData.phone, email: orderData.email || null },
+        location: { city: orderData.location, address: orderData.address || '' },
+        order: { quantity: orderData.quantity, product: orderData.productName, total: orderData.total, currency: 'PYG' },
+        payment: { method: orderData.paymentType, isPaid: orderData.isPaid === true || orderData.paymentType === 'Card' },
+        source: 'selenne-landing-page',
+      };
+
+      await fetch(N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fallbackPayload),
+      });
+
+      return { success: true, message: 'Orden enviada (fallback)', orderNumber: orderData.orderNumber };
+    } catch (fallbackError) {
+      const errorMessage = fallbackError instanceof Error ? fallbackError.message : 'Error al enviar orden';
+      return { success: false, message: errorMessage, orderNumber: orderData.orderNumber, error: errorMessage };
+    }
   }
 }
 
