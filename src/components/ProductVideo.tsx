@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { staggerContainerVariants, staggerItemVariants } from "@/lib/animations";
-// import productVideo from "@/assets/nocteglasses.mp4"; // Video file not available
 import { useRef, useEffect } from "react";
 
 export const ProductVideo = () => {

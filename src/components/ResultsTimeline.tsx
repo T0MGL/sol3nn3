@@ -181,7 +181,7 @@ export const ResultsTimeline: React.FC = () => {
               transition={{ duration: 0.4 }}
             >
               <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">
-                {steps[activeIndex].label} — {steps[activeIndex].timeframe}
+                {steps[activeIndex].label}, {steps[activeIndex].timeframe}
               </h3>
               <ul className="space-y-2">
                 {steps[activeIndex].benefits.map((benefit, idx) => (

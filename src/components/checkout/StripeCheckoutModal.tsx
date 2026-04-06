@@ -388,8 +388,8 @@ const CheckoutForm = ({
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground leading-tight">
               {customerData.quantity === 2
-                ? 'Lentes Rojos Premium Anti-Luz Azul - Pack x2'
-                : 'Lentes Rojos Premium Anti-Luz Azul'}
+                ? 'PDRN Pink Peptide Serum - Kit Duo (x2)'
+                : 'PDRN Pink Peptide Serum 30ml'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Cantidad: {customerData.quantity}
@@ -655,8 +655,8 @@ const CODCheckoutForm = ({
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground leading-tight">
               {customerData.quantity === 2
-                ? 'Lentes Rojos Premium Anti-Luz Azul - Pack x2'
-                : 'Lentes Rojos Premium Anti-Luz Azul'}
+                ? 'PDRN Pink Peptide Serum - Kit Duo (x2)'
+                : 'PDRN Pink Peptide Serum 30ml'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">Cantidad: {customerData.quantity}</p>
           </div>
@@ -750,9 +750,9 @@ export const StripeCheckoutModal = ({
 
   // User contacts via WhatsApp
   const handleWhatsAppContact = () => {
-    const phone = "595991893587";
+    const phone = import.meta.env.VITE_WHATSAPP_NUMBER || '595976287180';
     const message = encodeURIComponent(
-      `Hola! Estaba por comprar NOCTE pero tengo algunas dudas. Mi orden: ${customerData.orderNumber}`
+      `Hola! Estaba por comprar en Solenne pero tengo algunas dudas. Mi orden: ${customerData.orderNumber}`
     );
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
     setShowExitConfirm(false);

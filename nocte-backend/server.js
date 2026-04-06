@@ -1,5 +1,5 @@
 /**
- * NOCTE Backend API - Development Server
+ * Solenne Backend API - Development Server
  * Stripe Payment Processing for localhost
  */
 
@@ -31,9 +31,8 @@ const corsOptions = {
       'http://127.0.0.1:8081',
       'http://127.0.0.1:8082',
       'http://127.0.0.1:8083',
-      'https://nocte.studio',           // ← AGREGAR
-      'https://www.nocte.studio',       // ← AGREGAR
-      'https://api.nocte.studio'
+      'https://bysolenne.shop',
+      'https://www.bysolenne.shop'
     ];
 
     if (allowedOrigins.indexOf(origin) !== -1) {
@@ -63,7 +62,7 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'NOCTE Backend API is running',
+    message: 'Solenne Backend API is running',
     version: '1.0.0',
     stripe: !!process.env.STRIPE_SECRET_KEY
   });
@@ -137,9 +136,9 @@ app.post('/api/create-payment-intent', async (req, res) => {
       amount: parseInt(amount),
       currency: currencyLower,
       receipt_email: email,
-      description: 'NOCTE® Red-Tinted Glasses',
+      description: 'PDRN Pink Peptide Serum 30ml',
       metadata: {
-        product: 'NOCTE Red-Tinted Glasses',
+        product: 'PDRN Pink Peptide Serum 30ml',
         environment: 'development',
         ...metadata
       },
@@ -422,7 +421,7 @@ app.post('/api/reverse-geocode', async (req, res) => {
 function generateOrdefyIdempotencyKey() {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 10);
-  return `nocte-order-${timestamp}-${random}`;
+  return `solenne-order-${timestamp}-${random}`;
 }
 
 /**
@@ -464,9 +463,9 @@ function buildOrdefyShippingAddress({ lat, long, address, city, googleMapsLink, 
 function getUnitPrice(quantity, total) {
   // Known pricing structure
   const prices = {
-    1: 199000,
+    1: 189000,
     2: 299000,
-    3: 429000,
+    3: 399000,
   };
 
   // If total matches known price, calculate unit price
@@ -485,18 +484,18 @@ function getUnitPrice(quantity, total) {
  * - 3+ units: Office pack (bulk pricing)
  */
 function getSku(quantity) {
-  if (quantity === 1) return 'NOCTE-GLASSES-PERSONAL';
-  if (quantity === 2) return 'NOCTE-GLASSES-PAREJA';
-  return 'NOCTE-GLASSES-OFICINA'; // 3+ units
+  if (quantity === 1) return 'SOLENNE-PDRN-30ML';
+  if (quantity === 2) return 'SOLENNE-PDRN-DUO';
+  return 'SOLENNE-PDRN-FAMILIAR';
 }
 
 /**
  * Get product name based on quantity
  */
 function getProductName(quantity) {
-  if (quantity === 1) return 'NOCTE® Glasses - Personal';
-  if (quantity === 2) return 'NOCTE® Glasses - Pack Pareja';
-  return `NOCTE® Glasses - Pack Oficina (x${quantity})`;
+  if (quantity === 1) return 'PDRN Pink Peptide Serum 30ml';
+  if (quantity === 2) return 'PDRN Serum - Kit Duo (x2)';
+  return `PDRN Serum - Kit Familiar (x${quantity})`;
 }
 
 /**
@@ -542,7 +541,7 @@ async function sendToOrdefy(orderData) {
   // Add priority shipping as a line item if selected
   if (isPriority) {
     items.push({
-      sku: 'NOCTE-ENVIO-PRIORITARIO',
+      sku: 'SOLENNE-ENVIO-PRIORITARIO',
       name: 'Envío Prioritario VIP',
       quantity: 1,
       price: priorityCost
@@ -642,7 +641,7 @@ app.post('/api/send-order', async (req, res) => {
 
     // Prepare payload for n8n
     const webhookPayload = {
-      orderNumber: orderNumber || `#NOCTE-${Date.now()}`,
+      orderNumber: orderNumber || `#SOL-${Date.now()}`,
       timestamp: new Date().toISOString(),
       customer: {
         name,
@@ -656,8 +655,8 @@ app.post('/api/send-order', async (req, res) => {
       },
       order: {
         quantity: quantity || 1,
-        product: 'NOCTE® Red Light Blocking Glasses',
-        total: total || (quantity === 2 ? 369000 : 249000),
+        product: 'PDRN Pink Peptide Serum 30ml',
+        total: total || (quantity === 2 ? 299000 : 189000),
         currency: 'PYG'
       },
       payment: {
@@ -666,7 +665,7 @@ app.post('/api/send-order', async (req, res) => {
         isPaid: isPaid === true || paymentType === 'Card',
         paymentIntentId: paymentIntentId || null
       },
-      source: 'nocte-landing-page'
+      source: 'solenne-landing-page'
     };
 
     // Send to both n8n and Ordefy in parallel
@@ -841,7 +840,7 @@ app.use((err, req, res, next) => {
 const server = app.listen(PORT, () => {
   console.log('');
   console.log('═══════════════════════════════════════════');
-  console.log('  🚀 NOCTE Backend API - Development Mode');
+  console.log('  Solenne Backend API - Development Mode');
   console.log('═══════════════════════════════════════════');
   console.log(`  ✓ Server:        http://localhost:${PORT}`);
   console.log(`  ✓ Health Check:  http://localhost:${PORT}/api/health`);

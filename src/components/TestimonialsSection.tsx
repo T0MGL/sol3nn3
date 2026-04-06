@@ -15,7 +15,7 @@ const multiImageReview = {
   role: "Asunción",
   rating: 5,
   quote:
-    "No podía creer la textura del suero. Se absorbe al instante y deja la piel increíblemente suave. Acá les muestro cómo queda aplicado en la mano — esa gota rosada es pura hidratación. ¡Amo este producto!",
+    "No podía creer la textura del suero. Se absorbe al instante y deja la piel increíblemente suave. Acá les muestro cómo queda aplicado en la mano, esa gota rosada es pura hidratación. ¡Amo este producto!",
   images: [reviewTogether1, reviewTogeter2, reviewTogether2],
 };
 
@@ -288,7 +288,7 @@ export const TestimonialsSection = () => {
           viewport={{ once: true, amount: 0.2 }}
           className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6"
         >
-          {/* Review con 3 fotos (mano 1, 2 y 3) — ocupa 2 columnas */}
+          {/* Review con 3 fotos (mano 1, 2 y 3), ocupa 2 columnas */}
           <MultiImageReviewCard />
 
           {/* Reviews con foto individual */}

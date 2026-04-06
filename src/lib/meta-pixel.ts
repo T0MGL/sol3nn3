@@ -97,11 +97,11 @@ export const trackViewContent = (params?: {
   if (typeof window === 'undefined' || !window.fbq) return;
 
   const defaultParams = {
-    content_name: 'NOCTE® Red Light Blocking Glasses',
-    content_category: 'Sleep & Wellness',
-    content_ids: ['nocte-red-glasses'],
+    content_name: 'Solenne PDRN Pink Peptide Serum',
+    content_category: 'Skincare & Beauty',
+    content_ids: ['solenne-pdrn-serum'],
     content_type: 'product',
-    value: 199000,
+    value: 189000,
     currency: 'PYG',
   };
 
@@ -124,11 +124,11 @@ export const trackInitiateCheckout = (params?: {
   if (typeof window === 'undefined' || !window.fbq) return;
 
   const defaultParams = {
-    content_name: 'NOCTE® Red Light Blocking Glasses',
-    content_category: 'Sleep & Wellness',
-    content_ids: ['nocte-red-glasses'],
+    content_name: 'Solenne PDRN Pink Peptide Serum',
+    content_category: 'Skincare & Beauty',
+    content_ids: ['solenne-pdrn-serum'],
     num_items: 1,
-    value: 199000,
+    value: 189000,
     currency: 'PYG',
   };
 
@@ -151,7 +151,7 @@ export const trackAddToCart = (params: {
 
   window.fbq('track', 'AddToCart', {
     content_name: params.content_name,
-    content_category: 'Sleep & Wellness',
+    content_category: 'Skincare & Beauty',
     content_ids: params.content_ids,
     content_type: 'product',
     num_items: params.num_items,
@@ -177,8 +177,8 @@ export const trackAddPaymentInfo = (params: {
   if (typeof window === 'undefined' || !window.fbq) return;
 
   const defaultParams = {
-    content_category: 'Sleep & Wellness',
-    content_ids: ['nocte-red-glasses'],
+    content_category: 'Skincare & Beauty',
+    content_ids: ['solenne-pdrn-serum'],
     ...params,
   };
 
@@ -205,7 +205,7 @@ export const trackPurchase = (params: {
     value: params.value,
     currency: params.currency,
     content_name: params.content_name,
-    content_category: 'Sleep & Wellness',
+    content_category: 'Skincare & Beauty',
     content_type: 'product',
     content_ids: params.content_ids,
     num_items: params.num_items,
