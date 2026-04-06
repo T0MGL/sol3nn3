@@ -199,9 +199,9 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
             {/* Image Carousel */}
             <div className="relative w-full max-w-[500px] mx-auto">
               <div className="relative w-full aspect-square overflow-hidden rounded-lg">
-                {/* Outer ambient glow — wide, soft, breathing */}
+                {/* Outer ambient glow, wide, soft, breathing */}
                 <div className="absolute inset-0 -z-10 rounded-full blur-[60px] bg-primary/20 animate-glow-breathe scale-75" />
-                {/* Inner contact glow — tight, slightly brighter */}
+                {/* Inner contact glow, tight, slightly brighter */}
                 <div className="absolute inset-[10%] -z-10 rounded-full blur-[30px] bg-primary/15" />
 
                 {/* Animated Slides */}
@@ -425,7 +425,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                     }}
                     onClick={onBuyClick}
                   >
-                    COMPRAR AHORA — Gs. 189.000
+                    COMPRAR AHORA: Gs. 189.000
                   </Button>
                 </motion.div>
 

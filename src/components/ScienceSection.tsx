@@ -55,7 +55,7 @@ export const ScienceSection = () => {
           </h2>
           <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground font-light max-w-4xl mx-auto px-4 leading-relaxed">
             Formulado con ingredientes K-beauty auténticos, clínicamente probados.
-            <span className="text-foreground font-medium"> PDRN + Péptidos + Hyaluronic Acid</span> —
+            <span className="text-foreground font-medium"> PDRN + Péptidos + Hyaluronic Acid</span> ,
             la trilogía que regenera tu piel desde adentro.
           </p>
         </motion.div>

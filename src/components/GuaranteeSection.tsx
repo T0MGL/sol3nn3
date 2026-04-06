@@ -22,7 +22,7 @@ export const GuaranteeSection = ({ onBuyClick }: GuaranteeSectionProps) => {
           >
             <div className="flex justify-center">
               <div className="relative">
-                {/* Outer ambient glow — breathing */}
+                {/* Outer ambient glow, breathing */}
                 <div className="absolute inset-0 bg-primary/25 rounded-full blur-3xl animate-glow-breathe" />
                 {/* Inner contact glow */}
                 <div className="absolute inset-[20%] bg-primary/15 rounded-full blur-xl" />

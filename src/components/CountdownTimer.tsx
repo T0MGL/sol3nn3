@@ -19,7 +19,7 @@ export const CountdownTimer = memo(() => {
   const targetDateRef = useRef<Date | null>(null);
 
   useEffect(() => {
-    const STORAGE_KEY = 'nocte-countdown-target';
+    const STORAGE_KEY = 'solenne-countdown-target';
 
     // Get or create target date
     const getTargetDate = (): Date => {

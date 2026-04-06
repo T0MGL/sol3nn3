@@ -42,7 +42,8 @@ export const WhatsAppButton = () => {
   }, []);
 
   const message = encodeURIComponent("Hola SOLENNE, vi el PDRN Serum en la web y tengo una consulta...");
-  const whatsappUrl = `https://wa.me/595991893587?text=${message}`;
+  const phone = import.meta.env.VITE_WHATSAPP_NUMBER || '595976287180';
+  const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
 
   return (
     <a

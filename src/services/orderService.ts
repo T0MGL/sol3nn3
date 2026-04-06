@@ -4,7 +4,7 @@
  * Sin backend intermedio.
  */
 
-const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || 'https://n8n.thebrightidea.ai/webhook/nocteorder';
+const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || 'https://n8n.thebrightidea.ai/webhook/solenneorder';
 
 export interface OrderData {
   name: string;
@@ -111,12 +111,12 @@ export function sendOrderInBackground(orderData: OrderData): void {
 
 /**
  * Genera número de orden único.
- * Formato: #NOC-MMDD-XXXX
+ * Formato: #SOL-MMDD-XXXX
  */
 export function generateOrderNumber(): string {
   const date = new Date();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  return `#NOC-${month}${day}-${random}`;
+  return `#SOL-${month}${day}-${random}`;
 }
