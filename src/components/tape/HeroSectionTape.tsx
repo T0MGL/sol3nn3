@@ -13,7 +13,6 @@ import faceTapeHero from "@/assets/products/tape/face-tape-hero.webp";
 import faceTapeApplication from "@/assets/products/tape/face-tape-application.webp";
 import faceTapeResult from "@/assets/products/tape/face-tape-result.webp";
 import faceTapePackaging from "@/assets/products/tape/face-tape-packaging.webp";
-import faceTapeLifestyle from "@/assets/products/tape/face-tape-lifestyle.webp";
 import { LivePurchaseNotification, getRandomBuyer } from "@/components/LivePurchaseNotification";
 import { trackTapeViewContent } from "@/lib/meta-pixel";
 import { getDeliveryDates } from "@/lib/delivery-utils";
@@ -68,10 +67,6 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
     {
       image: faceTapePackaging,
       alt: "SOLENNE V-Shaped Face Tape - Caja de 100 parches",
-    },
-    {
-      image: faceTapeLifestyle,
-      alt: "SOLENNE V-Shaped Face Tape - Lista para tu evento",
     },
   ];
 
@@ -173,28 +168,22 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
                 <div className="absolute inset-0 -z-10 rounded-full blur-[60px] bg-primary/20 animate-glow-breathe scale-75" />
                 <div className="absolute inset-[10%] -z-10 rounded-full blur-[30px] bg-primary/15" />
 
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="popLayout">
                   <motion.div
                     key={currentSlide}
-                    initial={{ opacity: 0, x: 40 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -40 }}
-                    transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-                    className="w-full h-full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="w-full h-full absolute inset-0"
                   >
-                    <motion.div
-                      animate={{ y: [0, -8, 0] }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-full h-full"
-                    >
-                      <img
-                        src={slides[currentSlide].image}
-                        alt={slides[currentSlide].alt}
-                        className="w-full h-full object-contain"
-                        loading={currentSlide === 0 ? "eager" : "lazy"}
-                        decoding="async"
-                      />
-                    </motion.div>
+                    <img
+                      src={slides[currentSlide].image}
+                      alt={slides[currentSlide].alt}
+                      className="w-full h-full object-contain"
+                      loading={currentSlide === 0 ? "eager" : "lazy"}
+                      decoding="async"
+                    />
                   </motion.div>
                 </AnimatePresence>
 

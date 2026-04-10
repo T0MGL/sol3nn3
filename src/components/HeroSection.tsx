@@ -96,7 +96,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
     const preloadTimer = setTimeout(() => {
       import("@/components/checkout/QuantitySelector");
       import("@/components/checkout/PhoneNameForm");
-      import("@/components/checkout/StripeCheckoutModal");
+      import("@/components/checkout/CheckoutModal");
     }, 2000); // Wait 2 seconds after page load
 
     return () => clearTimeout(preloadTimer);
@@ -205,28 +205,22 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                 <div className="absolute inset-[10%] -z-10 rounded-full blur-[30px] bg-primary/15" />
 
                 {/* Animated Slides */}
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="popLayout">
                   <motion.div
                     key={currentSlide}
-                    initial={{ opacity: 0, x: 40 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -40 }}
-                    transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-                    className="w-full h-full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="w-full h-full absolute inset-0"
                   >
-                    <motion.div
-                      animate={{ y: [0, -8, 0] }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-full h-full"
-                    >
-                      <img
-                        src={slides[currentSlide].image}
-                        alt={slides[currentSlide].alt}
-                        className="w-full h-full object-cover"
-                        loading={currentSlide === 0 ? "eager" : "lazy"}
-                        decoding="async"
-                      />
-                    </motion.div>
+                    <img
+                      src={slides[currentSlide].image}
+                      alt={slides[currentSlide].alt}
+                      className="w-full h-full object-cover"
+                      loading={currentSlide === 0 ? "eager" : "lazy"}
+                      decoding="async"
+                    />
                   </motion.div>
                 </AnimatePresence>
 
