@@ -149,7 +149,7 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
           >
             <motion.div
               layout
-              className="absolute top-4 left-2 md:top-2 md:left-4 z-20 bg-primary px-3 py-1.5 rounded-md shadow-lg overflow-hidden"
+              className="absolute top-2 left-2 z-20 bg-primary px-2 py-1 rounded-md shadow-lg overflow-hidden"
               initial={false}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             >
@@ -157,9 +157,9 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="text-foreground text-xs md:text-sm font-semibold whitespace-nowrap"
+                className="text-foreground text-[10px] md:text-xs font-semibold whitespace-nowrap"
               >
-                Nuevo en Paraguay
+                #1
               </motion.p>
             </motion.div>
 
