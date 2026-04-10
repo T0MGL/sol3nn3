@@ -43,7 +43,7 @@ export const BenefitsSectionTape = () => {
           className="text-center mb-12 md:mb-20 space-y-3 md:space-y-4"
         >
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold px-4">
-            Tu secret weapon, siempre lista
+            Tu mejor aliada, siempre lista
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground font-light max-w-2xl mx-auto">
             Cuatro cosas que la cinta facial hace mejor que cualquier filtro, contour o ajuste digital.

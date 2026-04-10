@@ -308,7 +308,7 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
 
             <div className="space-y-2">
               <p className="text-sm md:text-base text-foreground/70 leading-relaxed">
-                Cinta adhesiva ultra fina color piel que tensa mejillas, papada, contorno y párpados sin que nadie lo note. Tu secret weapon antes de fotos, reuniones y salidas.
+                Cinta adhesiva ultra fina color piel que tensa mejillas, papada, contorno y párpados sin que nadie lo note. Tu mejor aliada antes de fotos, reuniones y salidas.
               </p>
               <p className="text-xs md:text-sm text-primary font-medium">
                 Caja con 100 parches · Aplicación en 3 pasos · 30 segundos
