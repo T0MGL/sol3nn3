@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 
 const faqs = [
   {
-    question: "¿Qué es el V-Shaped Face Tape?",
+    question: "¿Qué son los parches invisibles para la cara?",
     answer:
       "Son cintas adhesivas invisibles diseñadas para dar un efecto lifting temporal en mejillas, papada, contorno facial y párpados. Las usás el día que querés lucir más firme y radiante, y las retirás al final del día.",
   },

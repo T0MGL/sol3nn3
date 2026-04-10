@@ -133,7 +133,7 @@ export const StatsSectionTape: React.FC = () => {
             Los números que importan
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Todo lo que hace el Face Tape, sin lo que no queremos.
+            Todo lo que hacen los parches, sin lo que no queremos.
           </p>
         </motion.div>
 

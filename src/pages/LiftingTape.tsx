@@ -98,7 +98,7 @@ const LiftingTape = () => {
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = "V-Shaped Face Tape | Lifting Instantáneo Invisible | Solenne Paraguay";
+    document.title = "Parches Invisibles para la Cara | 100 unidades | Solenne Paraguay";
 
     const metaDescription = document.querySelector('meta[name="description"]');
     const previousDescription = metaDescription?.getAttribute("content") ?? "";
@@ -123,7 +123,7 @@ const LiftingTape = () => {
       'meta[property="og:title"]',
       "property",
       "og:title",
-      "V-Shaped Face Tape | Lifting Instantáneo Invisible | Solenne"
+      "Parches Invisibles para la Cara | 100 unidades | Solenne"
     );
     const ogDescription = setOrCreateMeta(
       'meta[property="og:description"]',
@@ -141,7 +141,7 @@ const LiftingTape = () => {
       'meta[name="twitter:title"]',
       "name",
       "twitter:title",
-      "V-Shaped Face Tape | Lifting Instantáneo Invisible | Solenne"
+      "Parches Invisibles para la Cara | 100 unidades | Solenne"
     );
     const twitterDescription = setOrCreateMeta(
       'meta[name="twitter:description"]',
