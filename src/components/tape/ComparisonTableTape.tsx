@@ -21,7 +21,7 @@ const comparisons = [
     ],
   },
   {
-    title: "V-Shaped Face Tape",
+    title: "Parches Invisibles",
     specs: [
       { label: "Resultado en persona", value: "Real, visible", isGood: true },
       { label: "Funciona en vivo", value: "360 grados", isGood: true },
@@ -110,7 +110,7 @@ export const ComparisonTableTape = () => {
       <div className="container max-w-[1200px] mx-auto">
         <div className="text-center mb-12 md:mb-16 space-y-4 md:space-y-6">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter px-4">
-            ¿Por qué elegir Face Tape?
+            ¿Por qué elegir los parches?
           </h2>
           <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground font-light px-4 max-w-3xl mx-auto leading-relaxed">
             Cuatro formas de verte mejor. Una sola te da resultado real, ahora, sin riesgo.

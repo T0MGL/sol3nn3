@@ -190,7 +190,7 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
                       <img
                         src={slides[currentSlide].image}
                         alt={slides[currentSlide].alt}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         loading={currentSlide === 0 ? "eager" : "lazy"}
                         decoding="async"
                       />
@@ -259,10 +259,10 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
-                V-Shaped <span className="italic">Invisible</span> Face Tape
+                Parches <span className="italic">Invisibles</span> para la Cara
               </motion.h1>
               <p className="text-lg md:text-xl text-primary font-medium">
-                Lifting instantáneo invisible. En 30 segundos, antes de tu evento.
+                100 unidades. Lifting instantaneo en 30 segundos, antes de tu evento.
               </p>
 
               <div className="flex items-center gap-2 flex-wrap">
@@ -274,7 +274,7 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
                   <StarIcon className="w-5 h-5 text-accent" />
                 </div>
                 <p className="text-sm text-foreground/80 font-medium">
-                  El secreto beauty detrás de cada evento
+                  Tu aliada antes de cada evento
                 </p>
               </div>
             </div>
