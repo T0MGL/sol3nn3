@@ -259,10 +259,13 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
-                Parches <span className="italic">Invisibles</span> para la Cara
+                Parches <span className="italic">Invisibles</span>
               </motion.h1>
               <p className="text-lg md:text-xl text-primary font-medium">
-                100 unidades. Lifting instantaneo en 30 segundos, antes de tu evento.
+                Para la Cara | 100 unidades
+              </p>
+              <p className="text-base md:text-lg text-muted-foreground font-light">
+                Lifting instantaneo en 30 segundos, antes de tu evento.
               </p>
 
               <div className="flex items-center gap-2 flex-wrap">
