@@ -1,31 +1,56 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
-import { UserIcon, PhoneIcon, HomeIcon, XMarkIcon, MapPinIcon, CheckIcon } from "@heroicons/react/24/outline";
+import {
+  UserIcon,
+  PhoneIcon,
+  HomeIcon,
+  XMarkIcon,
+  MapPinIcon,
+  CheckIcon,
+  BuildingOfficeIcon,
+  DocumentTextIcon,
+} from "@heroicons/react/24/outline";
 import { CheckoutProgressBar } from "./CheckoutProgressBar";
-import { API_CONFIG } from "@/lib/stripe";
+import { API_CONFIG } from "@/lib/api";
+import { PARAGUAY_CITIES } from "@/data/paraguayCities";
 
 interface PhoneNameFormProps {
   isOpen: boolean;
-  onSubmit: (data: { name: string; phone: string; location: string; address: string; lat?: number; long?: number }) => void;
+  onSubmit: (data: {
+    name: string;
+    phone: string;
+    location: string;
+    address: string;
+    isGeolocated: boolean;
+    lat?: number;
+    long?: number;
+    ruc?: string;
+  }) => void;
   onClose?: () => void;
 }
 
 export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps) => {
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("+595 "); // ✅ Predefined prefix
+  const [phone, setPhone] = useState("+595 ");
+  const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
+  const [ruc, setRuc] = useState("");
+  const [showRuc, setShowRuc] = useState(false);
+  const [customPrefix, setCustomPrefix] = useState(false);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [detectedLocation, setDetectedLocation] = useState<string | null>(null);
-  const [showManualLocation, setShowManualLocation] = useState(false);
+  const [showManualLocation, setShowManualLocation] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [locationCoords, setLocationCoords] = useState<{ lat?: number; long?: number }>({});
-  const [errors, setErrors] = useState<{ name?: string; phone?: string; address?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; phone?: string; address?: string; city?: string }>({});
   const [loading, setLoading] = useState(false);
   const phoneInputRef = useRef<HTMLInputElement>(null);
+  const cityInputRef = useRef<HTMLDivElement>(null);
   const isMountedRef = useRef(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Track component mounted state to prevent state updates after unmount
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
@@ -33,14 +58,18 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
     };
   }, []);
 
-  // Reset form when modal opens/closes
   useEffect(() => {
     if (isOpen) {
       setName("");
       setPhone("+595 ");
+      setCity("");
       setAddress("");
+      setRuc("");
+      setShowRuc(false);
+      setCustomPrefix(false);
+      setShowCitySuggestions(false);
       setDetectedLocation(null);
-      setShowManualLocation(false);
+      setShowManualLocation(true);
       setLocationError(null);
       setIsLoadingLocation(false);
       setLocationCoords({});
@@ -49,98 +78,94 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
     }
   }, [isOpen]);
 
-  // Prevent body scroll when modal is open
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (cityInputRef.current && !cityInputRef.current.contains(e.target as Node)) {
+        setShowCitySuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
 
-  // Detect fake phone numbers with suspicious patterns
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   const isFakePhoneNumber = (digits: string): boolean => {
-    // All same digit (e.g., 981111111)
     if (/^(\d)\1+$/.test(digits)) return true;
-
-    // Sequential repeating pairs (e.g., 981222333, 981223344)
     if (/^(\d{2,3})(\d)\2{2,}(\d)\3{2,}$/.test(digits)) return true;
-
-    // Common fake patterns: ascending/descending sequences
     if (/^9[789]1?(123456|234567|345678|456789|987654|876543|765432)/.test(digits)) return true;
-
-    // Mirror patterns (e.g., 981123321)
     if (digits.length >= 6) {
       const firstHalf = digits.slice(0, Math.floor(digits.length / 2));
       const secondHalf = digits.slice(-Math.floor(digits.length / 2));
-      const reversedSecond = secondHalf.split('').reverse().join('');
+      const reversedSecond = secondHalf.split("").reverse().join("");
       if (firstHalf === reversedSecond) return true;
     }
-
-    // Three or more same consecutive digits anywhere (e.g., 981111234)
-    if (/(\d)\1{3,}/.test(digits)) return true;
-
-    // Two groups of 3+ same digits (e.g., 981222333)
-    if (/(\d)\1{2,}.*(\d)\2{2,}/.test(digits)) return true;
-
     return false;
-  };
-
-  const formatPhoneNumber = (value: string) => {
-    // Always ensure it starts with +595
-    if (!value.startsWith("+595")) {
-      return "+595 ";
-    }
-
-    // Remove all non-digits after the prefix
-    const afterPrefix = value.slice(5); // Get everything after "+595 "
-    const digits = afterPrefix.replace(/\D/g, "");
-
-    // Return formatted number
-    return `+595 ${digits}`;
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
 
-    // Prevent deletion of the prefix
+    if (customPrefix) {
+      if (!newValue.startsWith("+")) {
+        setPhone("+" + newValue.replace(/[^0-9]/g, ""));
+      } else {
+        setPhone("+" + newValue.slice(1).replace(/[^0-9 ]/g, ""));
+      }
+      setErrors((prev) => ({ ...prev, phone: undefined }));
+      return;
+    }
+
     if (!newValue.startsWith("+595")) {
       setPhone("+595 ");
       return;
     }
 
-    // If user tries to delete space after +595, restore it
     if (newValue === "+595") {
       setPhone("+595 ");
       return;
     }
 
-    const formatted = formatPhoneNumber(newValue);
+    const afterPrefix = newValue.slice(5);
+    const digits = afterPrefix.replace(/\D/g, "");
+    const formatted = `+595 ${digits}`;
     setPhone(formatted);
 
-    // Real-time validation for fake numbers
-    const digits = formatted.slice(5).replace(/\D/g, "");
     if (digits.length >= 8 && isFakePhoneNumber(digits)) {
-      setErrors((prev) => ({ ...prev, phone: "Por favor, introducí un número válido" }));
+      setErrors((prev) => ({ ...prev, phone: "Por favor, introduci un numero valido" }));
     } else {
       setErrors((prev) => ({ ...prev, phone: undefined }));
     }
   };
 
   const handlePhoneFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Position cursor at the end (after the prefix)
-    const length = e.target.value.length;
-    e.target.setSelectionRange(length, length);
+    if (!customPrefix) {
+      const length = e.target.value.length;
+      e.target.setSelectionRange(length, length);
+    }
   };
 
   const handlePhoneClick = (e: React.MouseEvent<HTMLInputElement>) => {
-    // If user clicks before the end of prefix, move cursor to end
-    const target = e.target as HTMLInputElement;
-    if (target.selectionStart !== null && target.selectionStart < 5) {
-      target.setSelectionRange(5, 5); // Position after "+595 "
+    if (!customPrefix) {
+      const target = e.target as HTMLInputElement;
+      if (target.selectionStart !== null && target.selectionStart < 5) {
+        target.setSelectionRange(5, 5);
+      }
     }
   };
 
@@ -149,35 +174,30 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
     setLocationError(null);
 
     if (!navigator.geolocation) {
-      setLocationError("Tu navegador no soporta geolocalización");
+      setLocationError("Tu navegador no soporta geolocalizacion");
       setIsLoadingLocation(false);
       setShowManualLocation(true);
       return;
     }
 
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        // Check if component is still mounted before updating state
-        if (!isMountedRef.current) return;
+        if (!isMountedRef.current || controller.signal.aborted) return;
 
         const { latitude, longitude } = position.coords;
 
         try {
-          console.log(`📍 GPS coordinates obtained: ${latitude}, ${longitude}`);
-
-          // Call backend reverse geocoding API
           const response = await fetch(`${API_CONFIG.baseUrl}/api/reverse-geocode`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              lat: latitude,
-              lng: longitude,
-            }),
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ lat: latitude, lng: longitude }),
+            signal: controller.signal,
           });
 
-          // Check again after async operation
           if (!isMountedRef.current) return;
 
           if (!response.ok) {
@@ -185,71 +205,87 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
           }
 
           const data = await response.json();
-          console.log('✅ Reverse geocoding result:', data);
 
-          // Final check before state updates
           if (!isMountedRef.current) return;
 
-          // Use the precise address from reverse geocoding
           const locationText = data.city || data.formattedAddress || "Paraguay";
           setDetectedLocation(locationText);
           setLocationCoords({ lat: latitude, long: longitude });
           setIsLoadingLocation(false);
         } catch (err) {
-          // Check if component is still mounted before updating state
-          if (!isMountedRef.current) return;
+          if (!isMountedRef.current || controller.signal.aborted) return;
 
-          console.error("Location processing error:", err);
-
-          // Fallback: use coordinates with generic location
-          console.log('⚠️ Reverse geocoding failed, using fallback');
           setDetectedLocation("Paraguay (coordenadas GPS obtenidas)");
           setLocationCoords({ lat: latitude, long: longitude });
           setIsLoadingLocation(false);
         }
       },
-      (err) => {
-        // Check if component is still mounted before updating state
+      () => {
         if (!isMountedRef.current) return;
 
-        console.error("Geolocation error:", err);
-        setLocationError("Permiso denegado para acceder a tu ubicación");
+        setLocationError("Permiso denegado para acceder a tu ubicacion");
         setDetectedLocation(null);
         setIsLoadingLocation(false);
         setShowManualLocation(true);
-      }
+      },
+      { timeout: 10000, enableHighAccuracy: false, maximumAge: 300000 }
     );
   };
 
   const validateForm = () => {
-    const newErrors: { name?: string; phone?: string; address?: string } = {};
+    const newErrors: { name?: string; phone?: string; address?: string; city?: string } = {};
 
-    // Validate name
     if (!name || name.trim().length < 3) {
-      newErrors.name = "Nombre requerido (mín. 3 caracteres)";
+      newErrors.name = "Nombre requerido (min. 3 caracteres)";
     } else if (name.length > 60) {
-      newErrors.name = "Nombre demasiado largo (máx. 60 caracteres)";
+      newErrors.name = "Nombre demasiado largo (max. 60 caracteres)";
     } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s-]+$/.test(name)) {
       newErrors.name = "Solo letras, espacios y guiones";
     }
 
-    // Validate phone - only digits after "+595 "
-    const afterPrefix = phone.slice(5); // Remove "+595 "
-    const phoneDigits = afterPrefix.replace(/\D/g, "");
-    if (phoneDigits.length < 8 || phoneDigits.length > 10) {
-      newErrors.phone = "Teléfono inválido (ej: +595 971 234567)";
-    } else if (isFakePhoneNumber(phoneDigits)) {
-      newErrors.phone = "Por favor, introducí un número válido";
+    if (customPrefix) {
+      const allDigits = phone.replace(/\D/g, "");
+      if (allDigits.length < 10) {
+        newErrors.phone = "Numero invalido (inclui codigo de pais + numero)";
+      }
+    } else {
+      const afterPrefix = phone.slice(5);
+      const phoneDigits = afterPrefix.replace(/\D/g, "");
+      if (phoneDigits.length < 8 || phoneDigits.length > 10) {
+        newErrors.phone = "Telefono invalido (ej: +595 971 234567)";
+      } else if (isFakePhoneNumber(phoneDigits)) {
+        newErrors.phone = "Por favor, introduci un numero valido";
+      }
     }
 
-    // Validate address (either detected or manual)
-    if (!detectedLocation && address.trim().length < 10) {
-      newErrors.address = "La dirección debe tener al menos 10 caracteres";
+    if (!detectedLocation) {
+      if (!city.trim()) {
+        newErrors.city = "Selecciona una ciudad";
+      }
+      if (address.trim().length < 5) {
+        newErrors.address = "Ingresa tu direccion (min. 5 caracteres)";
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  const filteredCities =
+    city.trim().length >= 2
+      ? PARAGUAY_CITIES.filter((c) =>
+          c
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .includes(
+              city
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+            )
+        ).slice(0, 6)
+      : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -258,25 +294,27 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
 
     setLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
     onSubmit({
       name: name.trim(),
       phone: phone.trim(),
-      location: detectedLocation || address.trim(),
+      location: detectedLocation || city.trim(),
       address: address.trim(),
+      isGeolocated: !!detectedLocation,
       lat: locationCoords.lat,
       long: locationCoords.long,
+      ruc: ruc.trim() || undefined,
     });
 
     setLoading(false);
   };
 
-  // Validate button state
-  const phoneDigitsOnly = phone.slice(5).replace(/\D/g, "");
-  const hasValidLocation = detectedLocation || address.trim().length >= 10;
-  const isValidPhone = phoneDigitsOnly.length >= 8 && phoneDigitsOnly.length <= 10 && !isFakePhoneNumber(phoneDigitsOnly);
+  const hasValidLocation = detectedLocation || (city.trim().length > 0 && address.trim().length >= 5);
+  const isValidPhone = customPrefix
+    ? phone.replace(/\D/g, "").length >= 10
+    : (() => {
+        const phoneDigitsOnly = phone.slice(5).replace(/\D/g, "");
+        return phoneDigitsOnly.length >= 8 && phoneDigitsOnly.length <= 10 && !isFakePhoneNumber(phoneDigitsOnly);
+      })();
   const isValid = name.trim().length >= 3 && isValidPhone && hasValidLocation;
 
   return (
@@ -287,17 +325,17 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 bg-background/50 z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-background/50 z-[100] flex items-center justify-center p-4 touch-none"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="relative w-full max-w-[500px] bg-gradient-to-b from-secondary to-background border-2 border-primary rounded-2xl p-6 md:p-8 shadow-[0_20px_25px_-5px_rgba(192,139,122,0.2)] max-h-[90dvh] overflow-y-auto"
+            className="relative w-full max-w-[500px] bg-gradient-to-b from-secondary to-background border-2 border-primary rounded-2xl p-6 md:p-8 shadow-[0_20px_25px_-5px_rgba(192,139,122,0.2)] max-h-[90dvh] overflow-y-auto overscroll-contain touch-auto"
           >
             <div className="space-y-6">
-              {/* Header with Progress Bar and Close Button */}
+              {/* Header */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <CheckoutProgressBar currentStep={1} />
@@ -316,18 +354,18 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
               {/* Trust Block */}
               <div className="text-center space-y-2">
                 <p className="text-sm font-medium text-foreground">
-                  Compra sin riesgo en Paraguay 🇵🇾
+                  Compra sin riesgo en Paraguay
                 </p>
                 <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
-                  <span>✓ +1.000 entregas realizadas</span>
-                  <span>✓ Soporte via WhatsApp</span>
-                  <span>✓ Pagás al recibir</span>
+                  <span>+1.000 entregas realizadas</span>
+                  <span>Soporte via WhatsApp</span>
+                  <span>Pagas al recibir</span>
                 </div>
               </div>
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* FIELD 1 - NOMBRE COMPLETO */}
+                {/* Nombre completo */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-foreground">
                     Nombre completo
@@ -341,10 +379,11 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                         setName(e.target.value);
                         setErrors((prev) => ({ ...prev, name: undefined }));
                       }}
-                      placeholder="Ej: Juan López"
+                      placeholder="Ej: Maria Lopez"
                       maxLength={60}
-                      className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${errors.name ? "border-red-500" : "border-border focus:border-primary"
-                        }`}
+                      className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${
+                        errors.name ? "border-red-500" : "border-border focus:border-primary"
+                      }`}
                     />
                   </div>
                   {errors.name && (
@@ -358,10 +397,10 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                   )}
                 </div>
 
-                {/* FIELD 2 - TELÉFONO */}
+                {/* Telefono WhatsApp */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-foreground">
-                    Teléfono WhatsApp
+                    Telefono WhatsApp
                   </label>
                   <div className="relative">
                     <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -373,8 +412,9 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                       onFocus={handlePhoneFocus}
                       onClick={handlePhoneClick}
                       placeholder="Ej: +595 971 234567"
-                      className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${errors.phone ? "border-red-500" : "border-border focus:border-primary"
-                        }`}
+                      className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${
+                        errors.phone ? "border-red-500" : "border-border focus:border-primary"
+                      }`}
                     />
                   </div>
                   {errors.phone && (
@@ -386,18 +426,82 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                       {errors.phone}
                     </motion.p>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (customPrefix) {
+                        setCustomPrefix(false);
+                        setPhone("+595 ");
+                      } else {
+                        setCustomPrefix(true);
+                        setPhone("+");
+                        setErrors((prev) => ({ ...prev, phone: undefined }));
+                        setTimeout(() => phoneInputRef.current?.focus(), 0);
+                      }
+                    }}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {customPrefix ? "Volver a +595 (Paraguay)" : "Otro pais?"}
+                  </button>
                 </div>
 
-                {/* LOCATION SECTION */}
+                {/* RUC (optional, collapsible) */}
+                <div>
+                  {!showRuc ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowRuc(true)}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Necesitas factura? Ingresa tu RUC
+                    </button>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="space-y-1.5"
+                    >
+                      <label className="block text-sm font-medium text-foreground">
+                        RUC <span className="text-muted-foreground font-normal">(opcional)</span>
+                      </label>
+                      <div className="relative">
+                        <DocumentTextIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <input
+                          type="text"
+                          value={ruc}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9-]/g, "");
+                            setRuc(val);
+                          }}
+                          placeholder="Ej: 80012345-6"
+                          maxLength={12}
+                          className="w-full pl-11 pr-4 py-3 bg-secondary border border-border focus:border-primary rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowRuc(false);
+                          setRuc("");
+                        }}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        No necesito factura
+                      </button>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Location Section */}
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center gap-2 pb-2 border-b border-border/30">
                     <MapPinIcon className="w-5 h-5 text-primary" />
                     <label className="block text-sm font-semibold text-foreground">
-                      Ubicación de entrega
+                      Ubicacion de entrega
                     </label>
                   </div>
 
-                  {/* Detected Location Display */}
+                  {/* Detected Location (GPS) */}
                   {detectedLocation && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
@@ -426,7 +530,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                     </motion.div>
                   )}
 
-                  {/* Error Display - only show if not in manual mode */}
+                  {/* Error (only when not in manual mode) */}
                   {locationError && !showManualLocation && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
@@ -437,98 +541,150 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                     </motion.div>
                   )}
 
-                  {/* Use Location Button */}
-                  {!detectedLocation && !showManualLocation && (
-                    <div className="space-y-2">
-                      <Button
-                        type="button"
-                        onClick={handleUseLocation}
-                        disabled={isLoadingLocation}
-                        variant="outline"
-                        size="lg"
-                        className="w-full bg-transparent border-border/50 hover:bg-secondary/50"
-                      >
-                        {isLoadingLocation ? (
-                          <span className="flex items-center gap-2">
-                            <div className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Detectando ubicación...
-                          </span>
-                        ) : (
-                          <>
-                            <MapPinIcon className="w-4 h-4 mr-2" />
-                            Usar mi ubicación actual
-                          </>
-                        )}
-                      </Button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowManualLocation(true);
-                          setLocationError(null); // Clear any location errors
-                        }}
-                        className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        O ingresar manualmente
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Manual Location Entry */}
+                  {/* Manual: Ciudad + Direccion (always visible when no GPS detection) */}
                   {showManualLocation && !detectedLocation && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="space-y-2"
+                      className="space-y-3"
                     >
-                      <label className="block text-sm font-medium text-foreground">
-                        Dirección completa
-                      </label>
-                      <div className="relative">
-                        <HomeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                        <input
-                          type="text"
-                          value={address}
-                          onChange={(e) => {
-                            setAddress(e.target.value);
-                            setErrors((prev) => ({ ...prev, address: undefined }));
-                            // Clear location error when user starts typing
-                            if (locationError) {
-                              setLocationError(null);
-                            }
-                          }}
-                          placeholder="Ej: Asunción, Av. Mariscal López 1234"
-                          className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${errors.address ? "border-red-500" : "border-border focus:border-primary"
+                      {/* GPS as secondary option */}
+                      <button
+                        type="button"
+                        onClick={handleUseLocation}
+                        disabled={isLoadingLocation}
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                      >
+                        {isLoadingLocation ? (
+                          <>
+                            <div className="inline-block w-3 h-3 border border-foreground/30 border-t-foreground rounded-full animate-spin" />
+                            Detectando...
+                          </>
+                        ) : (
+                          <>
+                            <MapPinIcon className="w-3.5 h-3.5" />
+                            Usar mi ubicacion actual
+                          </>
+                        )}
+                      </button>
+
+                      {/* Ciudad (autocomplete) */}
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-medium text-foreground">Ciudad</label>
+                        <div className="relative" ref={cityInputRef}>
+                          <BuildingOfficeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10" />
+                          <input
+                            type="text"
+                            value={city}
+                            onChange={(e) => {
+                              setCity(e.target.value);
+                              setShowCitySuggestions(true);
+                              setErrors((prev) => ({ ...prev, city: undefined }));
+                            }}
+                            onFocus={() => {
+                              if (city.trim().length >= 2) setShowCitySuggestions(true);
+                            }}
+                            placeholder="Ej: Asuncion, Luque, CDE..."
+                            autoComplete="off"
+                            className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${
+                              errors.city ? "border-red-500" : "border-border focus:border-primary"
                             }`}
-                        />
+                          />
+                          {showCitySuggestions && filteredCities.length > 0 && (
+                            <div className="absolute z-50 w-full mt-1 bg-secondary border border-border rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto">
+                              {filteredCities.map((suggestion) => (
+                                <button
+                                  key={suggestion}
+                                  type="button"
+                                  onClick={() => {
+                                    setCity(suggestion);
+                                    setShowCitySuggestions(false);
+                                    setErrors((prev) => ({ ...prev, city: undefined }));
+                                  }}
+                                  className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 transition-colors"
+                                >
+                                  {suggestion}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {errors.city && (
+                          <motion.p
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-xs text-red-400"
+                          >
+                            {errors.city}
+                          </motion.p>
+                        )}
                       </div>
-                      {errors.address && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-xs text-red-400"
-                        >
-                          {errors.address}
-                        </motion.p>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        Incluye ciudad y dirección (mínimo 10 caracteres)
-                      </p>
+
+                      {/* Direccion */}
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-medium text-foreground">Direccion</label>
+                        <div className="relative">
+                          <HomeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                          <input
+                            type="text"
+                            value={address}
+                            onChange={(e) => {
+                              setAddress(e.target.value);
+                              setErrors((prev) => ({ ...prev, address: undefined }));
+                            }}
+                            placeholder="Ej: Av. Mariscal Lopez 1234"
+                            className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${
+                              errors.address ? "border-red-500" : "border-border focus:border-primary"
+                            }`}
+                          />
+                        </div>
+                        {errors.address && (
+                          <motion.p
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-xs text-red-400"
+                          >
+                            {errors.address}
+                          </motion.p>
+                        )}
+                      </div>
                     </motion.div>
                   )}
                 </div>
 
-                {/* Submit Button */}
+                {/* Consent */}
+                <p className="text-[11px] leading-relaxed text-muted-foreground text-center mt-4">
+                  Al continuar, acepto los{" "}
+                  <a
+                    href="/terminos-y-condiciones"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-foreground transition-colors"
+                  >
+                    Terminos y Condiciones
+                  </a>{" "}
+                  y la{" "}
+                  <a
+                    href="/politica-de-privacidad"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-foreground transition-colors"
+                  >
+                    Politica de Privacidad
+                  </a>
+                </p>
+
+                {/* Submit */}
                 <Button
                   type="submit"
                   disabled={!isValid || loading}
                   variant="hero"
                   size="xl"
-                  className="w-full h-14 text-base font-bold mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-14 text-base font-bold mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <span className="flex items-center gap-2">
-                      <span className="animate-spin">⏳</span>
+                      <div className="inline-block w-4 h-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
                       Guardando...
                     </span>
                   ) : (

@@ -80,6 +80,7 @@ const Index = () => {
     name: "",
     phone: "",
     address: "",
+    isGeolocated: false,
     lat: undefined as number | undefined,
     long: undefined as number | undefined,
     paymentMethod: "digital" as "digital" | "cash",
@@ -197,6 +198,7 @@ const Index = () => {
       name: "",
       phone: "",
       address: "",
+      isGeolocated: false,
       paymentMethod: "digital",
       orderNumber: generateOrderNumber(),
       paymentIntentId: "",
@@ -217,14 +219,14 @@ const Index = () => {
     resetCheckoutData();
   }, [resetCheckoutData]);
 
-  const handlePhoneSubmit = useCallback((data: { name: string; phone: string; location: string; address: string; lat?: number; long?: number }) => {
-    // Store personal info and location, then proceed to payment
+  const handlePhoneSubmit = useCallback((data: { name: string; phone: string; location: string; address: string; isGeolocated: boolean; lat?: number; long?: number; ruc?: string }) => {
     setCheckoutData((prev) => ({
       ...prev,
       name: data.name,
       phone: data.phone,
       location: data.location,
       address: data.address,
+      isGeolocated: data.isGeolocated,
       lat: data.lat,
       long: data.long,
     }));
