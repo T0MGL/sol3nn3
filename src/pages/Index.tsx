@@ -6,12 +6,22 @@ import { StickyBuyButton } from "@/components/StickyBuyButton";
 import { OfferCTA } from "@/components/OfferCTA";
 import { CustomCursor } from "@/components/CustomCursor";
 import { ScrollProgress } from "@/components/ScrollProgress";
-import { sendOrderInBackground, generateOrderNumber } from "@/services/orderService";
+import {
+  sendOrderInBackground,
+  generateOrderNumber,
+  type PackVariant,
+} from "@/services/orderService";
 import {
   trackInitiateCheckout,
   trackAddToCart,
   trackPurchase,
 } from "@/lib/meta-pixel";
+
+const derivePdrnPackVariant = (quantity: number): PackVariant => {
+  if (quantity <= 1) return "individual";
+  if (quantity === 2) return "duo";
+  return "familiar";
+};
 
 // Lazy load heavy sections that are below the fold
 const CelebritiesMarquee = lazy(() => import("@/components/CelebritiesMarquee"));
@@ -33,9 +43,12 @@ const QuantitySelector = lazy(() => import("@/components/checkout/QuantitySelect
 const PhoneNameForm = lazy(() => import("@/components/checkout/PhoneNameForm"));
 const SuccessPage = lazy(() => import("@/components/checkout/SuccessPage"));
 const PaymentFallbackModal = lazy(() => import("@/components/checkout/PaymentFallbackModal"));
-const StripeCheckoutModal = lazy(() => import("@/components/checkout/StripeCheckoutModal"));
+const CheckoutModal = lazy(() =>
+  import("@/components/checkout/CheckoutModal").then((m) => ({ default: m.CheckoutModal }))
+);
 
-// Skeleton loader for lazy-loaded sections - prevents layout shift
+const PRODUCT_DISPLAY_NAME = "PDRN Serum";
+
 const SectionSkeleton = memo(({ height }: { height: string }) => (
   <div className={`${height} bg-background animate-pulse`}>
     <div className="container max-w-[1400px] mx-auto px-4 py-12 md:py-20">
@@ -52,7 +65,7 @@ SectionSkeleton.displayName = 'SectionSkeleton';
 const Index = () => {
   // Checkout state management
   const [showQuantitySelector, setShowQuantitySelector] = useState(false);
-  const [showStripeCheckout, setShowStripeCheckout] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
   const [showPaymentFallback, setShowPaymentFallback] = useState(false);
   const [showPhoneForm, setShowPhoneForm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -60,7 +73,8 @@ const Index = () => {
 
   const [checkoutData, setCheckoutData] = useState({
     quantity: 1,
-    totalPrice: 189000, // Default to single unit price
+    totalPrice: 189000,
+    unitPrice: 189000,
     colors: null as [string, string] | null,
     location: "",
     name: "",
@@ -97,19 +111,11 @@ const Index = () => {
     }
   }, [checkoutData.orderNumber]);
 
-  // Track InitiateCheckout when phone form opens
   useEffect(() => {
     if (showPhoneForm && checkoutData.quantity > 0) {
       trackInitiateCheckout({
-        content_name: checkoutData.quantity === 1
-          ? 'SOLENNE Beauty & Personal Care'
-          : `SOLENNE Beauty & Personal Care - Pack x${checkoutData.quantity}`,
-        content_ids: checkoutData.quantity === 1
-          ? ['solenne-products']
-          : [`solenne-products-${checkoutData.quantity}pack`],
-        num_items: checkoutData.quantity,
+        quantity: checkoutData.quantity,
         value: checkoutData.totalPrice,
-        currency: 'PYG',
       });
     }
   }, [showPhoneForm, checkoutData.quantity, checkoutData.totalPrice]);
@@ -118,44 +124,31 @@ const Index = () => {
     setCheckoutInProgress(true); // Start checkout progress tracking
     setShowQuantitySelector(true);
 
-    // Preload next modals for seamless transition
     import("@/components/checkout/PhoneNameForm");
-    import("@/components/checkout/StripeCheckoutModal");
+    import("@/components/checkout/CheckoutModal");
   }, []);
 
-  const handleQuantitySelected = useCallback((quantity: number, totalPrice: number) => {
-    setCheckoutData((prev) => ({ ...prev, quantity, totalPrice }));
+  const handleQuantitySelected = useCallback((quantity: number, totalPrice: number, unitPrice: number) => {
+    setCheckoutData((prev) => ({ ...prev, quantity, totalPrice, unitPrice }));
     setShowQuantitySelector(false);
 
-    // Track AddToCart when user selects quantity
     trackAddToCart({
-      content_name: quantity === 1
-        ? 'SOLENNE Beauty & Personal Care'
-        : `SOLENNE Beauty & Personal Care - Pack x${quantity}`,
-      content_ids: quantity === 1
-        ? ['solenne-products']
-        : [`solenne-products-${quantity}pack`],
-      num_items: quantity,
+      quantity,
       value: totalPrice,
-      currency: 'PYG',
     });
 
-    // Open phone form immediately
-    // InitiateCheckout will be tracked when the form opens
     setShowPhoneForm(true);
   }, []);
 
   const handlePaymentSuccess = useCallback((result: {
     paymentIntentId: string;
-    paymentType: 'Card' | 'COD';
-    isPaid: boolean;
+    paymentType: 'COD';
+    isPaid: false;
     deliveryType: 'común' | 'premium';
     finalTotal: number;
   }) => {
-    // Read current checkout data directly (not inside the state setter to avoid side effects in a pure function)
     const data = checkoutData;
 
-    // Send order to backend in background (fire-and-forget) - OUTSIDE the state setter
     sendOrderInBackground({
       name: data.name,
       phone: data.phone,
@@ -164,6 +157,7 @@ const Index = () => {
       lat: data.lat,
       long: data.long,
       quantity: data.quantity,
+      unitPrice: data.unitPrice,
       total: result.finalTotal,
       orderNumber: data.orderNumber,
       paymentIntentId: result.paymentIntentId,
@@ -171,73 +165,57 @@ const Index = () => {
       paymentType: result.paymentType,
       isPaid: result.isPaid,
       deliveryType: result.deliveryType,
-      productName: 'PDRN SERUM',
+      productName: PRODUCT_DISPLAY_NAME,
+      productKey: "pdrn",
+      packVariant: derivePdrnPackVariant(data.quantity),
     });
 
-    // Track Purchase conversion event (also non-blocking)
     trackPurchase({
+      quantity: data.quantity,
       value: result.finalTotal,
-      currency: 'PYG',
-      content_name: data.quantity === 1
-        ? 'SOLENNE Beauty & Personal Care'
-        : `SOLENNE Beauty & Personal Care - Pack x${data.quantity}`,
-      content_ids: data.quantity === 1
-        ? ['solenne-products']
-        : [`solenne-products-${data.quantity}pack`],
-      num_items: data.quantity,
       order_id: data.orderNumber,
     });
 
-    // Pure state update (no side effects inside)
     setCheckoutData((prev) => ({ ...prev, paymentIntentId: result.paymentIntentId, totalPrice: result.finalTotal }));
 
-    // INSTANT UI update - show success immediately
-    setShowStripeCheckout(false);
+    setShowCheckout(false);
     setShowSuccess(true);
   }, [checkoutData]);
 
   const handleBackToPhoneForm = useCallback(() => {
-    setShowStripeCheckout(false);
+    setShowCheckout(false);
     setShowPhoneForm(true);
+  }, []);
+
+  const resetCheckoutData = useCallback(() => {
+    setCheckoutData({
+      quantity: 1,
+      totalPrice: 189000,
+      unitPrice: 189000,
+      colors: null,
+      location: "",
+      name: "",
+      phone: "",
+      address: "",
+      paymentMethod: "digital",
+      orderNumber: generateOrderNumber(),
+      paymentIntentId: "",
+      lat: undefined,
+      long: undefined,
+    });
   }, []);
 
   const handleQuantitySelectorClose = useCallback(() => {
     setShowQuantitySelector(false);
     setCheckoutInProgress(false);
-    setCheckoutData({
-      quantity: 1,
-      totalPrice: 229000,
-      colors: null,
-      location: "",
-      name: "",
-      phone: "",
-      address: "",
-      paymentMethod: "digital",
-      orderNumber: generateOrderNumber(),
-      paymentIntentId: "",
-      lat: undefined,
-      long: undefined,
-    });
-  }, []);
+    resetCheckoutData();
+  }, [resetCheckoutData]);
 
-  const handleStripeCheckoutClose = useCallback(() => {
-    setShowStripeCheckout(false);
+  const handleCheckoutClose = useCallback(() => {
+    setShowCheckout(false);
     setCheckoutInProgress(false);
-    setCheckoutData({
-      quantity: 1,
-      totalPrice: 229000,
-      colors: null,
-      location: "",
-      name: "",
-      phone: "",
-      address: "",
-      paymentMethod: "digital",
-      orderNumber: generateOrderNumber(),
-      paymentIntentId: "",
-      lat: undefined,
-      long: undefined,
-    });
-  }, []);
+    resetCheckoutData();
+  }, [resetCheckoutData]);
 
   const handlePhoneSubmit = useCallback((data: { name: string; phone: string; location: string; address: string; lat?: number; long?: number }) => {
     // Store personal info and location, then proceed to payment
@@ -252,69 +230,32 @@ const Index = () => {
     }));
 
     setShowPhoneForm(false);
-    setShowStripeCheckout(true); // Show payment with all info collected
+    setShowCheckout(true);
   }, []);
 
   const handlePhoneFormClose = useCallback(() => {
     setShowPhoneForm(false);
     setCheckoutInProgress(false);
-    setCheckoutData({
-      quantity: 1,
-      totalPrice: 229000,
-      colors: null,
-      location: "",
-      name: "",
-      phone: "",
-      address: "",
-      paymentMethod: "digital",
-      orderNumber: generateOrderNumber(),
-      paymentIntentId: "",
-      lat: undefined,
-      long: undefined,
-    });
-  }, []);
+    resetCheckoutData();
+  }, [resetCheckoutData]);
 
   const handleSuccessClose = useCallback(() => {
     setShowSuccess(false);
-    setCheckoutInProgress(false); // Deactivate protection
-    // Reset checkout state
-    setCheckoutData({
-      quantity: 1,
-      totalPrice: 229000,
-      colors: null,
-      location: "",
-      name: "",
-      phone: "",
-      address: "",
-      paymentMethod: "digital",
-      orderNumber: generateOrderNumber(),
-      paymentIntentId: "",
-      lat: undefined,
-      long: undefined,
-    });
-  }, []);
+    setCheckoutInProgress(false);
+    resetCheckoutData();
+  }, [resetCheckoutData]);
 
 
-  const orderData = useMemo(() => {
-    // Generate Google Maps link if we have coordinates
-    let googleMapsLink: string | undefined;
-    if (checkoutData.lat && checkoutData.long) {
-      googleMapsLink = `https://www.google.com/maps?q=${checkoutData.lat},${checkoutData.long}`;
-    }
+  const orderData = useMemo(() => ({
+    orderNumber: checkoutData.orderNumber,
+    products: `${checkoutData.quantity}x ${PRODUCT_DISPLAY_NAME}`,
+    total: `${checkoutData.totalPrice.toLocaleString('es-PY')} Gs`,
+    location: checkoutData.location,
+    phone: checkoutData.phone,
+    name: checkoutData.name,
+    address: checkoutData.address,
+  }), [checkoutData]);
 
-    return {
-      orderNumber: checkoutData.orderNumber,
-      products: `${checkoutData.quantity}x SOLENNE Beauty & Personal Care`,
-      total: `${checkoutData.totalPrice.toLocaleString('es-PY')} Gs`,
-      location: checkoutData.location,
-      phone: checkoutData.phone,
-      name: checkoutData.name,
-      address: checkoutData.address,
-      googleMapsLink,
-    };
-  }, [checkoutData]);
-
-  // Memoize customerData to prevent re-renders of StripeCheckoutModal (contains expensive Stripe Elements)
   const customerData = useMemo(() => ({
     name: checkoutData.name,
     phone: checkoutData.phone,
@@ -480,11 +421,11 @@ const Index = () => {
         </Suspense>
       )}
 
-      {showStripeCheckout && (
+      {showCheckout && (
         <Suspense fallback={null}>
-          <StripeCheckoutModal
-            isOpen={showStripeCheckout}
-            onClose={handleStripeCheckoutClose}
+          <CheckoutModal
+            isOpen={showCheckout}
+            onClose={handleCheckoutClose}
             onBack={handleBackToPhoneForm}
             onSuccess={handlePaymentSuccess}
             amount={checkoutData.totalPrice}

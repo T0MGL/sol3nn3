@@ -1,8 +1,11 @@
 /**
  * Meta (Facebook) Pixel Integration
  *
- * This module provides type-safe utilities for tracking conversion events
- * with Meta/Facebook Pixel for ROAS measurement and ad optimization.
+ * Type-safe utilities for tracking conversion events with Meta/Facebook Pixel.
+ * Every funnel event (ViewContent, AddToCart, InitiateCheckout, AddPaymentInfo,
+ * Purchase) shares the same canonical content_name and content_ids so the
+ * attribution funnel stays consolidated and catalog matching works against
+ * the Ordefy product ("PDRN Pink Peptide Serum 30ml").
  */
 
 declare global {
@@ -15,6 +18,45 @@ declare global {
     _fbq: unknown;
   }
 }
+
+export const SOLENNE_CONTENT_NAME_BASE = 'Solenne PDRN Pink Peptide Serum';
+export const SOLENNE_CONTENT_ID_BASE = 'solenne-pdrn-serum';
+export const SOLENNE_CONTENT_CATEGORY = 'Skincare & Beauty';
+export const SOLENNE_CONTENT_TYPE = 'product';
+export const SOLENNE_CURRENCY = 'PYG';
+export const SOLENNE_UNIT_PRICE = 189000;
+
+export const SOLENNE_TAPE_CONTENT_NAME_BASE = 'Solenne V-Shaped Face Tape';
+export const SOLENNE_TAPE_CONTENT_CATEGORY = 'Beauty & Personal Care';
+export const SOLENNE_TAPE_UNIT_PRICE = 149000;
+
+const TAPE_SKU_BY_QUANTITY: Record<number, string> = {
+  1: 'SOLENNE-TAPE-100',
+  2: 'SOLENNE-TAPE-RITUAL',
+  3: 'SOLENNE-TAPE-EVENTO',
+};
+
+export const buildSolenneContentName = (quantity: number): string =>
+  quantity <= 1
+    ? SOLENNE_CONTENT_NAME_BASE
+    : `${SOLENNE_CONTENT_NAME_BASE} - Pack x${quantity}`;
+
+export const buildSolenneContentIds = (quantity: number): string[] =>
+  quantity <= 1
+    ? [SOLENNE_CONTENT_ID_BASE]
+    : [`${SOLENNE_CONTENT_ID_BASE}-${quantity}pack`];
+
+export const buildTapeContentName = (quantity: number): string => {
+  if (quantity <= 1) return SOLENNE_TAPE_CONTENT_NAME_BASE;
+  if (quantity === 2) return `${SOLENNE_TAPE_CONTENT_NAME_BASE} - Pack Ritual`;
+  if (quantity === 3) return `${SOLENNE_TAPE_CONTENT_NAME_BASE} - Pack Evento`;
+  return `${SOLENNE_TAPE_CONTENT_NAME_BASE} - Pack x${quantity}`;
+};
+
+export const buildTapeContentIds = (quantity: number): string[] => {
+  const sku = TAPE_SKU_BY_QUANTITY[quantity] ?? `SOLENNE-TAPE-${quantity}`;
+  return [sku];
+};
 
 /**
  * Initialize Meta Pixel
@@ -97,122 +139,127 @@ export const trackViewContent = (params?: {
   if (typeof window === 'undefined' || !window.fbq) return;
 
   const defaultParams = {
-    content_name: 'Solenne PDRN Pink Peptide Serum',
-    content_category: 'Skincare & Beauty',
-    content_ids: ['solenne-pdrn-serum'],
-    content_type: 'product',
-    value: 189000,
-    currency: 'PYG',
+    content_name: SOLENNE_CONTENT_NAME_BASE,
+    content_category: SOLENNE_CONTENT_CATEGORY,
+    content_ids: [SOLENNE_CONTENT_ID_BASE],
+    content_type: SOLENNE_CONTENT_TYPE,
+    value: SOLENNE_UNIT_PRICE,
+    currency: SOLENNE_CURRENCY,
   };
 
-  window.fbq('track', 'ViewContent', { ...defaultParams, ...params });
-  console.log('📊 Meta Pixel: ViewContent tracked', { ...defaultParams, ...params });
+  const payload = { ...defaultParams, ...params };
+  window.fbq('track', 'ViewContent', payload);
+  console.log('📊 Meta Pixel: ViewContent tracked', payload);
 };
 
 /**
  * Track InitiateCheckout event
- * Call when user clicks "Buy Now" button
+ * Call when user proceeds to the checkout step.
+ * Quantity drives the canonical content_name and content_ids.
  */
-export const trackInitiateCheckout = (params?: {
-  content_name?: string;
-  content_category?: string;
-  content_ids?: string[];
-  num_items?: number;
-  value?: number;
+export const trackInitiateCheckout = (params: {
+  quantity: number;
+  value: number;
   currency?: string;
 }): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
 
-  const defaultParams = {
-    content_name: 'Solenne PDRN Pink Peptide Serum',
-    content_category: 'Skincare & Beauty',
-    content_ids: ['solenne-pdrn-serum'],
-    num_items: 1,
-    value: 189000,
-    currency: 'PYG',
+  const payload = {
+    content_name: buildSolenneContentName(params.quantity),
+    content_category: SOLENNE_CONTENT_CATEGORY,
+    content_ids: buildSolenneContentIds(params.quantity),
+    content_type: SOLENNE_CONTENT_TYPE,
+    num_items: params.quantity,
+    value: params.value,
+    currency: params.currency ?? SOLENNE_CURRENCY,
   };
 
-  window.fbq('track', 'InitiateCheckout', { ...defaultParams, ...params });
-  console.log('📊 Meta Pixel: InitiateCheckout tracked', { ...defaultParams, ...params });
+  window.fbq('track', 'InitiateCheckout', payload);
+  console.log('📊 Meta Pixel: InitiateCheckout tracked', payload);
 };
 
 /**
  * Track AddToCart event
- * Call when user selects quantity/upsell
+ * Call when user confirms quantity/upsell selection.
+ * Quantity drives the canonical content_name and content_ids.
  */
 export const trackAddToCart = (params: {
-  content_name: string;
-  content_ids: string[];
-  num_items: number;
+  quantity: number;
   value: number;
-  currency: string;
+  currency?: string;
 }): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
 
-  window.fbq('track', 'AddToCart', {
-    content_name: params.content_name,
-    content_category: 'Skincare & Beauty',
-    content_ids: params.content_ids,
-    content_type: 'product',
-    num_items: params.num_items,
+  const payload = {
+    content_name: buildSolenneContentName(params.quantity),
+    content_category: SOLENNE_CONTENT_CATEGORY,
+    content_ids: buildSolenneContentIds(params.quantity),
+    content_type: SOLENNE_CONTENT_TYPE,
+    num_items: params.quantity,
     value: params.value,
-    currency: params.currency,
-  });
+    currency: params.currency ?? SOLENNE_CURRENCY,
+  };
 
-  console.log('📊 Meta Pixel: AddToCart tracked', params);
+  window.fbq('track', 'AddToCart', payload);
+  console.log('📊 Meta Pixel: AddToCart tracked', payload);
 };
 
 /**
  * Track AddPaymentInfo event
- * Call when user enters payment information
+ * Call when user enters or switches payment method.
+ * Quantity drives the canonical content_name and content_ids so this event
+ * stays aligned with the rest of the funnel.
  */
 export const trackAddPaymentInfo = (params: {
-  content_category?: string;
-  content_ids?: string[];
-  num_items?: number;
+  quantity: number;
   value: number;
-  currency: string;
-  payment_type?: string; // e.g., 'Pago contra entrega', 'Tarjeta'
+  currency?: string;
+  payment_type?: string;
 }): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
 
-  const defaultParams = {
-    content_category: 'Skincare & Beauty',
-    content_ids: ['solenne-pdrn-serum'],
-    ...params,
+  const payload = {
+    content_name: buildSolenneContentName(params.quantity),
+    content_category: SOLENNE_CONTENT_CATEGORY,
+    content_ids: buildSolenneContentIds(params.quantity),
+    content_type: SOLENNE_CONTENT_TYPE,
+    num_items: params.quantity,
+    value: params.value,
+    currency: params.currency ?? SOLENNE_CURRENCY,
+    ...(params.payment_type && { payment_type: params.payment_type }),
   };
 
-  window.fbq('track', 'AddPaymentInfo', defaultParams);
-  console.log('📊 Meta Pixel: AddPaymentInfo tracked', defaultParams);
+  window.fbq('track', 'AddPaymentInfo', payload);
+  console.log('📊 Meta Pixel: AddPaymentInfo tracked', payload);
 };
 
 /**
  * Track Purchase event (conversion)
- * Call when order is successfully completed
- * This is the most important event for ROAS measurement
+ * Call when the order is successfully completed.
+ * This is the most important event for ROAS measurement.
+ * Quantity drives the canonical content_name and content_ids.
  */
 export const trackPurchase = (params: {
+  quantity: number;
   value: number;
-  currency: string;
-  content_name: string;
-  content_ids: string[];
-  num_items: number;
+  currency?: string;
   order_id?: string;
 }): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
 
-  window.fbq('track', 'Purchase', {
+  const payload = {
+    content_name: buildSolenneContentName(params.quantity),
+    content_category: SOLENNE_CONTENT_CATEGORY,
+    content_ids: buildSolenneContentIds(params.quantity),
+    content_type: SOLENNE_CONTENT_TYPE,
+    num_items: params.quantity,
     value: params.value,
-    currency: params.currency,
-    content_name: params.content_name,
-    content_category: 'Skincare & Beauty',
-    content_type: 'product',
-    content_ids: params.content_ids,
-    num_items: params.num_items,
+    currency: params.currency ?? SOLENNE_CURRENCY,
     ...(params.order_id && { order_id: params.order_id }),
-  });
+  };
 
-  console.log('📊 Meta Pixel: Purchase tracked (CONVERSION)', params);
+  window.fbq('track', 'Purchase', payload);
+  console.log('📊 Meta Pixel: Purchase tracked (CONVERSION)', payload);
 };
 
 /**
@@ -224,4 +271,91 @@ export const trackCustomEvent = (eventName: string, parameters?: Record<string, 
 
   window.fbq('trackCustom', eventName, parameters);
   console.log(`📊 Meta Pixel: Custom event "${eventName}" tracked`, parameters);
+};
+
+/**
+ * Tape-specific pixel wrappers.
+ * Funnel stays canonical for the V-Shaped Face Tape product catalog so AdsManager
+ * never mixes tape attribution with the PDRN serum funnel.
+ */
+
+export const trackTapeViewContent = (): void => {
+  if (typeof window === 'undefined' || !window.fbq) return;
+
+  const payload = {
+    content_name: SOLENNE_TAPE_CONTENT_NAME_BASE,
+    content_category: SOLENNE_TAPE_CONTENT_CATEGORY,
+    content_ids: buildTapeContentIds(1),
+    content_type: SOLENNE_CONTENT_TYPE,
+    value: SOLENNE_TAPE_UNIT_PRICE,
+    currency: SOLENNE_CURRENCY,
+  };
+
+  window.fbq('track', 'ViewContent', payload);
+  console.log('📊 Meta Pixel: Tape ViewContent tracked', payload);
+};
+
+export const trackTapeInitiateCheckout = (params: {
+  quantity: number;
+  value: number;
+  currency?: string;
+}): void => {
+  if (typeof window === 'undefined' || !window.fbq) return;
+
+  const payload = {
+    content_name: buildTapeContentName(params.quantity),
+    content_category: SOLENNE_TAPE_CONTENT_CATEGORY,
+    content_ids: buildTapeContentIds(params.quantity),
+    content_type: SOLENNE_CONTENT_TYPE,
+    num_items: params.quantity,
+    value: params.value,
+    currency: params.currency ?? SOLENNE_CURRENCY,
+  };
+
+  window.fbq('track', 'InitiateCheckout', payload);
+  console.log('📊 Meta Pixel: Tape InitiateCheckout tracked', payload);
+};
+
+export const trackTapeAddToCart = (params: {
+  quantity: number;
+  value: number;
+  currency?: string;
+}): void => {
+  if (typeof window === 'undefined' || !window.fbq) return;
+
+  const payload = {
+    content_name: buildTapeContentName(params.quantity),
+    content_category: SOLENNE_TAPE_CONTENT_CATEGORY,
+    content_ids: buildTapeContentIds(params.quantity),
+    content_type: SOLENNE_CONTENT_TYPE,
+    num_items: params.quantity,
+    value: params.value,
+    currency: params.currency ?? SOLENNE_CURRENCY,
+  };
+
+  window.fbq('track', 'AddToCart', payload);
+  console.log('📊 Meta Pixel: Tape AddToCart tracked', payload);
+};
+
+export const trackTapePurchase = (params: {
+  quantity: number;
+  value: number;
+  currency?: string;
+  order_id?: string;
+}): void => {
+  if (typeof window === 'undefined' || !window.fbq) return;
+
+  const payload = {
+    content_name: buildTapeContentName(params.quantity),
+    content_category: SOLENNE_TAPE_CONTENT_CATEGORY,
+    content_ids: buildTapeContentIds(params.quantity),
+    content_type: SOLENNE_CONTENT_TYPE,
+    num_items: params.quantity,
+    value: params.value,
+    currency: params.currency ?? SOLENNE_CURRENCY,
+    ...(params.order_id && { order_id: params.order_id }),
+  };
+
+  window.fbq('track', 'Purchase', payload);
+  console.log('📊 Meta Pixel: Tape Purchase tracked (CONVERSION)', payload);
 };

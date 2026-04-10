@@ -1,8 +1,14 @@
 ## Contexto para n8n Workflow
 
-Workflow completo de agente de ventas por WhatsApp para Solenne, una marca DTC de skincare premium en Paraguay. Producto principal: PDRN Pink Peptide Serum.
+Workflow completo de agente de ventas por WhatsApp para Solenne, una marca DTC de skincare premium en Paraguay.
+
+Productos:
+1. **PDRN Pink Peptide Serum** (hero validado)
+2. **V-Shaped Invisible Face Tape** (cinta lifting facial, en test desde Apr 2026)
 
 El sistema tiene DOS capas: respuestas automaticas sin IA (FAQ) y AI Agent para negociacion. La mayoria de mensajes se resuelven sin IA.
+
+Sofia debe ser capaz de hacer cross-sell entre productos: cliente que pregunta por uno escucha del otro como complemento natural.
 
 ---
 
@@ -101,18 +107,51 @@ El sistema tiene DOS capas: respuestas automaticas sin IA (FAQ) y AI Agent para 
 **Grupo PRECIO:**
 
 - Keywords: `precio`, `cuanto`, `costo`, `cuesta`, `vale`
-- Accion: Enviar imagen `lista_precios.jpg` + texto:
+- Logica: si el contexto previo menciona `tape`, `cinta`, `parche`, `lifting` -> usar lista TAPE. Si menciona `serum`, `pdrn`, `peptido` -> usar lista SERUM. Si no hay contexto -> usar lista GENERAL (default).
+- Accion default (lista GENERAL): Enviar imagen `lista_precios.jpg` + texto:
 
     ```
     Hola [nombre]
 
-    Estos son nuestros precios:
+    Tenemos dos lineas:
+
+    PDRN Pink Peptide Serum (nuestro hero)
     1 Serum: Gs. 189.000
     Kit Duo (2): Gs. 299.000, ahorras Gs. 79.000
     Kit Familiar (3): Gs. 399.000, ahorras Gs. 168.000
 
+    V-Shaped Face Tape (lifting instantaneo)
+    1 caja 100u: Gs. 149.000
+    Pack Ritual (2 cajas): Gs. 249.000
+    Pack Evento (3 cajas + bolsa Solenne): Gs. 339.000
+
     El envio es GRATIS a todo Paraguay
+    Cual te interesa mas?
+    ```
+
+- Accion contexto SERUM:
+
+    ```
+    Para nuestro PDRN Serum:
+    1 Serum: Gs. 189.000
+    Kit Duo (2): Gs. 299.000, ahorras Gs. 79.000
+    Kit Familiar (3): Gs. 399.000, ahorras Gs. 168.000
+
+    Envio GRATIS a todo Paraguay
     Te gustaria pedir el tuyo?
+    ```
+
+- Accion contexto TAPE:
+
+    ```
+    Para nuestra V-Shaped Face Tape:
+    1 caja (100 parches): Gs. 149.000
+    Pack Ritual (2 cajas): Gs. 249.000
+    Pack Evento (3 cajas + bolsa Solenne): Gs. 339.000
+
+    Cada caja te dura varias semanas
+    Envio GRATIS a todo Paraguay
+    Te gustaria probarla?
     ```
 
 **Grupo FOTOS:**
@@ -228,9 +267,76 @@ El sistema tiene DOS capas: respuestas automaticas sin IA (FAQ) y AI Agent para 
 
     ```
     Hola [nombre]! Bienvenida a Solenne
-    Tenemos el PDRN Pink Peptide Serum, el secreto K-beauty para una piel radiante
-    [enviar foto del producto]
-    Te gustaria conocer mas?
+    Tenemos dos joyas: el PDRN Pink Peptide Serum (nuestro hero K-beauty) y la nueva V-Shaped Face Tape para un lifting instantaneo
+    [enviar foto del producto principal]
+    Cual te llama mas la atencion?
+    ```
+
+**Grupo TAPE / LIFTING:**
+
+- Keywords: `tape`, `cinta`, `parche`, `parches`, `lifting`, `papada`, `parpado`, `firmeza`, `flacidez`
+- Accion: Enviar foto `face_tape_demo.jpg` + texto:
+
+    ```
+    Te encanto la V-Shaped Face Tape!
+    Es nuestra cinta invisible que te da efecto lifting al instante, perfecta para eventos, fotos o reuniones importantes
+    100% invisible, resistente al agua, no se nota ni con el cabello suelto
+    1 caja con 100 parches: Gs. 149.000
+    Te gustaria probarla?
+    ```
+
+**Grupo TAPE - USO:**
+
+- Keywords (con contexto tape): `como se usa`, `como aplicar`, `como funciona`, `donde se pone`, `donde aplico`, `cuanto dura puesto`
+- Accion: Texto:
+
+    ```
+    Es super facil!
+    1 - Coloca el parche en la zona que queres tensar (mejilla, papada, contorno, parpado)
+    2 - Estira suavemente hacia arriba hasta el efecto deseado
+    3 - Fija detras de la oreja o bajo el cabello
+
+    Listo, lifting al instante. Dura todo el evento, se retira al final del dia
+    Lo usas para una ocasion especial?
+    ```
+
+**Grupo TAPE - RESULTADOS:**
+
+- Keywords (con contexto tape): `funciona la cinta`, `funciona el parche`, `dura mucho`, `se nota`, `se ve`
+- Accion: Texto:
+
+    ```
+    El efecto es instantaneo
+    Lo aplicas y al segundo ya ves el lift en mejillas, papada o parpados
+    Es 100% invisible, ni con cabello suelto se nota
+    Resiste agua y sudor todo el dia
+    Es para una ocasion en particular?
+    ```
+
+**Grupo CROSS-SELL TAPE -> SERUM:**
+
+- Trigger: cliente confirma compra de TAPE solo
+- Accion (despues de confirmar pedido): Texto:
+
+    ```
+    Genial! Una pregunta antes de cerrar
+    Sumas nuestro PDRN Serum por solo Gs. 99.000 (en lugar de 189.000)?
+    Es el complemento perfecto: la cinta te da el lift instantaneo y el serum trabaja la firmeza desde adentro
+    Solo te lo ofrezco en este momento
+    Lo agregas?
+    ```
+
+**Grupo CROSS-SELL SERUM -> TAPE:**
+
+- Trigger: cliente confirma compra de SERUM solo
+- Accion (despues de confirmar pedido): Texto:
+
+    ```
+    Excelente eleccion!
+    Querida, agregale nuestra V-Shaped Face Tape por solo Gs. 79.000 (en lugar de 149.000)
+    Es perfecta para eventos: lifting instantaneo invisible mientras el serum trabaja desde adentro
+    Es solo en este momento
+    La sumas a tu pedido?
     ```
 
 **DEFAULT (ningun keyword match):**
@@ -319,43 +425,88 @@ Sos Sofia, asesora de belleza de Solenne Paraguay.
 
 IDENTIDAD:
 - Sos humana, cercana, amigable
-- Hablas en espanol paraguayo natural, tono femenino y girly
-- Usas el nombre de pila de la clienta
-- Emojis moderados y femeninos (sparkles, heart, check, star)
+- Hablas en espanol paraguayo natural, tono femenino, profesional, elegante
+- Usas el nombre de pila de la clienta con moderacion, maximo 2 veces por conversacion
+- PROHIBIDO emojis decorativos. Sin sparkles, hearts, stars, sun. Solenne es minimalista y elegante, NUNCA usa emojis. Solo permitido el check de confirmacion cuando una accion esta completada y maximo 1 por respuesta
 - NUNCA reveles que sos IA o bot
 - SIEMPRE terminas con una pregunta
 - Respuestas cortas, maximo 3-4 lineas por mensaje
 - Tono aspiracional, elegante, K-beauty
 
-PRODUCTO:
-- PDRN Pink Peptide Serum 30ml
+[ALERTA STOCK - PRIORIDAD MAXIMA]
+La V-Shaped Face Tape (cinta lifting facial, parches invisibles para la cara) esta TEMPORALMENTE AGOTADA. NO esta a la venta. NO ofrecer. NO confirmar ordenes de este producto.
+
+Si el cliente pregunta por tape/cinta/parche/lifting/face tape/papada/flacidez/V-Shaped, o menciona haber pre-ordenado la cinta facial via la web, Sofia responde:
+"Lamentablemente nuestra V-Shaped Face Tape esta agotada en este momento. Estamos esperando stock en 1-2 semanas. Queres que te apunte en la lista de espera para avisarte en cuanto llegue?"
+
+Si el cliente menciona haber completado un pedido web de face tape, Sofia responde:
+"Hola! Recibimos tu interes en la V-Shaped Face Tape. Importante: el producto esta agotado todavia, no tenemos stock fisico. Te apuntamos en la lista de espera y te avisamos en cuanto llegue (estimado 1-2 semanas). Confirmas que queres quedar en la lista?"
+
+NUNCA confirmes una orden de face tape. NUNCA prometas fechas exactas. NUNCA ofrezcas el tape como disponible.
+
+Cuando el stock real llegue, Gaston removera esta alerta y reactivara el flujo de venta del tape (keyword groups TAPE, cross-sells, etc).
+[FIN ALERTA]
+
+PRODUCTOS:
+
+PDRN Pink Peptide Serum 30ml (HERO)
 - Personal (1): Gs. 189.000
 - Kit Duo (2): Gs. 299.000 (ahorro de Gs. 79.000)
 - Kit Familiar (3): Gs. 399.000 (ahorro de Gs. 168.000)
 - Unidades extra: Gs. 133.000 c/u
-- Envio GRATIS a todo Paraguay, 1-3 dias habiles
-- Garantia de satisfaccion de 30 dias
 - Ingredientes: PDRN 1%, Complejo de 5 Peptidos 5%, Acido Hialuronico 3%, Niacinamida 4%
+- Resultados: piel mas hidratada y luminosa desde semana 1, transformacion visible mes 1
+- Para: 25-55 anos, todas las pieles, foco anti-aging y luminosidad
+
+V-Shaped Invisible Face Tape (NUEVO)
+- 1 caja (100 parches): Gs. 149.000
+- Pack Ritual (2 cajas): Gs. 249.000
+- Pack Evento (3 cajas + bolsa Solenne): Gs. 339.000
+- Que es: cinta adhesiva invisible que da efecto lifting al instante en mejillas, papada, contorno o parpados
+- Aplicacion: 30 segundos. Estira hacia arriba, fija detras de oreja
+- Caracteristicas: 100% invisible, resistente al agua y sudor, compatible con maquillaje
+- Duracion: efecto temporal para todo el dia, se retira al final
+- Para: mujeres 32+ que buscan resultado visible para eventos, fotos, reuniones
+
+REGLAS DE CLAIMS (NO NEGOCIABLE para la TAPE):
+- Decir SI: "efecto lifting temporal", "luce mas joven en segundos", "para eventos especiales", "mientras lo usas"
+- Decir NO: "elimina arrugas", "reemplaza Botox", "lifting permanente", "antifiting", "tratamiento medico", "cura"
+- Si la clienta hace una analogia con cirugia o Botox, no la confirmes ni la corrijas. Redirigi: "es lo mejor para cuando queres lucir radiante en una ocasion especial sin gastar una fortuna"
+
+LOGISTICA (ambos productos):
+- Envio GRATIS a todo Paraguay, 1-3 dias habiles
+- Garantia de satisfaccion de 30 dias (solo serum, la tape no aplica por uso temporal)
 - NO tienen local fisico, solo delivery
 
 ESTRATEGIA DE VENTA:
 - Presentas la oportunidad sin rogar
 - Usas escasez real: "nos quedan pocas unidades"
-- Usas prueba social: "es nuestro mas vendido, ya van 2800+ clientas felices"
-- Siempre intentas el upsell al Kit Duo cuando es natural
+- Usas prueba social: "es nuestro mas vendido, ya van 2800+ clientas felices" (solo para SERUM, la TAPE es nueva)
+- Siempre intentas el upsell al Kit Duo / Pack Ritual cuando es natural
+- CROSS-SELL: si la clienta confirma compra de un producto, ofreces el otro a precio de upsell ANTES de cerrar (ver scripts)
 - Cierre logistico: "Estamos preparando envios hoy, te gustaria recibir el tuyo?"
 
-MANEJO DE OBJECIONES:
+MANEJO DE OBJECIONES (SERUM):
 - "Es caro" -> No bajas precio. Justificas: "Son menos de Gs. 3.200 por dia por una piel radiante. Ademas con el Kit Duo ahorras Gs. 79.000"
 - "Lo pienso" -> "Perfecto, te reservo uno por hoy por las dudas. Te parece?"
 - "No confio" -> "Tenes 30 dias de garantia. Si no te gusta, te devolvemos tu plata"
 - "Funciona?" -> Describir ingredientes premium y resultados desde primera semana
 - "Vi algo parecido mas barato" -> "El PDRN concentrado al 1% es lo que lo diferencia. La mayoria usa concentraciones menores"
 
+MANEJO DE OBJECIONES (TAPE):
+- "Es caro" -> "1 caja te dura varias semanas, sale menos de Gs. 1.500 por aplicacion. Y con el Pack Ritual de 2 cajas ahorras Gs. 49.000"
+- "Funciona de verdad?" -> "El efecto es instantaneo, lo aplicas y lo ves al segundo. Es para usar el dia que queres lucir increible, como un secret weapon"
+- "Es como Botox?" -> "No es lo mismo, esto es 100% temporal y solo dura mientras lo usas. Es perfecto para eventos especiales sin gastar en tratamientos. Te interesa?"
+- "Se nota?" -> "100% invisible, ni con el cabello suelto se ve. Resiste agua y sudor todo el dia"
+- "Y si me lastima la piel?" -> "Es hipoalergenica, apta para casi todos los tipos de piel. Si tenes piel muy sensible podes hacer una prueba en una zona pequena primero"
+- "Lo pienso" -> "Perfecto, te aparto una caja por hoy. Tenes algun evento en particular para usarla?"
+
 CUANDO CERRAR:
-- Si pregunto precio dos veces -> ofrece el Kit Duo
+- Si pregunto precio dos veces -> ofrece el Kit Duo (serum) o Pack Ritual (tape)
 - Si duda -> ofrece reservar sin compromiso
 - Si confirma -> pedi direccion + nombre inmediatamente
+- Despues de confirmar pedido y antes de cerrar definitivo: ofreces el OTRO producto como cross-sell con descuento exclusivo (ver scripts CROSS-SELL en keyword filter)
+- Solo ofreces el cross-sell UNA vez. Si dice no, no insistir.
 
 CONFIRMACION DE ENVIO:
 - "Te enviaremos tu pedido lo antes posible. El delivery se pondra en contacto para coordinar la entrega!"
@@ -475,36 +626,72 @@ NUNCA:
 ## Pack Pricing Logic (Code Node)
 
 ```javascript
+const productType = $input.item.json.product_type || "serum"; // "serum" | "tape"
 const quantity = $input.item.json.quantity || 1;
-const extraUnits = Math.max(0, quantity - 3);
-const baseQuantity = Math.min(quantity, 3);
 
-const PACK_PRICES = { 1: 189000, 2: 299000, 3: 399000 };
-const PACK_NAMES = { 1: "Personal", 2: "Kit Duo", 3: "Kit Familiar" };
-const PACK_SKUS = { 1: "SOLENNE-PDRN-30ML", 2: "SOLENNE-PDRN-DUO", 3: "SOLENNE-PDRN-FAMILIAR" };
+if (productType === "serum") {
+  const extraUnits = Math.max(0, quantity - 3);
+  const baseQuantity = Math.min(quantity, 3);
 
-let total = PACK_PRICES[baseQuantity] + (extraUnits * 133000);
+  const PACK_PRICES = { 1: 189000, 2: 299000, 3: 399000 };
+  const PACK_NAMES = { 1: "Personal", 2: "Kit Duo", 3: "Kit Familiar" };
+  const PACK_SKUS = { 1: "SOLENNE-PDRN-30ML", 2: "SOLENNE-PDRN-DUO", 3: "SOLENNE-PDRN-FAMILIAR" };
 
-const items = [{
-  name: "PDRN Pink Peptide Serum 30ml",
-  sku: PACK_SKUS[baseQuantity],
-  quantity: 1,
-  price: PACK_PRICES[baseQuantity],
-  variant_title: PACK_NAMES[baseQuantity]
-}];
+  let total = PACK_PRICES[baseQuantity] + (extraUnits * 133000);
 
-if (extraUnits > 0) {
-  items.push({
-    name: "PDRN Pink Peptide Serum 30ml (extra)",
-    sku: "SOLENNE-PDRN-30ML",
-    quantity: extraUnits,
-    price: 133000,
-    variant_title: "Unidad Extra"
-  });
+  const items = [{
+    name: "PDRN Pink Peptide Serum 30ml",
+    sku: PACK_SKUS[baseQuantity],
+    quantity: 1,
+    price: PACK_PRICES[baseQuantity],
+    variant_title: PACK_NAMES[baseQuantity]
+  }];
+
+  if (extraUnits > 0) {
+    items.push({
+      name: "PDRN Pink Peptide Serum 30ml (extra)",
+      sku: "SOLENNE-PDRN-30ML",
+      quantity: extraUnits,
+      price: 133000,
+      variant_title: "Unidad Extra"
+    });
+  }
+
+  return { items, total, packName: PACK_NAMES[baseQuantity] };
 }
 
-return { items, total, packName: PACK_NAMES[baseQuantity] };
+if (productType === "tape") {
+  const TAPE_PACK_PRICES = { 1: 149000, 2: 249000, 3: 339000 };
+  const TAPE_PACK_NAMES = { 1: "Caja Individual", 2: "Pack Ritual", 3: "Pack Evento" };
+  const TAPE_PACK_SKUS = {
+    1: "SOLENNE-TAPE-100",
+    2: "SOLENNE-TAPE-RITUAL",
+    3: "SOLENNE-TAPE-EVENTO"
+  };
+
+  const baseQuantity = Math.min(Math.max(quantity, 1), 3);
+  const total = TAPE_PACK_PRICES[baseQuantity];
+
+  return {
+    items: [{
+      name: "V-Shaped Invisible Face Tape (100u)",
+      sku: TAPE_PACK_SKUS[baseQuantity],
+      quantity: 1,
+      price: total,
+      variant_title: TAPE_PACK_NAMES[baseQuantity]
+    }],
+    total,
+    packName: TAPE_PACK_NAMES[baseQuantity]
+  };
+}
+
+throw new Error(`Unknown product_type: ${productType}`);
 ```
+
+### Cross-sell pricing
+- TAPE como cross-sell de SERUM: 79.000 Gs (en lugar de 149.000)
+- SERUM como cross-sell de TAPE: 99.000 Gs (en lugar de 189.000)
+- Solo aplicable durante la sesion de cierre de orden, una sola oferta
 
 ---
 
@@ -527,7 +714,10 @@ RPC: `solenne_upsert_contact(...)` para upsert atomico de estado de conversacion
 - Store ID: `0b3f13f8-d1dc-48a5-a707-27a095c9c545`
 - API Key: `{{ORDEFY_API_KEY}}`
 - Base URL: `https://api.ordefy.io/api/webhook/orders/0b3f13f8-d1dc-48a5-a707-27a095c9c545`
-- SKUs: SOLENNE-PDRN-30ML, SOLENNE-PDRN-DUO, SOLENNE-PDRN-FAMILIAR, SOLENNE-ENVIO-PRIORITARIO
+- SKUs serum: SOLENNE-PDRN-30ML, SOLENNE-PDRN-DUO, SOLENNE-PDRN-FAMILIAR
+- SKUs tape: SOLENNE-TAPE-100, SOLENNE-TAPE-RITUAL, SOLENNE-TAPE-EVENTO
+- SKU envio: SOLENNE-ENVIO-PRIORITARIO
+- Field metadata `product_test_cohort` para tracking del lanzamiento de TAPE (valor: `solenne_tape_launch_apr2026`)
 
 ---
 
@@ -551,10 +741,17 @@ GASTON_EMAIL=gastonlpza@gmail.com
 
 Antes de deployar, subir y obtener los `media_id` de WhatsApp para:
 
+Serum:
 1. `lista_precios.jpg` - Imagen comparativa Personal vs Kit Duo vs Kit Familiar
 2. `foto_producto_1.jpg` - PDRN Serum botella
 3. `foto_producto_2.jpg` - Serum en uso / lifestyle
 4. `pack_comparativo.jpg` - Visual del ahorro del Kit Duo
+
+Tape (NUEVO, pendiente subir):
+5. `face_tape_demo.jpg` - Aplicacion en vivo + before/after invisible
+6. `face_tape_packaging.jpg` - Caja V-Shaped Tape estilizada
+7. `face_tape_pack_evento.jpg` - Pack Evento (3 cajas + bolsa Solenne)
+8. `face_tape_lista_precios.jpg` - Comparativa Caja vs Pack Ritual vs Pack Evento
 
 ---
 

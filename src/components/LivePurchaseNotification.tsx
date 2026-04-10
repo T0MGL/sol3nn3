@@ -5,12 +5,14 @@ interface LivePurchaseNotificationProps {
   isVisible: boolean;
   buyerName: string;
   buyerCity: string;
+  productLabel?: string;
 }
 
 export const LivePurchaseNotification = ({
   isVisible,
   buyerName,
   buyerCity,
+  productLabel = "el PDRN Serum",
 }: LivePurchaseNotificationProps) => {
   return (
     <AnimatePresence>
@@ -32,7 +34,7 @@ export const LivePurchaseNotification = ({
                   {buyerName} de {buyerCity}
                 </p>
                 <p className="text-xs text-foreground/60 mt-0.5">
-                  acaba de comprar el PDRN Serum
+                  acaba de comprar {productLabel}
                 </p>
               </div>
               <span className="text-xs text-foreground/40 flex-shrink-0">
