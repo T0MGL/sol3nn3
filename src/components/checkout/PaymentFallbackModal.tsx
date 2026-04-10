@@ -78,7 +78,7 @@ export const PaymentFallbackModal = ({
                         Pago contra entrega
                       </h3>
                       <p className="text-sm text-muted-foreground mb-3">
-                        Paga en efectivo cuando recibas tu PDRN Serum de Solenne.
+                        Paga en efectivo cuando recibas tu pedido de Solenne.
                         Sin tarjeta, sin complicaciones.
                       </p>
                       <div className="space-y-1.5">
