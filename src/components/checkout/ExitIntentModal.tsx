@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { XMarkIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { trackLead } from "@/lib/meta-pixel";
+import { hashEmail, getFbc, getFbp } from "@/lib/meta-matching";
 
 interface ExitIntentModalProps {
   isOpen: boolean;
@@ -54,6 +56,18 @@ export const ExitIntentModal = ({ isOpen, onClose }: ExitIntentModalProps) => {
 
       if (response.ok) {
         setIsSubmitted(true);
+
+        void (async () => {
+          const em = await hashEmail(email);
+          trackLead({
+            content_name: "Solenne exit-intent 10 percent coupon",
+            user_data: {
+              em,
+              fbc: getFbc(),
+              fbp: getFbp(),
+            },
+          });
+        })();
 
         // Wait a moment to show success message, then close and navigate
         setTimeout(() => {

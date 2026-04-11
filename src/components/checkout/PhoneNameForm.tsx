@@ -10,10 +10,13 @@ import {
   CheckIcon,
   BuildingOfficeIcon,
   DocumentTextIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 import { CheckoutProgressBar } from "./CheckoutProgressBar";
 import { API_CONFIG } from "@/lib/api";
 import { PARAGUAY_CITIES } from "@/data/paraguayCities";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface PhoneNameFormProps {
   isOpen: boolean;
@@ -26,6 +29,8 @@ interface PhoneNameFormProps {
     lat?: number;
     long?: number;
     ruc?: string;
+    email?: string;
+    wantsInvoice?: boolean;
   }) => void;
   onClose?: () => void;
 }
@@ -35,8 +40,9 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
   const [phone, setPhone] = useState("+595 ");
   const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
+  const [wantsInvoice, setWantsInvoice] = useState(false);
   const [ruc, setRuc] = useState("");
-  const [showRuc, setShowRuc] = useState(false);
+  const [email, setEmail] = useState("");
   const [customPrefix, setCustomPrefix] = useState(false);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [detectedLocation, setDetectedLocation] = useState<string | null>(null);
@@ -44,7 +50,14 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [locationCoords, setLocationCoords] = useState<{ lat?: number; long?: number }>({});
-  const [errors, setErrors] = useState<{ name?: string; phone?: string; address?: string; city?: string }>({});
+  const [errors, setErrors] = useState<{
+    name?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    ruc?: string;
+    email?: string;
+  }>({});
   const [loading, setLoading] = useState(false);
   const phoneInputRef = useRef<HTMLInputElement>(null);
   const cityInputRef = useRef<HTMLDivElement>(null);
@@ -64,8 +77,9 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
       setPhone("+595 ");
       setCity("");
       setAddress("");
+      setWantsInvoice(false);
       setRuc("");
-      setShowRuc(false);
+      setEmail("");
       setCustomPrefix(false);
       setShowCitySuggestions(false);
       setDetectedLocation(null);
@@ -233,7 +247,14 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
   };
 
   const validateForm = () => {
-    const newErrors: { name?: string; phone?: string; address?: string; city?: string } = {};
+    const newErrors: {
+      name?: string;
+      phone?: string;
+      address?: string;
+      city?: string;
+      ruc?: string;
+      email?: string;
+    } = {};
 
     if (!name || name.trim().length < 3) {
       newErrors.name = "Nombre requerido (min. 3 caracteres)";
@@ -267,6 +288,19 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
       }
     }
 
+    if (wantsInvoice) {
+      const cleanRuc = ruc.replace(/\D/g, "");
+      if (cleanRuc.length < 6) {
+        newErrors.ruc = "RUC requerido para factura";
+      }
+      const cleanEmail = email.trim();
+      if (!cleanEmail) {
+        newErrors.email = "Email requerido para factura";
+      } else if (!EMAIL_REGEX.test(cleanEmail)) {
+        newErrors.email = "Email invalido";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -294,6 +328,9 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
 
     setLoading(true);
 
+    const trimmedEmail = email.trim();
+    const trimmedRuc = ruc.trim();
+
     onSubmit({
       name: name.trim(),
       phone: phone.trim(),
@@ -302,7 +339,9 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
       isGeolocated: !!detectedLocation,
       lat: locationCoords.lat,
       long: locationCoords.long,
-      ruc: ruc.trim() || undefined,
+      ruc: wantsInvoice && trimmedRuc ? trimmedRuc : undefined,
+      email: wantsInvoice && trimmedEmail ? trimmedEmail : undefined,
+      wantsInvoice,
     });
 
     setLoading(false);
@@ -315,7 +354,10 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
         const phoneDigitsOnly = phone.slice(5).replace(/\D/g, "");
         return phoneDigitsOnly.length >= 8 && phoneDigitsOnly.length <= 10 && !isFakePhoneNumber(phoneDigitsOnly);
       })();
-  const isValid = name.trim().length >= 3 && isValidPhone && hasValidLocation;
+  const isValidInvoice = !wantsInvoice || (
+    ruc.replace(/\D/g, "").length >= 6 && EMAIL_REGEX.test(email.trim())
+  );
+  const isValid = name.trim().length >= 3 && isValidPhone && hasValidLocation && isValidInvoice;
 
   return (
     <AnimatePresence>
@@ -445,51 +487,110 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                   </button>
                 </div>
 
-                {/* RUC (optional, collapsible) */}
-                <div>
-                  {!showRuc ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowRuc(true)}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Necesitas factura? Ingresa tu RUC
-                    </button>
-                  ) : (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="space-y-1.5"
-                    >
-                      <label className="block text-sm font-medium text-foreground">
-                        RUC <span className="text-muted-foreground font-normal">(opcional)</span>
-                      </label>
-                      <div className="relative">
-                        <DocumentTextIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                        <input
-                          type="text"
-                          value={ruc}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/[^0-9-]/g, "");
-                            setRuc(val);
-                          }}
-                          placeholder="Ej: 80012345-6"
-                          maxLength={12}
-                          className="w-full pl-11 pr-4 py-3 bg-secondary border border-border focus:border-primary rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowRuc(false);
+                {/* Factura (checkbox + RUC/email required on) */}
+                <div className="space-y-3">
+                  <label className="flex items-start gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={wantsInvoice}
+                      onChange={(e) => {
+                        const next = e.target.checked;
+                        setWantsInvoice(next);
+                        if (!next) {
                           setRuc("");
-                        }}
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          setEmail("");
+                          setErrors((prev) => ({ ...prev, ruc: undefined, email: undefined }));
+                        }
+                      }}
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-border bg-secondary text-primary focus:ring-2 focus:ring-primary/30 focus:ring-offset-0 cursor-pointer"
+                    />
+                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors select-none">
+                      Necesito factura legal
+                    </span>
+                  </label>
+
+                  <AnimatePresence initial={false}>
+                    {wantsInvoice && (
+                      <motion.div
+                        key="invoice-fields"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-3 overflow-hidden"
                       >
-                        No necesito factura
-                      </button>
-                    </motion.div>
-                  )}
+                        {/* RUC */}
+                        <div className="space-y-1.5">
+                          <label className="block text-sm font-medium text-foreground">RUC</label>
+                          <div className="relative">
+                            <DocumentTextIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                            <input
+                              type="text"
+                              value={ruc}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/[^0-9-]/g, "");
+                                setRuc(val);
+                                setErrors((prev) => ({ ...prev, ruc: undefined }));
+                              }}
+                              placeholder="Ej: 80012345-6"
+                              maxLength={12}
+                              required
+                              aria-invalid={!!errors.ruc}
+                              className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${
+                                errors.ruc ? "border-red-500" : "border-border focus:border-primary"
+                              }`}
+                            />
+                          </div>
+                          {errors.ruc && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-xs text-red-400"
+                            >
+                              {errors.ruc}
+                            </motion.p>
+                          )}
+                        </div>
+
+                        {/* Email */}
+                        <div className="space-y-1.5">
+                          <label className="block text-sm font-medium text-foreground">Email</label>
+                          <div className="relative">
+                            <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                            <input
+                              type="email"
+                              value={email}
+                              onChange={(e) => {
+                                setEmail(e.target.value);
+                                setErrors((prev) => ({ ...prev, email: undefined }));
+                              }}
+                              placeholder="tu@email.com"
+                              maxLength={120}
+                              autoComplete="email"
+                              inputMode="email"
+                              required
+                              aria-invalid={!!errors.email}
+                              className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${
+                                errors.email ? "border-red-500" : "border-border focus:border-primary"
+                              }`}
+                            />
+                          </div>
+                          {errors.email && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-xs text-red-400"
+                            >
+                              {errors.email}
+                            </motion.p>
+                          )}
+                          <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
+                            Te enviamos la factura al email.
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Location Section */}

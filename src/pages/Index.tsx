@@ -15,7 +15,17 @@ import {
   trackInitiateCheckout,
   trackAddToCart,
   trackPurchase,
+  type MetaUserData,
 } from "@/lib/meta-pixel";
+import {
+  hashEmail,
+  hashPhoneE164,
+  hashFirstName,
+  hashLastName,
+  hashExternalId,
+  getFbc,
+  getFbp,
+} from "@/lib/meta-matching";
 
 const derivePdrnPackVariant = (quantity: number): PackVariant => {
   if (quantity <= 1) return "individual";
@@ -80,6 +90,9 @@ const Index = () => {
     name: "",
     phone: "",
     address: "",
+    email: "" as string,
+    wantsInvoice: false,
+    ruc: "" as string,
     isGeolocated: false,
     lat: undefined as number | undefined,
     long: undefined as number | undefined,
@@ -117,6 +130,7 @@ const Index = () => {
       trackInitiateCheckout({
         quantity: checkoutData.quantity,
         value: checkoutData.totalPrice,
+        user_data: { fbc: getFbc(), fbp: getFbp() },
       });
     }
   }, [showPhoneForm, checkoutData.quantity, checkoutData.totalPrice]);
@@ -136,6 +150,7 @@ const Index = () => {
     trackAddToCart({
       quantity,
       value: totalPrice,
+      user_data: { fbc: getFbc(), fbp: getFbp() },
     });
 
     setShowPhoneForm(true);
@@ -162,7 +177,7 @@ const Index = () => {
       total: result.finalTotal,
       orderNumber: data.orderNumber,
       paymentIntentId: result.paymentIntentId,
-      email: undefined,
+      email: data.email || undefined,
       paymentType: result.paymentType,
       isPaid: result.isPaid,
       deliveryType: result.deliveryType,
@@ -171,11 +186,33 @@ const Index = () => {
       packVariant: derivePdrnPackVariant(data.quantity),
     });
 
-    trackPurchase({
-      quantity: data.quantity,
-      value: result.finalTotal,
-      order_id: data.orderNumber,
-    });
+    void (async () => {
+      const [em, ph, fn, ln, external_id] = await Promise.all([
+        hashEmail(data.email || undefined),
+        hashPhoneE164(data.phone),
+        hashFirstName(data.name),
+        hashLastName(data.name),
+        hashExternalId(data.orderNumber),
+      ]);
+
+      const user_data: MetaUserData = {
+        em,
+        ph,
+        fn,
+        ln,
+        external_id,
+        fbc: getFbc(),
+        fbp: getFbp(),
+      };
+
+      trackPurchase({
+        quantity: data.quantity,
+        value: result.finalTotal,
+        order_id: data.orderNumber,
+        event_id: data.orderNumber,
+        user_data,
+      });
+    })();
 
     setCheckoutData((prev) => ({ ...prev, paymentIntentId: result.paymentIntentId, totalPrice: result.finalTotal }));
 
@@ -198,6 +235,9 @@ const Index = () => {
       name: "",
       phone: "",
       address: "",
+      email: "",
+      wantsInvoice: false,
+      ruc: "",
       isGeolocated: false,
       paymentMethod: "digital",
       orderNumber: generateOrderNumber(),
@@ -219,7 +259,18 @@ const Index = () => {
     resetCheckoutData();
   }, [resetCheckoutData]);
 
-  const handlePhoneSubmit = useCallback((data: { name: string; phone: string; location: string; address: string; isGeolocated: boolean; lat?: number; long?: number; ruc?: string }) => {
+  const handlePhoneSubmit = useCallback((data: {
+    name: string;
+    phone: string;
+    location: string;
+    address: string;
+    isGeolocated: boolean;
+    lat?: number;
+    long?: number;
+    ruc?: string;
+    email?: string;
+    wantsInvoice?: boolean;
+  }) => {
     setCheckoutData((prev) => ({
       ...prev,
       name: data.name,
@@ -229,6 +280,9 @@ const Index = () => {
       isGeolocated: data.isGeolocated,
       lat: data.lat,
       long: data.long,
+      ruc: data.ruc ?? "",
+      email: data.email ?? "",
+      wantsInvoice: !!data.wantsInvoice,
     }));
 
     setShowPhoneForm(false);
