@@ -16,7 +16,17 @@ import {
   trackTapeAddToCart,
   trackTapePurchase,
   buildTapeContentName,
+  type MetaUserData,
 } from "@/lib/meta-pixel";
+import {
+  hashEmail,
+  hashPhoneE164,
+  hashFirstName,
+  hashLastName,
+  hashExternalId,
+  getFbc,
+  getFbp,
+} from "@/lib/meta-matching";
 
 type TapePackVariant = Extract<PackVariant, "individual" | "ritual" | "evento">;
 
@@ -89,6 +99,9 @@ const LiftingTape = () => {
     name: "",
     phone: "",
     address: "",
+    email: "" as string,
+    wantsInvoice: false,
+    ruc: "" as string,
     isGeolocated: false,
     lat: undefined as number | undefined,
     long: undefined as number | undefined,
@@ -204,6 +217,7 @@ const LiftingTape = () => {
       trackTapeInitiateCheckout({
         quantity: checkoutData.quantity,
         value: checkoutData.totalPrice,
+        user_data: { fbc: getFbc(), fbp: getFbp() },
       });
     }
   }, [showPhoneForm, checkoutData.quantity, checkoutData.totalPrice]);
@@ -233,6 +247,7 @@ const LiftingTape = () => {
       trackTapeAddToCart({
         quantity,
         value: totalPrice,
+        user_data: { fbc: getFbc(), fbp: getFbp() },
       });
 
       setShowPhoneForm(true);
@@ -262,7 +277,7 @@ const LiftingTape = () => {
         total: result.finalTotal,
         orderNumber: data.orderNumber,
         paymentIntentId: result.paymentIntentId,
-        email: undefined,
+        email: data.email || undefined,
         paymentType: result.paymentType,
         isPaid: result.isPaid,
         deliveryType: result.deliveryType,
@@ -271,11 +286,33 @@ const LiftingTape = () => {
         packVariant: data.packVariant,
       });
 
-      trackTapePurchase({
-        quantity: data.quantity,
-        value: result.finalTotal,
-        order_id: data.orderNumber,
-      });
+      void (async () => {
+        const [em, ph, fn, ln, external_id] = await Promise.all([
+          hashEmail(data.email || undefined),
+          hashPhoneE164(data.phone),
+          hashFirstName(data.name),
+          hashLastName(data.name),
+          hashExternalId(data.orderNumber),
+        ]);
+
+        const user_data: MetaUserData = {
+          em,
+          ph,
+          fn,
+          ln,
+          external_id,
+          fbc: getFbc(),
+          fbp: getFbp(),
+        };
+
+        trackTapePurchase({
+          quantity: data.quantity,
+          value: result.finalTotal,
+          order_id: data.orderNumber,
+          event_id: data.orderNumber,
+          user_data,
+        });
+      })();
 
       setCheckoutData((prev) => ({
         ...prev,
@@ -305,6 +342,9 @@ const LiftingTape = () => {
       name: "",
       phone: "",
       address: "",
+      email: "",
+      wantsInvoice: false,
+      ruc: "",
       isGeolocated: false,
       paymentMethod: "digital",
       orderNumber: generateOrderNumber(),
@@ -327,7 +367,18 @@ const LiftingTape = () => {
   }, [resetCheckoutData]);
 
   const handlePhoneSubmit = useCallback(
-    (data: { name: string; phone: string; location: string; address: string; isGeolocated: boolean; lat?: number; long?: number; ruc?: string }) => {
+    (data: {
+      name: string;
+      phone: string;
+      location: string;
+      address: string;
+      isGeolocated: boolean;
+      lat?: number;
+      long?: number;
+      ruc?: string;
+      email?: string;
+      wantsInvoice?: boolean;
+    }) => {
       setCheckoutData((prev) => ({
         ...prev,
         name: data.name,
@@ -337,6 +388,9 @@ const LiftingTape = () => {
         isGeolocated: data.isGeolocated,
         lat: data.lat,
         long: data.long,
+        ruc: data.ruc ?? "",
+        email: data.email ?? "",
+        wantsInvoice: !!data.wantsInvoice,
       }));
 
       setShowPhoneForm(false);
