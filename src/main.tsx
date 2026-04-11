@@ -1,9 +1,12 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { captureFbclid } from "./lib/meta-matching";
 
-// Meta Pixel is initialized in index.html for faster loading
-// No need to initialize again here to avoid duplicate PageView events
+// Meta Pixel is initialized in index.html for faster loading.
+// Capture fbclid before React mounts so the _fbc cookie is available to any
+// event the landing fires, including the inline PageView at first paint.
+captureFbclid();
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
