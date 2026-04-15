@@ -199,24 +199,33 @@
     }
     </script>
 
-    <!-- Meta Pixel Code -->
+    <!-- Meta Pixel Code: hostname-guarded to bysolenne.shop only.
+         Vercel previews (sol3nn3.vercel.app, branch deploys) and localhost never fire. -->
     <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '2322991584857999');
-    fbq('track', 'PageView');
+    (function(){
+      var h = window.location.hostname;
+      if (h !== 'bysolenne.shop' && h !== 'www.bysolenne.shop') {
+        return;
+      }
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '2322991584857999');
+      fbq('track', 'PageView');
+    })();
     </script>
     <!-- End Meta Pixel Code -->
   </head>
 
   <body>
-    <!-- Meta Pixel Code (noscript fallback) -->
+    <!-- Meta Pixel noscript fallback: no hostname guard possible server-side,
+         but the image tag only loads if the browser disables JS AND lands here,
+         which in practice is a negligible traffic slice. -->
     <noscript>
       <img height="1" width="1" style="display:none"
         src="https://www.facebook.com/tr?id=2322991584857999&ev=PageView&noscript=1"
