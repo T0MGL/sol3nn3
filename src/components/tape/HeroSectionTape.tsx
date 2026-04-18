@@ -14,7 +14,8 @@ import faceTapeApplication from "@/assets/products/tape/face-tape-application.we
 import faceTapeResult from "@/assets/products/tape/face-tape-result.webp";
 import faceTapePackaging from "@/assets/products/tape/face-tape-packaging.webp";
 import { LivePurchaseNotification, getRandomBuyer } from "@/components/LivePurchaseNotification";
-import { trackTapeViewContent } from "@/lib/meta-pixel";
+import { trackViewContent } from "@/lib/meta-pixel";
+import { PRODUCTS } from "@/lib/products";
 import { getDeliveryDates } from "@/lib/delivery-utils";
 
 interface HeroSectionTapeProps {
@@ -71,7 +72,7 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
   ];
 
   useEffect(() => {
-    trackTapeViewContent();
+    trackViewContent(PRODUCTS.tape);
 
     const preloadTimer = setTimeout(() => {
       import("@/components/checkout/QuantitySelectorTape");

@@ -17,6 +17,7 @@ import firmskinImage from "@/assets/products/firmskin.webp";
 import beforeAfterImage from "@/assets/products/serumbeforeafter.webp";
 import { LivePurchaseNotification, getRandomBuyer } from "@/components/LivePurchaseNotification";
 import { trackViewContent } from "@/lib/meta-pixel";
+import { PRODUCTS } from "@/lib/products";
 import { getDeliveryDates } from "@/lib/delivery-utils";
 
 interface HeroSectionProps {
@@ -89,7 +90,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
 
   // Track ViewContent when hero section is viewed
   useEffect(() => {
-    trackViewContent();
+    trackViewContent(PRODUCTS.pdrn);
 
     // Preload checkout modals after a short delay (for mobile users)
     // This ensures instant response when user clicks CTA

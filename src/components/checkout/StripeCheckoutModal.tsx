@@ -5,6 +5,7 @@ import { XMarkIcon, CreditCardIcon, DevicePhoneMobileIcon, BanknotesIcon, CheckI
 import { formatPrice } from '@/lib/stripe';
 import { Button } from '@/components/ui/button';
 import { trackAddPaymentInfo } from '@/lib/meta-pixel';
+import { type ProductPixelConfig } from '@/lib/products';
 import { CheckoutProgressBar } from './CheckoutProgressBar';
 
 type PaymentMethod = 'card' | 'cash_on_delivery';
@@ -27,6 +28,7 @@ interface StripeCheckoutModalProps {
   amount: number;
   currency: string;
   isProcessingOrder?: boolean;
+  product: ProductPixelConfig;
   customerData: {
     name: string;
     phone: string;
@@ -43,8 +45,9 @@ const CheckoutForm = ({
   amount,
   currency,
   customerData,
+  product,
   onCloseAttempt,
-  clientSecret, // Add clientSecret prop
+  clientSecret,
 }: Omit<StripeCheckoutModalProps, 'isOpen'> & {
   onCloseAttempt: () => void;
   clientSecret: string;
@@ -138,9 +141,10 @@ const CheckoutForm = ({
     if (!initialTrackDoneRef.current) {
       console.log('📊 [Meta Pixel] Tracking AddPaymentInfo - Default: Pago contra entrega');
       trackAddPaymentInfo({
+        product,
+        quantity: customerData.quantity,
         value: finalTotal,
         currency: currency.toUpperCase(),
-        num_items: customerData.quantity,
         payment_type: 'Pago contra entrega',
       });
       initialTrackDoneRef.current = true;
@@ -153,9 +157,10 @@ const CheckoutForm = ({
       const paymentType = paymentMethod === 'cash_on_delivery' ? 'Pago contra entrega' : 'Tarjeta';
       console.log(`📊 [Meta Pixel] Tracking AddPaymentInfo - User changed to: ${paymentType}`);
       trackAddPaymentInfo({
+        product,
+        quantity: customerData.quantity,
         value: finalTotal,
         currency: currency.toUpperCase(),
-        num_items: customerData.quantity,
         payment_type: paymentType,
       });
       previousPaymentMethodRef.current = paymentMethod;
@@ -538,6 +543,7 @@ const CODCheckoutForm = ({
   amount,
   currency,
   customerData,
+  product,
   onCloseAttempt,
 }: Omit<StripeCheckoutModalProps, 'isOpen'> & { onCloseAttempt: () => void }) => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -551,9 +557,10 @@ const CODCheckoutForm = ({
   useEffect(() => {
     if (!initialTrackDoneRef.current) {
       trackAddPaymentInfo({
+        product,
+        quantity: customerData.quantity,
         value: finalTotal,
         currency: currency.toUpperCase(),
-        num_items: customerData.quantity,
         payment_type: 'Pago contra entrega',
       });
       initialTrackDoneRef.current = true;
