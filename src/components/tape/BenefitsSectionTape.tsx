@@ -1,4 +1,4 @@
-import { EyeSlashIcon, BoltIcon, SparklesIcon, FaceSmileIcon } from "@heroicons/react/24/outline";
+import { EyeSlashIcon, BoltIcon, CloudIcon, FaceSmileIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { staggerContainerVariants, staggerItemVariants } from "@/lib/animations";
 
@@ -16,7 +16,7 @@ const benefits = [
       "Ni ampollas, ni tratamientos, ni sesiones. Aplicás la cinta y en 30 segundos ves mejillas más firmes, contorno marcado y papada tensada.",
   },
   {
-    icon: SparklesIcon,
+    icon: CloudIcon,
     title: "Resistente al agua y al sudor",
     description:
       "Evento largo, boda al aire libre, viaje, gimnasio antes de salir. El adhesivo premium aguanta el día entero sin despegarse ni deslizarse.",

@@ -1,4 +1,4 @@
-import { CloudIcon, ClockIcon, HandRaisedIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { CloudIcon, ClockIcon, HandRaisedIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { staggerContainerVariants, staggerItemVariants } from "@/lib/animations";
 
@@ -22,7 +22,7 @@ const benefits = [
       "Solo 31 gramos y 14 cm de largo. Carga USB universal rapida: 1 hora de carga para todo el dia. Cabe en cualquier cartera o neceser.",
   },
   {
-    icon: SparklesIcon,
+    icon: EyeIcon,
     title: "Look totalmente natural",
     description:
       "El rizado con calor mantiene la curvatura natural de tus pestañas por hasta 24 horas. Sin grumos, sin producto, sin aspecto artificial.",
