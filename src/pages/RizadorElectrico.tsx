@@ -32,8 +32,10 @@ type RizadorPackVariant = Extract<PackVariant, "individual" | "duo">;
 
 const ProductShowcaseRizador = lazy(() => import("@/components/rizador/ProductShowcaseRizador"));
 const BenefitsSectionRizador = lazy(() => import("@/components/rizador/BenefitsSectionRizador"));
+const ProductFeatureShowcaseRizador = lazy(() => import("@/components/rizador/ProductFeatureShowcaseRizador"));
 const SpecsSectionRizador = lazy(() => import("@/components/rizador/SpecsSectionRizador"));
 const ComparisonTableRizador = lazy(() => import("@/components/rizador/ComparisonTableRizador"));
+const ComparisonShowcaseRizador = lazy(() => import("@/components/rizador/ComparisonShowcaseRizador"));
 const StatsSectionRizador = lazy(() => import("@/components/rizador/StatsSectionRizador"));
 const ProductGalleryRizador = lazy(() => import("@/components/rizador/ProductGalleryRizador"));
 const FAQSectionRizador = lazy(() => import("@/components/rizador/FAQSectionRizador"));
@@ -519,12 +521,20 @@ const RizadorElectrico = () => {
 
         <OfferCTA onBuyClick={handleBuyClick} />
 
+        <Suspense fallback={<SectionSkeleton height="h-[400px] md:h-[500px]" />}>
+          <ProductFeatureShowcaseRizador />
+        </Suspense>
+
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <SpecsSectionRizador />
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton height="h-[600px] md:h-[700px]" />}>
           <ComparisonTableRizador />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton height="h-[400px] md:h-[500px]" />}>
+          <ComparisonShowcaseRizador />
         </Suspense>
 
         <OfferCTA onBuyClick={handleBuyClick} />
