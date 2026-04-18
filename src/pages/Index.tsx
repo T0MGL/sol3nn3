@@ -17,6 +17,7 @@ import {
   trackPurchase,
   type MetaUserData,
 } from "@/lib/meta-pixel";
+import { PRODUCTS } from "@/lib/products";
 import {
   hashEmail,
   hashPhoneE164,
@@ -128,6 +129,7 @@ const Index = () => {
   useEffect(() => {
     if (showPhoneForm && checkoutData.quantity > 0) {
       trackInitiateCheckout({
+        product: PRODUCTS.pdrn,
         quantity: checkoutData.quantity,
         value: checkoutData.totalPrice,
         user_data: { fbc: getFbc(), fbp: getFbp() },
@@ -148,6 +150,7 @@ const Index = () => {
     setShowQuantitySelector(false);
 
     trackAddToCart({
+      product: PRODUCTS.pdrn,
       quantity,
       value: totalPrice,
       user_data: { fbc: getFbc(), fbp: getFbp() },
@@ -206,6 +209,7 @@ const Index = () => {
       };
 
       trackPurchase({
+        product: PRODUCTS.pdrn,
         quantity: data.quantity,
         value: result.finalTotal,
         order_id: data.orderNumber,

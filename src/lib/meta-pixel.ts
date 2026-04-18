@@ -1,17 +1,24 @@
 /**
- * Meta (Facebook) Pixel Integration
+ * Meta (Facebook) Pixel Integration (product-agnostic)
  *
  * Type-safe utilities for tracking conversion events with Meta/Facebook Pixel.
  * Every funnel event (ViewContent, AddToCart, InitiateCheckout, AddPaymentInfo,
- * Purchase) shares the same canonical content_name and content_ids so the
- * attribution funnel stays consolidated and catalog matching works against
- * the Ordefy product ("PDRN Pink Peptide Serum 30ml").
+ * Purchase) accepts a ProductPixelConfig so the same tracking code works for
+ * ANY product. Adding a new product requires zero changes here.
  *
  * Advanced Matching: Purchase, InitiateCheckout, AddToCart and AddPaymentInfo
  * accept an optional user_data payload with hashed PII (em, ph, fn, ln,
  * external_id) + fbc/fbp cookie values. Helpers in meta-matching.ts produce
  * all values in the format Meta expects. Plaintext PII is never sent.
+ *
+ * Server-side CAPI: Every tracked event is also relayed to the server-side
+ * Meta Conversions API endpoint via meta-capi-client.ts for redundant
+ * attribution (browser pixel + server CAPI with shared event_id dedup).
  */
+
+import { generateEventId, sendServerEvent } from './meta-capi-client';
+import { getFbc, getFbp } from './meta-matching';
+import { type ProductPixelConfig, buildContentName, buildContentIds } from './products';
 
 declare global {
   interface Window {
@@ -24,23 +31,6 @@ declare global {
     _fbq: unknown;
   }
 }
-
-export const SOLENNE_CONTENT_NAME_BASE = 'Solenne PDRN Pink Peptide Serum';
-export const SOLENNE_CONTENT_ID_BASE = 'solenne-pdrn-serum';
-export const SOLENNE_CONTENT_CATEGORY = 'Skincare & Beauty';
-export const SOLENNE_CONTENT_TYPE = 'product';
-export const SOLENNE_CURRENCY = 'PYG';
-export const SOLENNE_UNIT_PRICE = 189000;
-
-export const SOLENNE_TAPE_CONTENT_NAME_BASE = 'Solenne V-Shaped Face Tape';
-export const SOLENNE_TAPE_CONTENT_CATEGORY = 'Beauty & Personal Care';
-export const SOLENNE_TAPE_UNIT_PRICE = 149000;
-
-const TAPE_SKU_BY_QUANTITY: Record<number, string> = {
-  1: 'SOLENNE-TAPE-100',
-  2: 'SOLENNE-TAPE-RITUAL',
-  3: 'SOLENNE-TAPE-EVENTO',
-};
 
 /**
  * User data for Meta Advanced Matching.
@@ -64,31 +54,9 @@ const buildUserDataPayload = (user_data?: MetaUserData): Record<string, string> 
   return Object.fromEntries(entries);
 };
 
-export const buildSolenneContentName = (quantity: number): string =>
-  quantity <= 1
-    ? SOLENNE_CONTENT_NAME_BASE
-    : `${SOLENNE_CONTENT_NAME_BASE} - Pack x${quantity}`;
-
-export const buildSolenneContentIds = (quantity: number): string[] =>
-  quantity <= 1
-    ? [SOLENNE_CONTENT_ID_BASE]
-    : [`${SOLENNE_CONTENT_ID_BASE}-${quantity}pack`];
-
-export const buildTapeContentName = (quantity: number): string => {
-  if (quantity <= 1) return SOLENNE_TAPE_CONTENT_NAME_BASE;
-  if (quantity === 2) return `${SOLENNE_TAPE_CONTENT_NAME_BASE} - Pack Ritual`;
-  if (quantity === 3) return `${SOLENNE_TAPE_CONTENT_NAME_BASE} - Pack Evento`;
-  return `${SOLENNE_TAPE_CONTENT_NAME_BASE} - Pack x${quantity}`;
-};
-
-export const buildTapeContentIds = (quantity: number): string[] => {
-  const sku = TAPE_SKU_BY_QUANTITY[quantity] ?? `SOLENNE-TAPE-${quantity}`;
-  return [sku];
-};
-
 /**
- * Initialize Meta Pixel
- * Call this once when the app loads
+ * Initialize Meta Pixel.
+ * Call this once when the app loads.
  */
 export const initMetaPixel = (pixelId: string): void => {
   if (typeof window === 'undefined') return;
@@ -138,8 +106,8 @@ export const initMetaPixel = (pixelId: string): void => {
 };
 
 /**
- * Track PageView event
- * Call this on route changes or initial page load
+ * Track PageView event.
+ * Call this on route changes or initial page load.
  */
 export const trackPageView = (): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
@@ -149,39 +117,40 @@ export const trackPageView = (): void => {
 };
 
 /**
- * Track ViewContent event
- * Call when user views the product
+ * Track ViewContent event.
+ * Call when user views a product page.
  */
-export const trackViewContent = (params?: {
-  content_name?: string;
-  content_category?: string;
-  content_ids?: string[];
-  content_type?: string;
-  value?: number;
-  currency?: string;
-}): void => {
+export const trackViewContent = (product: ProductPixelConfig): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
 
-  const defaultParams = {
-    content_name: SOLENNE_CONTENT_NAME_BASE,
-    content_category: SOLENNE_CONTENT_CATEGORY,
-    content_ids: [SOLENNE_CONTENT_ID_BASE],
-    content_type: SOLENNE_CONTENT_TYPE,
-    value: SOLENNE_UNIT_PRICE,
-    currency: SOLENNE_CURRENCY,
+  const payload = {
+    content_name: product.contentNameBase,
+    content_category: product.contentCategory,
+    content_ids: [product.contentIdBase],
+    content_type: product.contentType,
+    value: product.unitPrice,
+    currency: product.currency,
   };
 
-  const payload = { ...defaultParams, ...params };
-  window.fbq('track', 'ViewContent', payload);
+  const event_id = generateEventId();
+  window.fbq('track', 'ViewContent', payload, { eventID: event_id });
   console.log('Meta Pixel: ViewContent tracked', payload);
+
+  sendServerEvent({
+    event_name: 'ViewContent',
+    event_id,
+    event_source_url: window.location.href,
+    user_data: { fbc: getFbc(), fbp: getFbp() },
+    custom_data: payload,
+  });
 };
 
 /**
- * Track InitiateCheckout event
+ * Track InitiateCheckout event.
  * Call when user proceeds to the checkout step.
- * Quantity drives the canonical content_name and content_ids.
  */
 export const trackInitiateCheckout = (params: {
+  product: ProductPixelConfig;
   quantity: number;
   value: number;
   currency?: string;
@@ -192,27 +161,35 @@ export const trackInitiateCheckout = (params: {
 
   const user_data = buildUserDataPayload(params.user_data);
   const payload: Record<string, unknown> = {
-    content_name: buildSolenneContentName(params.quantity),
-    content_category: SOLENNE_CONTENT_CATEGORY,
-    content_ids: buildSolenneContentIds(params.quantity),
-    content_type: SOLENNE_CONTENT_TYPE,
+    content_name: buildContentName(params.product, params.quantity),
+    content_category: params.product.contentCategory,
+    content_ids: buildContentIds(params.product, params.quantity),
+    content_type: params.product.contentType,
     num_items: params.quantity,
     value: params.value,
-    currency: params.currency ?? SOLENNE_CURRENCY,
+    currency: params.currency ?? params.product.currency,
   };
   if (user_data) payload.user_data = user_data;
 
-  const options = params.event_id ? { eventID: params.event_id } : undefined;
-  window.fbq('track', 'InitiateCheckout', payload, options);
-  console.log('Meta Pixel: InitiateCheckout tracked', { ...payload, eventID: params.event_id });
+  const event_id = params.event_id || generateEventId();
+  window.fbq('track', 'InitiateCheckout', payload, { eventID: event_id });
+  console.log('Meta Pixel: InitiateCheckout tracked', { ...payload, eventID: event_id });
+
+  sendServerEvent({
+    event_name: 'InitiateCheckout',
+    event_id,
+    event_source_url: window.location.href,
+    user_data: { ...user_data, fbc: getFbc(), fbp: getFbp() },
+    custom_data: payload,
+  });
 };
 
 /**
- * Track AddToCart event
+ * Track AddToCart event.
  * Call when user confirms quantity/upsell selection.
- * Quantity drives the canonical content_name and content_ids.
  */
 export const trackAddToCart = (params: {
+  product: ProductPixelConfig;
   quantity: number;
   value: number;
   currency?: string;
@@ -223,28 +200,35 @@ export const trackAddToCart = (params: {
 
   const user_data = buildUserDataPayload(params.user_data);
   const payload: Record<string, unknown> = {
-    content_name: buildSolenneContentName(params.quantity),
-    content_category: SOLENNE_CONTENT_CATEGORY,
-    content_ids: buildSolenneContentIds(params.quantity),
-    content_type: SOLENNE_CONTENT_TYPE,
+    content_name: buildContentName(params.product, params.quantity),
+    content_category: params.product.contentCategory,
+    content_ids: buildContentIds(params.product, params.quantity),
+    content_type: params.product.contentType,
     num_items: params.quantity,
     value: params.value,
-    currency: params.currency ?? SOLENNE_CURRENCY,
+    currency: params.currency ?? params.product.currency,
   };
   if (user_data) payload.user_data = user_data;
 
-  const options = params.event_id ? { eventID: params.event_id } : undefined;
-  window.fbq('track', 'AddToCart', payload, options);
-  console.log('Meta Pixel: AddToCart tracked', { ...payload, eventID: params.event_id });
+  const event_id = params.event_id || generateEventId();
+  window.fbq('track', 'AddToCart', payload, { eventID: event_id });
+  console.log('Meta Pixel: AddToCart tracked', { ...payload, eventID: event_id });
+
+  sendServerEvent({
+    event_name: 'AddToCart',
+    event_id,
+    event_source_url: window.location.href,
+    user_data: { ...user_data, fbc: getFbc(), fbp: getFbp() },
+    custom_data: payload,
+  });
 };
 
 /**
- * Track AddPaymentInfo event
+ * Track AddPaymentInfo event.
  * Call when user enters or switches payment method.
- * Quantity drives the canonical content_name and content_ids so this event
- * stays aligned with the rest of the funnel.
  */
 export const trackAddPaymentInfo = (params: {
+  product: ProductPixelConfig;
   quantity: number;
   value: number;
   currency?: string;
@@ -256,33 +240,37 @@ export const trackAddPaymentInfo = (params: {
 
   const user_data = buildUserDataPayload(params.user_data);
   const payload: Record<string, unknown> = {
-    content_name: buildSolenneContentName(params.quantity),
-    content_category: SOLENNE_CONTENT_CATEGORY,
-    content_ids: buildSolenneContentIds(params.quantity),
-    content_type: SOLENNE_CONTENT_TYPE,
+    content_name: buildContentName(params.product, params.quantity),
+    content_category: params.product.contentCategory,
+    content_ids: buildContentIds(params.product, params.quantity),
+    content_type: params.product.contentType,
     num_items: params.quantity,
     value: params.value,
-    currency: params.currency ?? SOLENNE_CURRENCY,
+    currency: params.currency ?? params.product.currency,
     ...(params.payment_type && { payment_type: params.payment_type }),
   };
   if (user_data) payload.user_data = user_data;
 
-  const options = params.event_id ? { eventID: params.event_id } : undefined;
-  window.fbq('track', 'AddPaymentInfo', payload, options);
-  console.log('Meta Pixel: AddPaymentInfo tracked', { ...payload, eventID: params.event_id });
+  const event_id = params.event_id || generateEventId();
+  window.fbq('track', 'AddPaymentInfo', payload, { eventID: event_id });
+  console.log('Meta Pixel: AddPaymentInfo tracked', { ...payload, eventID: event_id });
+
+  sendServerEvent({
+    event_name: 'AddPaymentInfo',
+    event_id,
+    event_source_url: window.location.href,
+    user_data: { ...user_data, fbc: getFbc(), fbp: getFbp() },
+    custom_data: payload,
+  });
 };
 
 /**
- * Track Purchase event (conversion)
+ * Track Purchase event (conversion).
  * Call when the order is successfully completed.
  * This is the most important event for ROAS measurement.
- * Quantity drives the canonical content_name and content_ids.
- *
- * user_data is optional Advanced Matching payload; all PII must be hashed
- * before calling (use helpers in meta-matching.ts).
- * event_id enables CAPI deduplication when server-side events are added later.
  */
 export const trackPurchase = (params: {
+  product: ProductPixelConfig;
   quantity: number;
   value: number;
   currency?: string;
@@ -294,24 +282,32 @@ export const trackPurchase = (params: {
 
   const user_data = buildUserDataPayload(params.user_data);
   const payload: Record<string, unknown> = {
-    content_name: buildSolenneContentName(params.quantity),
-    content_category: SOLENNE_CONTENT_CATEGORY,
-    content_ids: buildSolenneContentIds(params.quantity),
-    content_type: SOLENNE_CONTENT_TYPE,
+    content_name: buildContentName(params.product, params.quantity),
+    content_category: params.product.contentCategory,
+    content_ids: buildContentIds(params.product, params.quantity),
+    content_type: params.product.contentType,
     num_items: params.quantity,
     value: params.value,
-    currency: params.currency ?? SOLENNE_CURRENCY,
+    currency: params.currency ?? params.product.currency,
     ...(params.order_id && { order_id: params.order_id }),
   };
   if (user_data) payload.user_data = user_data;
 
-  const options = params.event_id ? { eventID: params.event_id } : undefined;
-  window.fbq('track', 'Purchase', payload, options);
-  console.log('Meta Pixel: Purchase tracked (CONVERSION)', { ...payload, eventID: params.event_id });
+  const event_id = params.event_id || params.order_id || generateEventId();
+  window.fbq('track', 'Purchase', payload, { eventID: event_id });
+  console.log('Meta Pixel: Purchase tracked (CONVERSION)', { ...payload, eventID: event_id });
+
+  sendServerEvent({
+    event_name: 'Purchase',
+    event_id,
+    event_source_url: window.location.href,
+    user_data: { ...user_data, fbc: getFbc(), fbp: getFbp() },
+    custom_data: payload,
+  });
 };
 
 /**
- * Track Lead event
+ * Track Lead event.
  * Fires when a user hands over contact data without completing a purchase,
  * e.g. exit-intent email capture. Feeds abandoned-cart audiences with
  * high match quality.
@@ -327,126 +323,32 @@ export const trackLead = (params: {
 
   const user_data = buildUserDataPayload(params.user_data);
   const payload: Record<string, unknown> = {
-    currency: params.currency ?? SOLENNE_CURRENCY,
+    currency: params.currency ?? 'PYG',
     ...(typeof params.value === 'number' && { value: params.value }),
     ...(params.content_name && { content_name: params.content_name }),
   };
   if (user_data) payload.user_data = user_data;
 
-  const options = params.event_id ? { eventID: params.event_id } : undefined;
-  window.fbq('track', 'Lead', payload, options);
-  console.log('Meta Pixel: Lead tracked', { ...payload, eventID: params.event_id });
+  const event_id = params.event_id || generateEventId();
+  window.fbq('track', 'Lead', payload, { eventID: event_id });
+  console.log('Meta Pixel: Lead tracked', { ...payload, eventID: event_id });
+
+  sendServerEvent({
+    event_name: 'Lead',
+    event_id,
+    event_source_url: window.location.href,
+    user_data: { ...user_data, fbc: getFbc(), fbp: getFbp() },
+    custom_data: payload,
+  });
 };
 
 /**
- * Track custom event
- * For any custom tracking needs
+ * Track custom event.
+ * For any custom tracking needs.
  */
 export const trackCustomEvent = (eventName: string, parameters?: Record<string, unknown>): void => {
   if (typeof window === 'undefined' || !window.fbq) return;
 
   window.fbq('trackCustom', eventName, parameters);
   console.log(`Meta Pixel: Custom event "${eventName}" tracked`, parameters);
-};
-
-/**
- * Tape-specific pixel wrappers.
- * Funnel stays canonical for the V-Shaped Face Tape product catalog so AdsManager
- * never mixes tape attribution with the PDRN serum funnel.
- */
-
-export const trackTapeViewContent = (): void => {
-  if (typeof window === 'undefined' || !window.fbq) return;
-
-  const payload = {
-    content_name: SOLENNE_TAPE_CONTENT_NAME_BASE,
-    content_category: SOLENNE_TAPE_CONTENT_CATEGORY,
-    content_ids: buildTapeContentIds(1),
-    content_type: SOLENNE_CONTENT_TYPE,
-    value: SOLENNE_TAPE_UNIT_PRICE,
-    currency: SOLENNE_CURRENCY,
-  };
-
-  window.fbq('track', 'ViewContent', payload);
-  console.log('Meta Pixel: Tape ViewContent tracked', payload);
-};
-
-export const trackTapeInitiateCheckout = (params: {
-  quantity: number;
-  value: number;
-  currency?: string;
-  user_data?: MetaUserData;
-  event_id?: string;
-}): void => {
-  if (typeof window === 'undefined' || !window.fbq) return;
-
-  const user_data = buildUserDataPayload(params.user_data);
-  const payload: Record<string, unknown> = {
-    content_name: buildTapeContentName(params.quantity),
-    content_category: SOLENNE_TAPE_CONTENT_CATEGORY,
-    content_ids: buildTapeContentIds(params.quantity),
-    content_type: SOLENNE_CONTENT_TYPE,
-    num_items: params.quantity,
-    value: params.value,
-    currency: params.currency ?? SOLENNE_CURRENCY,
-  };
-  if (user_data) payload.user_data = user_data;
-
-  const options = params.event_id ? { eventID: params.event_id } : undefined;
-  window.fbq('track', 'InitiateCheckout', payload, options);
-  console.log('Meta Pixel: Tape InitiateCheckout tracked', { ...payload, eventID: params.event_id });
-};
-
-export const trackTapeAddToCart = (params: {
-  quantity: number;
-  value: number;
-  currency?: string;
-  user_data?: MetaUserData;
-  event_id?: string;
-}): void => {
-  if (typeof window === 'undefined' || !window.fbq) return;
-
-  const user_data = buildUserDataPayload(params.user_data);
-  const payload: Record<string, unknown> = {
-    content_name: buildTapeContentName(params.quantity),
-    content_category: SOLENNE_TAPE_CONTENT_CATEGORY,
-    content_ids: buildTapeContentIds(params.quantity),
-    content_type: SOLENNE_CONTENT_TYPE,
-    num_items: params.quantity,
-    value: params.value,
-    currency: params.currency ?? SOLENNE_CURRENCY,
-  };
-  if (user_data) payload.user_data = user_data;
-
-  const options = params.event_id ? { eventID: params.event_id } : undefined;
-  window.fbq('track', 'AddToCart', payload, options);
-  console.log('Meta Pixel: Tape AddToCart tracked', { ...payload, eventID: params.event_id });
-};
-
-export const trackTapePurchase = (params: {
-  quantity: number;
-  value: number;
-  currency?: string;
-  order_id?: string;
-  user_data?: MetaUserData;
-  event_id?: string;
-}): void => {
-  if (typeof window === 'undefined' || !window.fbq) return;
-
-  const user_data = buildUserDataPayload(params.user_data);
-  const payload: Record<string, unknown> = {
-    content_name: buildTapeContentName(params.quantity),
-    content_category: SOLENNE_TAPE_CONTENT_CATEGORY,
-    content_ids: buildTapeContentIds(params.quantity),
-    content_type: SOLENNE_CONTENT_TYPE,
-    num_items: params.quantity,
-    value: params.value,
-    currency: params.currency ?? SOLENNE_CURRENCY,
-    ...(params.order_id && { order_id: params.order_id }),
-  };
-  if (user_data) payload.user_data = user_data;
-
-  const options = params.event_id ? { eventID: params.event_id } : undefined;
-  window.fbq('track', 'Purchase', payload, options);
-  console.log('Meta Pixel: Tape Purchase tracked (CONVERSION)', { ...payload, eventID: params.event_id });
 };

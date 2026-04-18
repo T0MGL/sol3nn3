@@ -12,12 +12,12 @@ import {
   type PackVariant,
 } from "@/services/orderService";
 import {
-  trackTapeInitiateCheckout,
-  trackTapeAddToCart,
-  trackTapePurchase,
-  buildTapeContentName,
+  trackInitiateCheckout,
+  trackAddToCart,
+  trackPurchase,
   type MetaUserData,
 } from "@/lib/meta-pixel";
+import { PRODUCTS, buildContentName } from "@/lib/products";
 import {
   hashEmail,
   hashPhoneE164,
@@ -214,7 +214,8 @@ const LiftingTape = () => {
 
   useEffect(() => {
     if (showPhoneForm && checkoutData.quantity > 0) {
-      trackTapeInitiateCheckout({
+      trackInitiateCheckout({
+        product: PRODUCTS.tape,
         quantity: checkoutData.quantity,
         value: checkoutData.totalPrice,
         user_data: { fbc: getFbc(), fbp: getFbp() },
@@ -244,7 +245,8 @@ const LiftingTape = () => {
       }));
       setShowQuantitySelector(false);
 
-      trackTapeAddToCart({
+      trackAddToCart({
+        product: PRODUCTS.tape,
         quantity,
         value: totalPrice,
         user_data: { fbc: getFbc(), fbp: getFbp() },
@@ -281,7 +283,7 @@ const LiftingTape = () => {
         paymentType: result.paymentType,
         isPaid: result.isPaid,
         deliveryType: result.deliveryType,
-        productName: buildTapeContentName(data.quantity),
+        productName: buildContentName(PRODUCTS.tape, data.quantity),
         productKey: "tape",
         packVariant: data.packVariant,
       });
@@ -305,7 +307,8 @@ const LiftingTape = () => {
           fbp: getFbp(),
         };
 
-        trackTapePurchase({
+        trackPurchase({
+          product: PRODUCTS.tape,
           quantity: data.quantity,
           value: result.finalTotal,
           order_id: data.orderNumber,
