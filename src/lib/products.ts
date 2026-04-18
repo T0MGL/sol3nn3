@@ -59,8 +59,8 @@ export const PRODUCTS = {
     currency: 'PYG',
     unitPrice: 159000,
     skuByQuantity: {
-      1: 'SOLENNE-RIZADOR-1',
-      2: 'SOLENNE-RIZADOR-DUO',
+      1: 'RIZADOR-ELECTRICO',
+      2: 'RIZADOR-ELECTRICO-DUO',
     },
     packNames: {
       2: 'Pack Duo',
