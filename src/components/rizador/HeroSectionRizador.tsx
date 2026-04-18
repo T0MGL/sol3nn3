@@ -9,10 +9,8 @@ import {
 import { StarIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import paymentMethodsImage from "@/assets/payments/payment-methods.webp";
-import rizadorHero from "@/assets/products/rizador/rizador-hero.webp";
-import rizadorComparison from "@/assets/products/rizador/rizador-comparison.webp";
-import rizadorSpecs from "@/assets/products/rizador/rizador-specs.webp";
-import rizadorBenefits from "@/assets/products/rizador/rizador-benefits.webp";
+import rizadorSlide1 from "@/assets/products/rizador/rizador-slide-1.webp";
+import rizadorSlide2 from "@/assets/products/rizador/rizador-slide-2.webp";
 import { LivePurchaseNotification, getRandomBuyer } from "@/components/LivePurchaseNotification";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { PRODUCTS } from "@/lib/products";
@@ -54,20 +52,12 @@ export const HeroSectionRizador = ({ onBuyClick }: HeroSectionRizadorProps) => {
 
   const slides = [
     {
-      image: rizadorHero,
+      image: rizadorSlide1,
       alt: "SOLENNE Rizador de Pestañas Eléctrico",
     },
     {
-      image: rizadorBenefits,
-      alt: "SOLENNE Rizador: Beneficios clave",
-    },
-    {
-      image: rizadorSpecs,
-      alt: "SOLENNE Rizador: Especificaciones técnicas",
-    },
-    {
-      image: rizadorComparison,
-      alt: "SOLENNE Rizador vs rizador tradicional",
+      image: rizadorSlide2,
+      alt: "SOLENNE Rizador: características y beneficios",
     },
   ];
 
