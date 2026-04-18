@@ -33,7 +33,6 @@ type RizadorPackVariant = Extract<PackVariant, "individual" | "duo">;
 const ProductShowcaseRizador = lazy(() => import("@/components/rizador/ProductShowcaseRizador"));
 const BenefitsSectionRizador = lazy(() => import("@/components/rizador/BenefitsSectionRizador"));
 const ProductFeatureShowcaseRizador = lazy(() => import("@/components/rizador/ProductFeatureShowcaseRizador"));
-const SpecsSectionRizador = lazy(() => import("@/components/rizador/SpecsSectionRizador"));
 const StatsSectionRizador = lazy(() => import("@/components/rizador/StatsSectionRizador"));
 const ProductGalleryRizador = lazy(() => import("@/components/rizador/ProductGalleryRizador"));
 const FAQSectionRizador = lazy(() => import("@/components/rizador/FAQSectionRizador"));
@@ -521,10 +520,6 @@ const RizadorElectrico = () => {
 
         <Suspense fallback={<SectionSkeleton height="h-[400px] md:h-[500px]" />}>
           <ProductFeatureShowcaseRizador />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
-          <SpecsSectionRizador />
         </Suspense>
 
         <OfferCTA onBuyClick={handleBuyClick} />
