@@ -51,6 +51,21 @@ export const PRODUCTS = {
       3: 'Pack Evento',
     },
   },
+  rizador: {
+    contentNameBase: 'Solenne Rizador de Pestañas Eléctrico',
+    contentIdBase: 'SOLENNE-RIZADOR',
+    contentCategory: 'Beauty & Personal Care',
+    contentType: 'product',
+    currency: 'PYG',
+    unitPrice: 159000,
+    skuByQuantity: {
+      1: 'SOLENNE-RIZADOR-1',
+      2: 'SOLENNE-RIZADOR-DUO',
+    },
+    packNames: {
+      2: 'Pack Duo',
+    },
+  },
 } as const satisfies Record<string, ProductPixelConfig>;
 
 export type ProductKey = keyof typeof PRODUCTS;
