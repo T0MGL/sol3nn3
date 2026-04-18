@@ -9,10 +9,10 @@ import {
 import { StarIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import paymentMethodsImage from "@/assets/payments/payment-methods.webp";
-import rizadorHero from "@/assets/products/rizador/rizador-hero.png";
-import rizadorComparison from "@/assets/products/rizador/rizador-comparison.png";
-import rizadorSpecs from "@/assets/products/rizador/rizador-specs.png";
-import rizadorBenefits from "@/assets/products/rizador/rizador-benefits.png";
+import rizadorHero from "@/assets/products/rizador/rizador-hero.webp";
+import rizadorComparison from "@/assets/products/rizador/rizador-comparison.webp";
+import rizadorSpecs from "@/assets/products/rizador/rizador-specs.webp";
+import rizadorBenefits from "@/assets/products/rizador/rizador-benefits.webp";
 import { LivePurchaseNotification, getRandomBuyer } from "@/components/LivePurchaseNotification";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { PRODUCTS } from "@/lib/products";
