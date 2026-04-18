@@ -160,7 +160,7 @@ export const HeroSectionRizador = ({ onBuyClick }: HeroSectionRizadorProps) => {
             </motion.div>
 
             <div className="relative w-full max-w-[500px] mx-auto">
-              <div className="relative w-full aspect-square overflow-hidden rounded-lg">
+              <div className="relative w-full aspect-[3/4] overflow-hidden rounded-lg">
                 <div className="absolute inset-0 -z-10 rounded-full blur-[60px] bg-primary/20 animate-glow-breathe scale-75" />
                 <div className="absolute inset-[10%] -z-10 rounded-full blur-[30px] bg-primary/15" />
 
@@ -176,7 +176,7 @@ export const HeroSectionRizador = ({ onBuyClick }: HeroSectionRizadorProps) => {
                     <img
                       src={slides[currentSlide].image}
                       alt={slides[currentSlide].alt}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover"
                       loading={currentSlide === 0 ? "eager" : "lazy"}
                       decoding="async"
                     />
