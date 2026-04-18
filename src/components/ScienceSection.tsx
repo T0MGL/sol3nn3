@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import { SparklesIcon, BeakerIcon, ShieldCheckIcon, HeartIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
+import { CpuChipIcon, BeakerIcon, ShieldCheckIcon, HeartIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
 import ingredientsImage from "@/assets/products/ingredients-info.webp";
 
 const ingredients = [
   {
-    icon: SparklesIcon,
+    icon: CpuChipIcon,
     name: "PDRN (Sodium DNA) 1%",
     concentration: "1%",
     description: "Salmon DNA extraído. Regeneración celular activa. Estimula la producción de colágeno y elastina naturalmente.",

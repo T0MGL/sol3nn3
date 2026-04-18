@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   BoltIcon,
-  SparklesIcon,
+  HeartIcon,
   ClockIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
@@ -293,7 +293,7 @@ export const HeroSectionRizador = ({ onBuyClick }: HeroSectionRizadorProps) => {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <SparklesIcon className="w-6 h-6 text-primary" />
+                  <HeartIcon className="w-6 h-6 text-primary" />
                 </div>
                 <span className="text-sm md:text-base font-medium text-foreground">No daña las pestañas</span>
               </div>
