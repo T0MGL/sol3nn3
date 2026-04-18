@@ -12,6 +12,7 @@ import paymentMethodsImage from "@/assets/payments/payment-methods.webp";
 import rizadorSlide0 from "@/assets/products/rizador/rizador-slide-0.webp";
 import rizadorSlide1 from "@/assets/products/rizador/rizador-slide-1.webp";
 import rizadorSlide2 from "@/assets/products/rizador/rizador-slide-2.webp";
+import rizadorSlide3 from "@/assets/products/rizador/rizador-slide-3.webp";
 import { LivePurchaseNotification, getRandomBuyer } from "@/components/LivePurchaseNotification";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { PRODUCTS } from "@/lib/products";
@@ -63,6 +64,10 @@ export const HeroSectionRizador = ({ onBuyClick }: HeroSectionRizadorProps) => {
     {
       image: rizadorSlide2,
       alt: "SOLENNE Rizador: características y beneficios",
+    },
+    {
+      image: rizadorSlide3,
+      alt: "SOLENNE Rizador: cabezal de cepillo 2 en 1",
     },
   ];
 
@@ -143,41 +148,29 @@ export const HeroSectionRizador = ({ onBuyClick }: HeroSectionRizadorProps) => {
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             className="relative order-1 w-full"
           >
-            <motion.div
-              layout
-              className="absolute top-2 left-2 z-20 bg-primary px-2 py-1 rounded-md shadow-lg overflow-hidden"
-              initial={false}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            >
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="text-foreground text-[10px] md:text-xs font-semibold whitespace-nowrap"
-              >
+            <div className="absolute top-2 left-2 z-20 bg-primary px-2 py-1 rounded-md shadow-lg overflow-hidden">
+              <p className="text-foreground text-[10px] md:text-xs font-semibold whitespace-nowrap">
                 NUEVO
-              </motion.p>
-            </motion.div>
+              </p>
+            </div>
 
             <div className="relative w-full max-w-[500px] mx-auto">
               <div className="relative w-full aspect-[3/4] overflow-hidden rounded-lg bg-[#f5ede8]">
-                <div className="absolute inset-0 -z-10 rounded-full blur-[60px] bg-primary/20 animate-glow-breathe scale-75" />
-                <div className="absolute inset-[10%] -z-10 rounded-full blur-[30px] bg-primary/15" />
-
-                <AnimatePresence mode="popLayout">
+                <AnimatePresence mode="wait">
                   <motion.div
                     key={currentSlide}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
+                    transition={{ duration: 0.2 }}
                     className="w-full h-full absolute inset-0"
+                    style={{ willChange: "opacity" }}
                   >
                     <img
                       src={slides[currentSlide].image}
                       alt={slides[currentSlide].alt}
                       className="w-full h-full object-contain"
-                      loading={currentSlide === 0 ? "eager" : "lazy"}
+                      loading="eager"
                       decoding="async"
                     />
                   </motion.div>
