@@ -9,6 +9,7 @@ import {
 import { StarIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import paymentMethodsImage from "@/assets/payments/payment-methods.webp";
+import rizadorSlide0 from "@/assets/products/rizador/rizador-slide-0.webp";
 import rizadorSlide1 from "@/assets/products/rizador/rizador-slide-1.webp";
 import rizadorSlide2 from "@/assets/products/rizador/rizador-slide-2.webp";
 import { LivePurchaseNotification, getRandomBuyer } from "@/components/LivePurchaseNotification";
@@ -51,6 +52,10 @@ export const HeroSectionRizador = ({ onBuyClick }: HeroSectionRizadorProps) => {
   const [stockAnimating, setStockAnimating] = useState(false);
 
   const slides = [
+    {
+      image: rizadorSlide0,
+      alt: "SOLENNE Rizador de Pestañas Eléctrico",
+    },
     {
       image: rizadorSlide1,
       alt: "SOLENNE Rizador de Pestañas Eléctrico",
