@@ -41,7 +41,7 @@ export const WhatsAppButton = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const message = encodeURIComponent("Hola SOLENNE, vi el PDRN Serum en la web y tengo una consulta...");
+  const message = encodeURIComponent("Hola SOLENNE, vi el Pink Repair Peptide Serum en la web y tengo una consulta...");
   const phone = import.meta.env.VITE_WHATSAPP_NUMBER || '595976287180';
   const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
 

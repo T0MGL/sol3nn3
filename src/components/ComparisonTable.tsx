@@ -6,28 +6,28 @@ const comparisons = [
   {
     title: "Crema Hidratante Común",
     specs: [
-      { label: "Ingrediente activo", value: "Glycerin", isGood: false },
-      { label: "Regeneración celular", value: "Mínima", isGood: false },
+      { label: "Ingredientes activos", value: "Glicerina", isGood: false },
+      { label: "Complejo de péptidos", value: "No", isGood: false },
       { label: "Garantía", value: "0 días", isGood: false },
-      { label: "Resultados en", value: "8-12 semanas", isGood: false },
+      { label: "Uso diario", value: "Sí", isGood: false },
     ],
   },
   {
-    title: "Serum Básico",
+    title: "Suero Básico",
     specs: [
-      { label: "Ingrediente activo", value: "Hyaluronic Acid", isGood: false },
-      { label: "Regeneración celular", value: "Parcial", isGood: false },
+      { label: "Ingredientes activos", value: "Ácido Hialurónico", isGood: false },
+      { label: "Complejo de péptidos", value: "Parcial", isGood: false },
       { label: "Garantía", value: "0 días", isGood: false },
-      { label: "Resultados en", value: "6-8 semanas", isGood: false },
+      { label: "Uso diario", value: "Sí", isGood: false },
     ],
   },
   {
-    title: "PDRN Pink Peptide Serum",
+    title: "Pink Repair Peptide Serum (30ml)",
     specs: [
-      { label: "Ingrediente activo", value: "PDRN (Salmon DNA) 1%", isGood: true },
-      { label: "Regeneración celular", value: "Máxima", isGood: true },
+      { label: "Ingredientes activos", value: "PDRN 1% + 5 péptidos", isGood: true },
+      { label: "Complejo de péptidos", value: "Sí, 5%", isGood: true },
       { label: "Garantía", value: "30 días", isGood: true },
-      { label: "Resultados en", value: "4 semanas", isGood: true },
+      { label: "Uso diario", value: "Sí, mañana y noche", isGood: true },
     ],
     isHighlighted: true,
   },
@@ -102,10 +102,10 @@ export const ComparisonTable = () => {
       <div className="container max-w-[1200px] mx-auto">
         <div className="text-center mb-12 md:mb-16 space-y-4 md:space-y-6">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter px-4">
-            ¿Por qué PDRN Serum es diferente?
+            Por qué este suero
           </h2>
           <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground font-light px-4 max-w-3xl mx-auto leading-relaxed">
-            No todos los serums son iguales. Aquí está la ciencia real detrás de PDRN.
+            No todos los sueros traen la misma combinación de ingredientes. Acá la diferencia, en una tabla.
           </p>
           <p className="text-sm md:text-base text-primary/80 font-medium">
             Arrastra para comparar →

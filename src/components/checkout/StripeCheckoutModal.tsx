@@ -393,8 +393,8 @@ const CheckoutForm = ({
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground leading-tight">
               {customerData.quantity === 2
-                ? 'PDRN Pink Peptide Serum - Kit Duo (x2)'
-                : 'PDRN Pink Peptide Serum 30ml'}
+                ? 'Pink Repair Peptide Serum - Kit Duo (x2)'
+                : 'Pink Repair Peptide Serum (30ml)'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Cantidad: {customerData.quantity}
@@ -662,8 +662,8 @@ const CODCheckoutForm = ({
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground leading-tight">
               {customerData.quantity === 2
-                ? 'PDRN Pink Peptide Serum - Kit Duo (x2)'
-                : 'PDRN Pink Peptide Serum 30ml'}
+                ? 'Pink Repair Peptide Serum - Kit Duo (x2)'
+                : 'Pink Repair Peptide Serum (30ml)'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">Cantidad: {customerData.quantity}</p>
           </div>

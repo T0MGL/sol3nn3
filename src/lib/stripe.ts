@@ -32,8 +32,8 @@ export const getStripe = (): Promise<Stripe | null> => {
 export const PRODUCT_CONFIG = {
   price: parseInt(import.meta.env.VITE_PRODUCT_PRICE || '189000'),
   currency: (import.meta.env.VITE_PRODUCT_CURRENCY || 'pyg').toLowerCase(),
-  name: import.meta.env.VITE_PRODUCT_NAME || 'PDRN Pink Peptide Serum 30ml',
-  description: 'Premium K-beauty serum con PDRN, Peptidos, Acido Hialuronico y Niacinamida',
+  name: import.meta.env.VITE_PRODUCT_NAME || 'Pink Repair Peptide Serum (30ml)',
+  description: 'Suero cosmetico importado con PDRN, peptidos, acido hialuronico y niacinamida',
 };
 
 /**

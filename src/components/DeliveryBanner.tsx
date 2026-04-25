@@ -4,7 +4,7 @@ const DEFAULT_MESSAGES = [
   "✦ PAGO 100% SEGURO",
   "✦ GARANTÍA 30 DÍAS",
   "✦ DELIVERY GRATIS A TODO PARAGUAY",
-  "✦ K-BEAUTY AUTÉNTICO",
+  "✦ COSMÉTICO IMPORTADO",
 ];
 
 interface DeliveryBannerProps {

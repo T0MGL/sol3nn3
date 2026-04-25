@@ -39,10 +39,10 @@ export const CelebritiesMarquee = () => {
                         viewport={{ once: true, amount: 0.2 }}
                         transition={{ duration: 0.8, ease: 'easeOut' }}
                     >
-                        Recomendado por Quienes Exigen lo Mejor
+                        Una rutina simple, ingredientes claros
                     </motion.h2>
                     <p className="text-muted-foreground">
-                        Personas que cuidan su piel con los mejores ingredientes
+                        Personas que buscan un cuidado facial sin complicaciones
                     </p>
                 </motion.div>
 
@@ -116,7 +116,7 @@ export const CelebritiesMarquee = () => {
                     transition={{ duration: 0.4, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
                     className="text-center mt-12 md:mt-16 text-sm md:text-base text-foreground/50 font-light tracking-wide"
                 >
-                    Influencers de belleza y expertos en skincare alrededor del mundo recomiendan PDRN
+                    Una fórmula cosmética importada, pensada para uso diario.
                 </motion.p>
             </div>
         </section>

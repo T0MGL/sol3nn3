@@ -14,26 +14,26 @@ const stats: Stat[] = [
   {
     value: 2847,
     suffix: '+',
-    label: 'Clientas Satisfechas',
-    description: 'En Paraguay y Latam',
+    label: 'Clientas',
+    description: 'Pedidos enviados en Paraguay',
   },
   {
-    value: 99,
-    suffix: '%',
-    label: 'Hidratación Mejorada',
-    description: 'En la primer semana',
+    value: 30,
+    suffix: 'ml',
+    label: 'Tamaño',
+    description: 'Frasco de 30ml por unidad',
   },
   {
     value: 4,
     suffix: ' semanas',
-    label: 'Transformación Visible',
-    description: 'Resultados óptimos',
+    label: 'Uso continuo',
+    description: 'Recomendado para ver acabado',
   },
   {
     value: 30,
     suffix: ' días',
-    label: 'Garantía de Dinero',
-    description: 'Devolución completa',
+    label: 'Garantía',
+    description: 'Devolución del dinero',
   },
 ];
 
@@ -125,10 +125,10 @@ export const StatsSection: React.FC = () => {
         {/* Section Header */}
         <motion.div className="text-center mb-12 md:mb-16" {...fadeInUpView}>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Resultados Probados Científicamente
+            Lo que vas a recibir
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Números reales de personas que han transformado su piel
+            Datos básicos del producto y de la operación en Paraguay.
           </p>
         </motion.div>
 
@@ -197,18 +197,17 @@ export const StatsSection: React.FC = () => {
           viewport={{ once: true, amount: 0.3 }}
         >
           <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
-            Estos resultados son el promedio de 2.847+ clientas que han usado PDRN Pink Peptide
-            Serum durante 4 semanas consecutivas
+            Producto cosmético importado para uso diario. Los resultados pueden variar según el tipo de piel y la rutina de cada persona.
           </p>
           <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              Datos Verificados
+              Envío gratis a todo Paraguay
             </span>
             <span className="hidden sm:inline text-primary/30">•</span>
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              Dermatológicamente Testeado
+              Garantía 30 días
             </span>
           </div>
         </motion.div>

@@ -15,8 +15,8 @@ interface BeforeAfterSectionProps {
 export const BeforeAfterSection: React.FC<BeforeAfterSectionProps> = ({
   beforeSrc = beforeImage,
   afterSrc = afterImage,
-  beforeLabel = 'Antes · Día 0',
-  afterLabel = 'Después · Semana 4',
+  beforeLabel = 'Día 0',
+  afterLabel = 'Semana 4',
 }) => {
   const [sliderPosition, setSliderPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -69,10 +69,10 @@ export const BeforeAfterSection: React.FC<BeforeAfterSectionProps> = ({
       {/* Section Title */}
       <motion.div className="text-center mb-12 md:mb-16" {...fadeInUpView}>
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-          Resultados Visibles al Comparar
+          Comparativa de aspecto
         </h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Desliza para ver la transformación en 4 semanas de uso continuo
+          Desliza para comparar el aspecto de la piel con uso continuo. Los resultados pueden variar según el tipo de piel.
         </p>
       </motion.div>
 
@@ -197,8 +197,8 @@ export const BeforeAfterSection: React.FC<BeforeAfterSectionProps> = ({
           viewport={{ once: true, amount: 0.3 }}
         >
           <span className="inline-block bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/30 px-6 py-3 rounded-full">
-            <span className="text-primary font-semibold">✓ Resultado Real</span>
-            <span className="text-muted-foreground text-sm"> · 28 días de transformación</span>
+            <span className="text-primary font-semibold">Imagen orientativa</span>
+            <span className="text-muted-foreground text-sm"> · 28 días de uso continuo</span>
           </span>
         </motion.div>
 
@@ -210,7 +210,7 @@ export const BeforeAfterSection: React.FC<BeforeAfterSectionProps> = ({
           transition={{ duration: DURATION.normal, delay: 0.4 }}
           viewport={{ once: true, amount: 0.3 }}
         >
-          Desliza la barra para comparar el antes y después
+          Desliza la barra para comparar. Imagen orientativa, los resultados pueden variar.
         </motion.p>
       </motion.div>
     </section>

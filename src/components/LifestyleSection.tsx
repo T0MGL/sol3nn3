@@ -7,17 +7,17 @@ const useCases = [
   {
     icon: SunIcon,
     title: "Mañana",
-    description: "Después del tónico. 2-3 gotas en rostro y cuello. Masajear hasta absorber.",
+    description: "Después del tónico. 2 a 3 gotas en rostro y cuello. Masajear hasta absorber. Combinar con protector solar durante el día.",
   },
   {
     icon: MoonIcon,
     title: "Noche",
-    description: "Segunda aplicación en tu rutina nocturna. Combina con hidratante favorita.",
+    description: "Segunda aplicación en tu rutina nocturna. Combinar con tu hidratante habitual.",
   },
   {
     icon: CheckCircleIcon,
-    title: "Resultados",
-    description: "Mejoras visibles en hidratación desde la semana 1. Óptimos a las 4 semanas.",
+    title: "Constancia",
+    description: "Pensado para uso diario, mañana y noche. Los resultados pueden variar según el tipo de piel.",
   },
 ];
 
@@ -59,10 +59,10 @@ export const LifestyleSection = () => {
           className="text-center mb-12 md:mb-20 space-y-4 md:space-y-6"
         >
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter px-4">
-            Cómo usar el PDRN Serum
+            Cómo usar el suero
           </h2>
           <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground font-light px-4 max-w-3xl mx-auto leading-relaxed">
-            Integra este suero en tu rutina diaria de cuidado facial para máximos resultados.
+            Integralo en tu rutina diaria de cuidado facial. Mañana y noche, sobre piel limpia.
           </p>
         </motion.div>
 
@@ -85,7 +85,7 @@ export const LifestyleSection = () => {
               >
                 <img
                   src={lifestyleImage}
-                  alt="Piel luminosa con PDRN Serum"
+                  alt="Aspecto de la piel con uso continuo del suero"
                   className="w-full h-full object-cover object-top"
                   loading="lazy"
                   decoding="async"
@@ -99,7 +99,7 @@ export const LifestyleSection = () => {
               >
                 <img
                   src={lifestyleProduct}
-                  alt="PDRN Pink Peptide Serum"
+                  alt="Pink Repair Peptide Serum (30ml)"
                   className="w-full h-full object-cover"
                   loading="lazy"
                   decoding="async"
@@ -108,7 +108,7 @@ export const LifestyleSection = () => {
               {/* Label */}
               <div className="absolute -bottom-6 left-4 bg-primary/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-primary/50 shadow-lg">
                 <p className="text-xs md:text-sm font-bold text-foreground text-center">
-                  PDRN Pink Peptide Serum
+                  Pink Repair Peptide Serum
                 </p>
               </div>
             </div>
@@ -159,7 +159,7 @@ export const LifestyleSection = () => {
         >
           <div className="inline-block shimmer-host bg-secondary/50 backdrop-blur-sm border border-primary/30 rounded-lg px-8 py-6 md:px-12 md:py-8 shadow-[0_4px_24px_rgba(192,139,122,0.12),0_1px_4px_rgba(0,0,0,0.06)]">
             <p className="text-lg md:text-xl lg:text-2xl font-light text-foreground/90 leading-relaxed">
-              El resultado: <span className="font-bold text-primary">Piel visiblemente transformada</span> en 4 semanas de uso constante.
+              Para uso diario. <span className="font-bold text-primary">Los resultados pueden variar</span> según el tipo de piel y la rutina.
             </p>
           </div>
         </motion.div>

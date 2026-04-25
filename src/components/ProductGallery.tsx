@@ -6,9 +6,9 @@ import serumBenefitsImage from "@/assets/products/serum-benefits.webp";
 import ingredientsImage from "@/assets/products/ingredients-info.webp";
 
 const images = [
-  { src: serumCloseupImage, alt: "SOLENNE PDRN Serum - Foto del producto" },
-  { src: serumBenefitsImage, alt: "SOLENNE - Beneficios del serum PDRN" },
-  { src: ingredientsImage, alt: "SOLENNE - Ingredientes clave del serum" },
+  { src: serumCloseupImage, alt: "SOLENNE - Pink Repair Peptide Serum, foto del producto" },
+  { src: serumBenefitsImage, alt: "SOLENNE - Pink Repair Peptide Serum, beneficios" },
+  { src: ingredientsImage, alt: "SOLENNE - Ingredientes clave del suero" },
 ];
 
 export const ProductGallery = () => {
