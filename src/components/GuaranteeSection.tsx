@@ -43,7 +43,7 @@ export const GuaranteeSection = ({ onBuyClick }: GuaranteeSectionProps) => {
 
             <div className="max-w-2xl mx-auto space-y-6 md:space-y-8 py-4 md:py-8">
               <p className="text-base md:text-lg text-foreground/80 leading-relaxed font-light px-4">
-                Prueba PDRN Pink Peptide Serum durante 30 días completos. Si no notas mejora en tu piel,
+                Probá el Pink Repair Peptide Serum durante 30 días completos. Si no estás conforme,
                 te devolvemos el 100% de tu dinero. Sin preguntas, sin complicaciones.
               </p>
 

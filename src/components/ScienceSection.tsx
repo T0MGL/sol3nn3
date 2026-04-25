@@ -1,39 +1,39 @@
 import { motion } from "framer-motion";
-import { CpuChipIcon, BeakerIcon, ShieldCheckIcon, HeartIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
+import { CpuChipIcon, BeakerIcon, ShieldCheckIcon, HeartIcon } from "@heroicons/react/24/outline";
 import ingredientsImage from "@/assets/products/ingredients-info.webp";
 
 const ingredients = [
   {
     icon: CpuChipIcon,
-    name: "PDRN (Sodium DNA) 1%",
+    name: "PDRN 1%",
     concentration: "1%",
-    description: "Salmon DNA extraído. Regeneración celular activa. Estimula la producción de colágeno y elastina naturalmente.",
-    benefit: "Revitaliza células dañadas",
-    clinical: true
+    description: "Polidesoxirribonucleótido. Apoya la apariencia de una piel revitalizada y un aspecto más liso.",
+    benefit: "Aspecto revitalizado",
+    clinical: false
   },
   {
     icon: BeakerIcon,
-    name: "5 Types Peptide Complex",
+    name: "Complejo de 5 Péptidos",
     concentration: "5%",
-    description: "Péptidos bioactivos derivados de aminoácidos. Mejora firmeza, elasticidad y textura de la piel.",
-    benefit: "Glass skin effect",
-    clinical: true
+    description: "Péptidos bioactivos. Apoya la apariencia de firmeza, elasticidad y textura de la piel.",
+    benefit: "Aspecto más firme",
+    clinical: false
   },
   {
     icon: HeartIcon,
-    name: "Hyaluronic Acid",
+    name: "Ácido Hialurónico",
     concentration: "3%",
-    description: "Hidratación profunda de múltiples capas de la epidermis. Retiene humedad 24 horas.",
-    benefit: "Piel suave y plumosa",
-    clinical: true
+    description: "Apoya la hidratación de las capas superficiales de la piel y ayuda a mantener la sensación de hidratación.",
+    benefit: "Piel con aspecto hidratado",
+    clinical: false
   },
   {
     icon: ShieldCheckIcon,
-    name: "Niacinamide",
+    name: "Niacinamida",
     concentration: "4%",
-    description: "Vitamina B3. Unifica el tono, minimiza poros y refuerza la barrera cutánea.",
-    benefit: "Piel más clara y resistente",
-    clinical: true
+    description: "Vitamina B3. Apoya la apariencia de un tono más uniforme y poros menos visibles.",
+    benefit: "Aspecto más uniforme",
+    clinical: false
   }
 ];
 
@@ -51,12 +51,12 @@ export const ScienceSection = () => {
           className="text-center mb-16 md:mb-20 space-y-6 md:space-y-8"
         >
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter px-4 leading-tight">
-            La ciencia detrás del PDRN Serum
+            Ingredientes clave
           </h2>
           <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground font-light max-w-4xl mx-auto px-4 leading-relaxed">
-            Formulado con ingredientes K-beauty auténticos, clínicamente probados.
-            <span className="text-foreground font-medium"> PDRN + Péptidos + Hyaluronic Acid</span> ,
-            la trilogía que regenera tu piel desde adentro.
+            Una fórmula cosmética importada que combina
+            <span className="text-foreground font-medium"> PDRN, complejo de péptidos, ácido hialurónico y niacinamida</span>,
+            pensada para apoyar la reparación, la hidratación y la textura.
           </p>
         </motion.div>
 
@@ -76,14 +76,6 @@ export const ScienceSection = () => {
                 key={index}
                 className="bg-card border border-border/50 rounded-lg p-6 space-y-4 hover:border-primary/30 transition-all duration-300 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_20px_rgba(192,139,122,0.12)]"
               >
-                {/* Clinical Badge */}
-                {ingredient.clinical && (
-                  <div className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full">
-                    <CheckBadgeIcon className="w-3.5 h-3.5" />
-                    Clínicamente Probado
-                  </div>
-                )}
-
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Icon className="w-6 h-6 text-primary" strokeWidth={1.5} />
                 </div>
@@ -130,30 +122,30 @@ export const ScienceSection = () => {
         >
           <div className="bg-gradient-to-b from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-8 md:p-10 space-y-4">
             <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-              Resultados Clínicos Probados
+              Para qué se usa
             </h3>
             <div className="grid grid-cols-3 gap-4 pt-4">
               <div>
-                <p className="text-2xl md:text-3xl font-bold text-primary">99%</p>
+                <p className="text-2xl md:text-3xl font-bold text-primary">Diario</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Hidratación mejorada en 7 días
+                  Pensado para uso diario
                 </p>
               </div>
               <div>
                 <p className="text-2xl md:text-3xl font-bold text-primary">4+</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Semanas para resultados óptimos
+                  Semanas de uso continuo recomendadas
                 </p>
               </div>
               <div>
-                <p className="text-2xl md:text-3xl font-bold text-primary">All</p>
+                <p className="text-2xl md:text-3xl font-bold text-primary">Todos</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Tipos de piel compatibles
+                  Tipos de piel
                 </p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground pt-4">
-              Dermatológicamente testeado. Fórmula coreana auténtica con 30 años de investigación K-beauty.
+              Producto cosmético importado. El empaque puede variar. Sin afiliación a ninguna marca específica. Los resultados pueden variar según el tipo de piel.
             </p>
           </div>
         </motion.div>
@@ -168,7 +160,7 @@ export const ScienceSection = () => {
         >
           <img
             src={ingredientsImage}
-            alt="Ingredientes del PDRN Serum - PDRN, Niacinamide, Péptidos"
+            alt="Ingredientes clave del suero: PDRN, péptidos, ácido hialurónico, niacinamida"
             className="w-full max-w-4xl mx-auto rounded-xl shadow-[0_10px_40px_rgba(192,139,122,0.2)]"
             loading="lazy"
             decoding="async"

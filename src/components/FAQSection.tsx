@@ -8,16 +8,20 @@ import { motion } from "framer-motion";
 
 const faqs = [
   {
-    question: "¿Para qué tipo de piel es el PDRN Serum?",
-    answer: "Es apto para todo tipo de piel, incluyendo piel sensible. Formulado y dermatológicamente testeado para uso diario.",
+    question: "¿Es un producto original de marca?",
+    answer: "Es un suero cosmético importado, no afiliado a ninguna marca específica.",
   },
   {
-    question: "¿Cuándo veo resultados?",
-    answer: "La mayoría de nuestras clientas notan mejoras en hidratación desde la primera semana. Resultados óptimos a las 4 semanas de uso constante.",
+    question: "¿Es seguro?",
+    answer: "Está diseñado para uso cosmético. Recomendamos hacer una prueba en una zona pequeña de la piel antes del uso completo.",
   },
   {
     question: "¿Cómo es el envío en Paraguay?",
-    answer: "Delivery gratis a Asunción y Departamento Central. 1-2 días hábiles. Packaging premium incluido.",
+    answer: "Envío gratis a Asunción y Departamento Central. 1 a 2 días hábiles.",
+  },
+  {
+    question: "¿Cómo se usa?",
+    answer: "Aplicá 2 a 3 gotas sobre la piel limpia, mañana y noche. Masajeá hasta absorber. Se recomienda combinar con hidratante y protector solar durante el día.",
   },
 ];
 

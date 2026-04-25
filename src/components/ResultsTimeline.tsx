@@ -12,42 +12,42 @@ interface TimelineStep {
 
 const steps: TimelineStep[] = [
   {
-    label: 'Hidratación Profunda',
-    timeframe: 'Día 1 - 3',
+    label: 'Primer uso',
+    timeframe: 'Día 1 a 3',
     benefits: [
-      'Piel suave y de aspecto fresco',
-      'Hidratación inmediata',
+      'Sensación de piel suave al tacto',
+      'Acabado ligero, sin pesadez',
       'Absorción rápida',
     ],
   },
   {
-    label: 'Regeneración Celular',
+    label: 'Uso continuo',
     timeframe: 'Semana 1',
     benefits: [
-      'Luminosidad visible',
-      'Textura más uniforme',
-      'Elasticidad mejorada',
+      'Aspecto de piel hidratada',
+      'Textura más uniforme al tacto',
+      'Acabado más liso',
     ],
-    badge: 'Resultados Visibles',
+    badge: 'Aspecto visible',
   },
   {
-    label: 'Transformación Notoria',
+    label: 'Rutina establecida',
     timeframe: 'Semana 2',
     benefits: [
-      'Poros más refinados',
-      'Glass skin effect',
-      'Firmeza aumentada',
+      'Aspecto de poros menos visibles',
+      'Apariencia de firmeza apoyada',
+      'Acabado uniforme',
     ],
   },
   {
-    label: 'Resultados Óptimos',
+    label: 'Uso continuado',
     timeframe: 'Semana 4',
     benefits: [
-      'Piel radiante y renovada',
-      'Textura premium',
-      'Efectos duraderos',
+      'Aspecto de piel cuidada',
+      'Acabado parejo',
+      'Resultados pueden variar',
     ],
-    badge: '28 Días Transformación',
+    badge: '28 días de uso continuo',
   },
 ];
 
@@ -81,10 +81,10 @@ export const ResultsTimeline: React.FC = () => {
       {/* Section Title */}
       <motion.div className="text-center mb-12 md:mb-16" {...fadeInUpView}>
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-          Tu Transformación Semana a Semana
+          Qué esperar, semana a semana
         </h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Resultados progresivos y reales desde el primer día de uso
+          Una guía orientativa de uso diario. Los resultados pueden variar según el tipo de piel.
         </p>
       </motion.div>
 

@@ -47,8 +47,8 @@ interface CODFormProps {
 
 const defaultProductLabel = (quantity: number): string =>
   quantity === 2
-    ? 'PDRN Pink Peptide Serum - Kit Duo (x2)'
-    : 'PDRN Pink Peptide Serum 30ml';
+    ? 'Pink Repair Peptide Serum - Kit Duo (x2)'
+    : 'Pink Repair Peptide Serum (30ml)';
 
 const CODForm = ({ onSuccess, onCloseAttempt, amount, currency, customerData, productLabel }: CODFormProps) => {
   const [isProcessing, setIsProcessing] = useState(false);

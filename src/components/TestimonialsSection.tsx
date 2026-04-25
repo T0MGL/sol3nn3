@@ -26,7 +26,7 @@ const singleImageReviews = [
     role: "Encarnación",
     rating: 5,
     quote:
-      "Compré el PDRN Serum sin muchas expectativas y me sorprendió desde el primer uso. El frasco es precioso y el suero huele increíble. Ya voy por mi segunda unidad.",
+      "Compré el suero sin muchas expectativas y me sorprendió desde el primer uso. El frasco es precioso y la fórmula huele increíble. Ya voy por mi segunda unidad.",
     image: reviewAlone1,
   },
   {
@@ -243,10 +243,10 @@ export const TestimonialsSection = () => {
       <div className="container max-w-[1200px] mx-auto relative z-10">
         <div className="text-center mb-8 md:mb-12 space-y-3 md:space-y-4">
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold px-4">
-            Resultados reales. Piel transformada.
+            Lo que dicen nuestras clientas
           </h2>
           <p className="text-base md:text-xl text-muted-foreground px-4">
-            Clientas paraguayas que ya lo viven
+            Experiencias individuales, los resultados pueden variar.
           </p>
         </div>
 

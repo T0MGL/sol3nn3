@@ -12,7 +12,7 @@ export const LivePurchaseNotification = ({
   isVisible,
   buyerName,
   buyerCity,
-  productLabel = "el PDRN Serum",
+  productLabel = "el Pink Repair Peptide Serum",
 }: LivePurchaseNotificationProps) => {
   return (
     <AnimatePresence>

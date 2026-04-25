@@ -58,7 +58,7 @@ const CheckoutModal = lazy(() =>
   import("@/components/checkout/CheckoutModal").then((m) => ({ default: m.CheckoutModal }))
 );
 
-const PRODUCT_DISPLAY_NAME = "PDRN Serum";
+const PRODUCT_DISPLAY_NAME = "Pink Repair Peptide Serum";
 
 const SectionSkeleton = memo(({ height }: { height: string }) => (
   <div className={`${height} bg-background animate-pulse`}>
@@ -523,6 +523,11 @@ const Index = () => {
           <p className="text-2xl font-serif font-semibold tracking-tighter text-primary">SOLENNE</p>
           <p className="text-muted-foreground font-light text-xs md:text-sm">
             Verse mejor. Sentirse mejor.
+          </p>
+
+          {/* Disclaimer */}
+          <p className="text-[10px] md:text-xs text-muted-foreground/70 font-light max-w-2xl mx-auto leading-relaxed px-4">
+            Este es un producto cosmético importado. El empaque puede variar. Sin afiliación a ninguna marca específica. Los resultados pueden variar según el tipo de piel.
           </p>
 
           {/* Legal Links */}

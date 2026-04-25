@@ -64,27 +64,27 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
     {
       image: lifestyleImage,
       gradient: "linear-gradient(135deg, #F2EDE4, #E8D5C4)",
-      alt: "SOLENNE - PDRN Pink Peptide Serum Lifestyle"
+      alt: "SOLENNE - Pink Repair Peptide Serum (30ml)"
     },
     {
       image: serumCloseupImage,
       gradient: "linear-gradient(135deg, #F2EDE4, #E8D5C4)",
-      alt: "SOLENNE PDRN Serum - Foto del producto"
+      alt: "SOLENNE - Foto del producto"
     },
     {
       image: serumBenefitsImage,
       gradient: "linear-gradient(135deg, #F2EDE4, #E8D5C4)",
-      alt: "SOLENNE - Beneficios del serum PDRN"
+      alt: "SOLENNE - Pink Repair Peptide Serum, beneficios"
     },
     {
       image: firmskinImage,
       gradient: "linear-gradient(135deg, #F2EDE4, #E8D5C4)",
-      alt: "SOLENNE - Resultados de Firmeza Clínicamente Probado"
+      alt: "SOLENNE - Aspecto de la piel con uso continuo"
     },
     {
       image: beforeAfterImage,
       gradient: "linear-gradient(135deg, #F2EDE4, #E8D5C4)",
-      alt: "SOLENNE - Efecto Filtro de Brillo Rosa Antes y Después"
+      alt: "SOLENNE - Comparativa de aspecto antes y después"
     }
   ];
 
@@ -193,7 +193,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                 transition={{ duration: 0.3 }}
                 className="text-foreground text-xs md:text-sm font-semibold whitespace-nowrap"
               >
-                #1 K-Beauty en Paraguay 🇵🇾
+                Cosmético importado · Paraguay 🇵🇾
               </motion.p>
             </motion.div>
 
@@ -290,10 +290,11 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
               >
-                PDRN <span className="italic">Pink Peptide</span> Serum
+                <span className="italic">Pink Repair</span> Peptide Serum
+                <span className="block text-2xl md:text-3xl lg:text-4xl font-light text-foreground/70 mt-2">30ml</span>
               </motion.h1>
               <p className="text-lg md:text-xl text-primary font-medium">
-                El suero viral de Corea que regenera tu piel
+                Suero ligero de péptidos para apoyar la reparación e hidratación de la piel.
               </p>
 
               {/* Star Rating + Social Proof */}
@@ -320,34 +321,34 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
             <div className="grid grid-cols-2 gap-3 md:gap-4 py-2">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <ArrowPathIcon className="w-6 h-6 text-primary" />
-                </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Regeneración Celular</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <BeakerIcon className="w-6 h-6 text-primary" />
                 </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Glass Skin Effect</span>
+                <span className="text-sm md:text-base font-medium text-foreground">Mejora la textura</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <ClockIcon className="w-6 h-6 text-primary" />
                 </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Hidratación 24hs</span>
+                <span className="text-sm md:text-base font-medium text-foreground">Apoya la hidratación</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <ArrowPathIcon className="w-6 h-6 text-primary" />
+                </div>
+                <span className="text-sm md:text-base font-medium text-foreground">Aspecto más liso</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <ShieldCheckIcon className="w-6 h-6 text-primary" />
                 </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Anti-Envejecimiento</span>
+                <span className="text-sm md:text-base font-medium text-foreground">Ligero, rápida absorción</span>
               </div>
             </div>
 
             {/* Product Description */}
             <div className="space-y-2">
               <p className="text-sm md:text-base text-foreground/70 leading-relaxed">
-                Formulado con PDRN (Sodium DNA) 1% y 5 tipos de Péptidos, el suero más buscado de Corea del Sur, ahora en Paraguay. Regenerá tu piel desde adentro.
+                Suero de péptidos importado, ligero, formulado para apoyar la reparación, la hidratación y un aspecto más liso de la piel. Esta fórmula cosmética es ideal para uso diario y ayuda a mejorar el aspecto de las líneas finas y la textura de la piel.
               </p>
               <p className="text-xs md:text-sm text-primary font-medium">
                 📦 Tamaño: 30ml / 1.01 fl. oz.
@@ -380,7 +381,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#A67265]"></span>
               </span>
               <span className="text-sm font-semibold text-[#A67265]">
-                ● Solo quedan{" "}
+                ● Stock limitado, lote actual por agotarse ({" "}
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={displayStock}
@@ -393,7 +394,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                     {displayStock}
                   </motion.span>
                 </AnimatePresence>
-                {" "}unidades en stock
+                {" "}unidades disponibles)
               </span>
             </motion.div>
 

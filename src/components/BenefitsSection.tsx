@@ -5,18 +5,18 @@ import { staggerContainerVariants, staggerItemVariants } from "@/lib/animations"
 const benefits = [
   {
     icon: ArrowPathIcon,
-    title: "Regeneración Celular Activa",
-    description: "El PDRN (Salmon DNA) estimula la producción natural de colágeno y elastina. Actúa en capas profundas de la piel para revitalizar células dañadas y restaurar su juventud. Resultados visibles desde la primera semana.",
+    title: "Apoya la reparación visible",
+    description: "Una fórmula ligera con PDRN y complejo de péptidos pensada para apoyar el aspecto de una piel reparada y un acabado más liso con uso continuo.",
   },
   {
     icon: BeakerIcon,
-    title: "Glass Skin Effect",
-    description: "Los 5 tipos de péptidos trabajan en sinergia para mejorar la firmeza, elasticidad y textura. Tu piel se vuelve más suave, luminosa y con ese brillo característico del glass skin coreano.",
+    title: "Mejora la textura",
+    description: "El complejo de péptidos y la niacinamida apoyan la apariencia de firmeza, elasticidad y un tono más uniforme. Acabado suave, sin sensación pesada.",
   },
   {
     icon: ClockIcon,
-    title: "Hidratación Profunda 24hs",
-    description: "El Hyaluronic Acid penetra hasta las capas más profundas de la epidermis, manteniendo tu piel hidratada todo el día. Niacinamide unifica el tono y minimiza poros visiblemente.",
+    title: "Apoya la hidratación",
+    description: "El ácido hialurónico ayuda a las capas superficiales de la piel a mantener una sensación de hidratación durante el día. La niacinamida apoya el aspecto de poros menos visibles.",
   },
 ];
 
@@ -34,10 +34,10 @@ export const BenefitsSection = () => {
           className="text-center mb-12 md:mb-20 space-y-3 md:space-y-4"
         >
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold px-4">
-            Tu piel, transformada desde adentro
+            Beneficios principales
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground font-light max-w-2xl mx-auto">
-            PDRN (Sodium DNA) + Péptidos actúan en capas profundas de la piel para resultados visibles.
+            PDRN, péptidos, ácido hialurónico y niacinamida en una sola fórmula cosmética para uso diario.
           </p>
         </motion.div>
 
