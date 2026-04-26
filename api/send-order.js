@@ -15,6 +15,21 @@ function generateOrdefyIdempotencyKey() {
   return `selenne-order-${timestamp}-${random}`;
 }
 
+/**
+ * Normalizes a Paraguay phone number to E.164 format (+595XXXXXXXXX).
+ * The checkout form submits "+595 9XXXXXXXX" (space after country code).
+ * When this reaches Ordefy without normalization, the space is treated as
+ * a digit by some parsers, producing "+5950..." which causes lookup mismatches.
+ */
+function normalizePhone(raw) {
+  if (!raw) return raw;
+  const digits = String(raw).replace(/[^\d+]/g, '');
+  if (digits.startsWith('+')) return digits;
+  if (digits.startsWith('595')) return '+' + digits;
+  if (digits.startsWith('0')) return '+595' + digits.slice(1);
+  return '+595' + digits;
+}
+
 const GPS_MAPS_LINK_RE = /^https?:\/\/(?:www\.)?google\.[a-z.]+\/maps\?q=-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?/i;
 
 function isRealGpsMapsLink(link) {
@@ -136,9 +151,11 @@ async function sendToOrdefy(orderData) {
 
   const paymentStatus = isPaid === true || paymentType === 'Card' ? 'paid' : 'pending';
 
+  const normalizedPhone = normalizePhone(phone);
+
   const ordefyPayload = {
     idempotency_key: orderNumber || generateOrdefyIdempotencyKey(),
-    customer: { name, phone: phone || undefined, email: email || undefined },
+    customer: { name, phone: normalizedPhone || undefined, email: email || undefined },
     shipping_address: buildOrdefyShippingAddress({ lat, long, address, city: location, googleMapsLink }),
     items,
     totals: { subtotal: total, shipping: 0, total },
@@ -199,11 +216,12 @@ export default async function handler(req, res) {
       quantity: safeQuantity,
     });
     const sanitizedMapsLink = isRealGpsMapsLink(googleMapsLink) ? googleMapsLink : null;
+    const resolvedPhone = normalizePhone(phone);
 
     const webhookPayload = {
       orderNumber: resolvedOrderNumber,
       timestamp: new Date().toISOString(),
-      customer: { name, phone, email: email || null },
+      customer: { name, phone: resolvedPhone, email: email || null },
       location: {
         city: location,
         address: address || '',
@@ -242,7 +260,7 @@ export default async function handler(req, res) {
         : Promise.resolve({ skipped: true, reason: 'N8N_WEBHOOK_URL not configured' }),
 
       sendToOrdefy({
-        name, phone, email, location, address,
+        name, phone: resolvedPhone, email, location, address,
         lat, long, googleMapsLink: sanitizedMapsLink,
         quantity: safeQuantity,
         unitPrice: resolvedUnitPrice,

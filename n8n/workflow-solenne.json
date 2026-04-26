@@ -963,7 +963,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"phone\": {{ JSON.stringify($('Extract & Route').first().json.phone || '') }},\n  \"google_maps_link\": {{ JSON.stringify(\n    $('Extract & Route').first().json.order_data?.mapsLink\n    || ($('Extract & Route').first().json.order_data?.latitude\n      ? 'https://www.google.com/maps?q=' + $('Extract & Route').first().json.order_data.latitude + ',' + $('Extract & Route').first().json.order_data.longitude\n      : '')\n  ) }},\n  \"shipping_city\": {{ JSON.stringify($('Extract & Route').first().json.order_data?.city || '') }}\n}",
+        "jsonBody": "={\n  \"order_number\": {{ JSON.stringify(\n    ($(\"Extract & Route\").first().json.template_order_data?.order_number || $(\"Extract & Route\").first().json.order_data?.orderNumber || \"\").replace(\"#\",\"\")\n  ) }},\n  \"phone\": {{ JSON.stringify($(\"Extract & Route\").first().json.phone || \"\") }},\n  \"google_maps_link\": {{ JSON.stringify(\n    $(\"Extract & Route\").first().json.order_data?.mapsLink\n    || ($(\"Extract & Route\").first().json.order_data?.latitude\n      ? \"https://www.google.com/maps?q=\" + $(\"Extract & Route\").first().json.order_data.latitude + \",\" + $(\"Extract & Route\").first().json.order_data.longitude\n      : \"\")\n  ) }},\n  \"shipping_city\": {{ JSON.stringify($(\"Extract & Route\").first().json.order_data?.city || \"\") }}\n}",
         "options": {}
       },
       "id": "bab1e692-e43c-42e2-a2dc-f5a6c84d04ff",
@@ -974,7 +974,7 @@
         4224,
         640
       ],
-      "onError": "continueRegularOutput"
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {},
@@ -1921,7 +1921,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"phone\": {{ JSON.stringify($('Extract & Route').first().json.phone) }},\n  \"google_maps_link\": {{ JSON.stringify(\n    $('Extract & Route').first().json.order_data?.mapsLink\n    || $('Extract & Route').first().json.template_order_data?.maps_link\n    || ($('Extract & Route').first().json.order_data?.latitude\n      ? 'https://www.google.com/maps?q=' + $('Extract & Route').first().json.order_data.latitude + ',' + $('Extract & Route').first().json.order_data.longitude\n      : '')\n  ) }}\n}",
+        "jsonBody": "={\n  \"order_number\": {{ JSON.stringify(\n    ($(\"Extract & Route\").first().json.template_order_data?.order_number || \"\").replace(\"#\",\"\")\n  ) }},\n  \"google_maps_link\": {{ JSON.stringify(\n    $(\"Extract & Route\").first().json.order_data?.mapsLink\n    || $(\"Extract & Route\").first().json.template_order_data?.maps_link\n    || ($(\"Extract & Route\").first().json.order_data?.latitude\n      ? \"https://www.google.com/maps?q=\" + $(\"Extract & Route\").first().json.order_data.latitude + \",\" + $(\"Extract & Route\").first().json.order_data.longitude\n      : \"\")\n  ) }}\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -1932,7 +1932,7 @@
       ],
       "id": "tr-ordefy-001",
       "name": "Confirm in Ordefy",
-      "onError": "continueRegularOutput"
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -2366,7 +2366,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"phone\": {{ JSON.stringify($('Extract & Route').item.json.phone) }}\n}",
+        "jsonBody": "={\n  \"order_number\": {{ JSON.stringify(\n    ($json.pending_order_number || \"\").replace(\"#\",\"\")\n  ) }},\n  \"phone\": {{ JSON.stringify($(\"Extract & Route\").item.json.phone) }}\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -2377,7 +2377,7 @@
       ],
       "id": "receipt-confirm-001",
       "name": "Confirm Receipt in Ordefy",
-      "onError": "continueRegularOutput"
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
