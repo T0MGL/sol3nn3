@@ -66,6 +66,23 @@ export const PRODUCTS = {
       2: 'Pack Duo',
     },
   },
+  serum: {
+    contentNameBase: 'Solenne Serum de Pestañas',
+    contentIdBase: 'SOLENNE-SERUM-LASH',
+    contentCategory: 'Beauty & Personal Care',
+    contentType: 'product',
+    currency: 'PYG',
+    unitPrice: 149000,
+    skuByQuantity: {
+      1: 'SOLENNE-SERUM-LASH-01',
+      2: 'SOLENNE-SERUM-LASH-DUO',
+      3: 'SOLENNE-SERUM-LASH-TRIO',
+    },
+    packNames: {
+      2: 'Pack Duo',
+      3: 'Pack Familia',
+    },
+  },
 } as const satisfies Record<string, ProductPixelConfig>;
 
 export type ProductKey = keyof typeof PRODUCTS;

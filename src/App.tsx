@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import LiftingTape from "./pages/LiftingTape";
 import RizadorElectrico from "./pages/RizadorElectrico";
+import LashSerum from "./pages/LashSerum";
 import NotFound from "./pages/NotFound";
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import TerminosCondiciones from "./pages/TerminosCondiciones";
@@ -40,6 +41,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/lifting-tape" element={<LiftingTape />} />
             <Route path="/rizador-electrico" element={<RizadorElectrico />} />
+            <Route path="/serum-pestanas" element={<LashSerum />} />
             <Route path="/politica-de-privacidad" element={<PoliticaPrivacidad />} />
             <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

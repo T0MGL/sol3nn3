@@ -59,6 +59,16 @@
       "source": "/www",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/serum-pesta%C3%B1as",
+      "destination": "/serum-pestanas",
+      "permanent": true
+    },
+    {
+      "source": "/serum-pestañas",
+      "destination": "/serum-pestanas",
+      "permanent": true
     }
   ]
 }
