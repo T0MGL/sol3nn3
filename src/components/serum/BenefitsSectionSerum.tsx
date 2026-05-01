@@ -1,10 +1,10 @@
-import { SparklesIcon, ShieldCheckIcon, BeakerIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { ArrowTrendingUpIcon, ShieldCheckIcon, BeakerIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { staggerContainerVariants, staggerItemVariants } from "@/lib/animations";
 
 const benefits = [
   {
-    icon: SparklesIcon,
+    icon: ArrowTrendingUpIcon,
     title: "Pestañas más largas y densas",
     description:
       "Acondiciona y nutre la fibra de la pestaña noche a noche. Los primeros cambios se ven entre las semanas 4 y 6 de uso constante. El resultado pleno aparece entre 8 y 12 semanas.",

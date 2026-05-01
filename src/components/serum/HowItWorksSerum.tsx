@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { MoonIcon, BeakerIcon, ClockIcon } from "@heroicons/react/24/outline";
-import serumApplication from "@/assets/products/serum/serum-application.webp";
+import serumApplication from "@/assets/products/serum/serum-detail-2.webp";
 
 const steps = [
   {

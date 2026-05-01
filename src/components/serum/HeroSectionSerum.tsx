@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  SparklesIcon,
+  ArrowTrendingUpIcon,
   ShieldCheckIcon,
   BeakerIcon,
   EyeIcon,
@@ -10,9 +10,8 @@ import { StarIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import paymentMethodsImage from "@/assets/payments/payment-methods.webp";
 import serumHero from "@/assets/products/serum/serum-hero.webp";
-import serumApplication from "@/assets/products/serum/serum-application.webp";
-import serumResult from "@/assets/products/serum/serum-result.webp";
-import serumPackaging from "@/assets/products/serum/serum-packaging.webp";
+import serumDetail1 from "@/assets/products/serum/serum-detail-1.jpg";
+import serumDetail2 from "@/assets/products/serum/serum-detail-2.webp";
 import { LivePurchaseNotification, getRandomBuyer } from "@/components/LivePurchaseNotification";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { PRODUCTS } from "@/lib/products";
@@ -56,10 +55,10 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
   const [stockAnimating, setStockAnimating] = useState(false);
 
   const slides = [
-    { image: serumHero, alt: "Solenne Serum de Pestañas, frasco con aplicador" },
-    { image: serumApplication, alt: "Aplicación nocturna del serum en la base de la pestaña" },
-    { image: serumResult, alt: "Resultado de pestañas más largas y densas" },
-    { image: serumPackaging, alt: "Solenne Serum de Pestañas, packaging 7 ml" },
+    { image: serumHero, alt: "Solenne Serum de Pestañas, presentación 7 ml" },
+    { image: serumDetail2, alt: "Aplicador del Serum de Pestañas Solenne, fórmula transparente" },
+    { image: serumDetail1, alt: "Solenne Serum de Pestañas, packaging premium 7 ml" },
+    { image: serumDetail2, alt: "Detalle del aplicador y la fórmula del Serum de Pestañas" },
   ];
 
   useEffect(() => {
@@ -263,7 +262,7 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
             <div className="grid grid-cols-2 gap-3 md:gap-4 py-2">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <SparklesIcon className="w-6 h-6 text-primary" />
+                  <ArrowTrendingUpIcon className="w-6 h-6 text-primary" />
                 </div>
                 <span className="text-sm md:text-base font-medium text-foreground">Más largas y densas</span>
               </div>

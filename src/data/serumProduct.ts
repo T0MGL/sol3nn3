@@ -287,14 +287,14 @@ export const SERUM_FAQS: readonly SerumFAQ[] = [
  * INCI function (humectant, antioxidant, conditioning), no false claims.
  */
 export interface SerumBenefit {
-  readonly icon: 'sparkle' | 'shield' | 'droplet' | 'eye';
+  readonly icon: 'trending' | 'shield' | 'droplet' | 'eye';
   readonly title: string;
   readonly description: string;
 }
 
 export const SERUM_BENEFITS: readonly SerumBenefit[] = [
   {
-    icon: 'sparkle',
+    icon: 'trending',
     title: 'Pestañas más largas y densas',
     description:
       'Acondiciona y nutre la fibra de la pestaña noche a noche. Resultado visible entre las semanas 4 y 6 con uso diario constante.',

@@ -2,15 +2,14 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeInUpView } from "@/lib/animations";
 import serumHero from "@/assets/products/serum/serum-hero.webp";
-import serumApplication from "@/assets/products/serum/serum-application.webp";
-import serumResult from "@/assets/products/serum/serum-result.webp";
-import serumPackaging from "@/assets/products/serum/serum-packaging.webp";
+import serumDetail1 from "@/assets/products/serum/serum-detail-1.jpg";
+import serumDetail2 from "@/assets/products/serum/serum-detail-2.webp";
 
 const images = [
   { src: serumHero, alt: "Solenne Serum de Pestañas, frasco 7 ml" },
-  { src: serumApplication, alt: "Aplicación nocturna del Serum de Pestañas" },
-  { src: serumResult, alt: "Resultado de pestañas más largas con uso constante" },
-  { src: serumPackaging, alt: "Packaging del Serum de Pestañas Solenne" },
+  { src: serumDetail2, alt: "Aplicador del Serum de Pestañas, fórmula transparente" },
+  { src: serumDetail1, alt: "Packaging del Serum de Pestañas Solenne" },
+  { src: serumDetail2, alt: "Detalle del aplicador y el frasco" },
 ];
 
 export const ProductGallerySerum = () => {
