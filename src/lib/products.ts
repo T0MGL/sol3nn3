@@ -66,21 +66,21 @@ export const PRODUCTS = {
       2: 'Pack Duo',
     },
   },
-  serum: {
+  lash: {
     contentNameBase: 'Solenne Serum de Pestañas',
-    contentIdBase: 'SOLENNE-SERUM-LASH',
+    contentIdBase: 'SOLENNE-LASH',
     contentCategory: 'Beauty & Personal Care',
     contentType: 'product',
     currency: 'PYG',
     unitPrice: 149000,
     skuByQuantity: {
-      1: 'SOLENNE-SERUM-LASH-01',
-      2: 'SOLENNE-SERUM-LASH-DUO',
-      3: 'SOLENNE-SERUM-LASH-TRIO',
+      1: 'SOLENNE-LASH-1',
+      2: 'SOLENNE-LASH-DUO',
+      3: 'SOLENNE-LASH-TRIO',
     },
     packNames: {
-      2: 'Pack Duo',
-      3: 'Pack Familia',
+      2: 'Pack Dúo',
+      3: 'Pack Trío',
     },
   },
 } as const satisfies Record<string, ProductPixelConfig>;

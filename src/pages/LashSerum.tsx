@@ -218,7 +218,7 @@ const LashSerum = () => {
   useEffect(() => {
     if (showPhoneForm && checkoutData.quantity > 0) {
       trackInitiateCheckout({
-        product: PRODUCTS.serum,
+        product: PRODUCTS.lash,
         quantity: checkoutData.quantity,
         value: checkoutData.totalPrice,
         user_data: { fbc: getFbc(), fbp: getFbp() },
@@ -249,7 +249,7 @@ const LashSerum = () => {
       setShowQuantitySelector(false);
 
       trackAddToCart({
-        product: PRODUCTS.serum,
+        product: PRODUCTS.lash,
         quantity,
         value: totalPrice,
         user_data: { fbc: getFbc(), fbp: getFbp() },
@@ -286,8 +286,8 @@ const LashSerum = () => {
         paymentType: result.paymentType,
         isPaid: result.isPaid,
         deliveryType: result.deliveryType,
-        productName: buildContentName(PRODUCTS.serum, data.quantity),
-        productKey: "serum",
+        productName: buildContentName(PRODUCTS.lash, data.quantity),
+        productKey: "lash",
         packVariant: data.packVariant,
       });
 
@@ -311,7 +311,7 @@ const LashSerum = () => {
         };
 
         trackPurchase({
-          product: PRODUCTS.serum,
+          product: PRODUCTS.lash,
           quantity: data.quantity,
           value: result.finalTotal,
           order_id: data.orderNumber,

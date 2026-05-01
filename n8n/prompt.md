@@ -608,10 +608,13 @@ NUNCA:
 ## Pack Pricing Logic (Code Node)
 
 ```javascript
-const productType = $input.item.json.product_type || "serum"; // "serum" | "tape"
+// product_type values: "pdrn" (skincare facial), "tape" (face tape), "lash" (serum de pestañas).
+// Legacy "serum" alias mapea a "pdrn" para no romper conversaciones viejas.
+const rawType = $input.item.json.product_type || "pdrn";
+const productType = rawType === "serum" ? "pdrn" : rawType;
 const quantity = $input.item.json.quantity || 1;
 
-if (productType === "serum") {
+if (productType === "pdrn") {
   const extraUnits = Math.max(0, quantity - 3);
   const baseQuantity = Math.min(quantity, 3);
 
@@ -664,6 +667,31 @@ if (productType === "tape") {
     }],
     total,
     packName: TAPE_PACK_NAMES[baseQuantity]
+  };
+}
+
+if (productType === "lash") {
+  const LASH_PACK_PRICES = { 1: 149000, 2: 249000, 3: 339000 };
+  const LASH_PACK_NAMES = { 1: "Frasco Individual", 2: "Pack Dúo", 3: "Pack Trío" };
+  const LASH_PACK_SKUS = {
+    1: "SOLENNE-LASH-1",
+    2: "SOLENNE-LASH-DUO",
+    3: "SOLENNE-LASH-TRIO"
+  };
+
+  const baseQuantity = Math.min(Math.max(quantity, 1), 3);
+  const total = LASH_PACK_PRICES[baseQuantity];
+
+  return {
+    items: [{
+      name: "Solenne Serum de Pestañas 7ml",
+      sku: LASH_PACK_SKUS[baseQuantity],
+      quantity: 1,
+      price: total,
+      variant_title: LASH_PACK_NAMES[baseQuantity]
+    }],
+    total,
+    packName: LASH_PACK_NAMES[baseQuantity]
   };
 }
 

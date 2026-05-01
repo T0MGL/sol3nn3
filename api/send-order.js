@@ -64,6 +64,11 @@ function getSku(productKey, packVariant) {
     if (packVariant === 'evento') return 'SOLENNE-TAPE-EVENTO';
     return null;
   }
+  if (productKey === 'lash') {
+    if (packVariant === 'duo') return 'SOLENNE-LASH-DUO';
+    if (packVariant === 'trio') return 'SOLENNE-LASH-TRIO';
+    return 'SOLENNE-LASH-1';
+  }
   if (packVariant === 'individual') return 'SOLENNE-PDRN-30ML';
   if (packVariant === 'duo') return 'SOLENNE-PDRN-DUO';
   if (packVariant === 'familiar') return 'SOLENNE-PDRN-FAMILIAR';
@@ -80,6 +85,18 @@ function getTapeProductName(packVariant) {
 function getTapePackPrice(packVariant) {
   if (packVariant === 'ritual') return 249000;
   if (packVariant === 'evento') return 339000;
+  return 149000;
+}
+
+function getLashProductName(packVariant) {
+  if (packVariant === 'duo') return 'Solenne Serum de Pestañas - Pack Dúo';
+  if (packVariant === 'trio') return 'Solenne Serum de Pestañas - Pack Trío';
+  return 'Solenne Serum de Pestañas';
+}
+
+function getLashPackPrice(packVariant) {
+  if (packVariant === 'duo') return 249000;
+  if (packVariant === 'trio') return 339000;
   return 149000;
 }
 
@@ -125,6 +142,25 @@ async function sendToOrdefy(orderData) {
       items.push({
         sku: tapeSku,
         name: tapeName,
+        quantity: safeQuantity,
+        price: 149000,
+      });
+    }
+  } else if (productKey === 'lash') {
+    const lashSku = getSku('lash', packVariant);
+    const lashName = getLashProductName(packVariant);
+
+    if (packVariant === 'duo' || packVariant === 'trio') {
+      items.push({
+        sku: lashSku,
+        name: lashName,
+        quantity: 1,
+        price: getLashPackPrice(packVariant),
+      });
+    } else {
+      items.push({
+        sku: lashSku,
+        name: lashName,
         quantity: safeQuantity,
         price: 149000,
       });
@@ -203,8 +239,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Name, phone, and location are required' });
     }
 
-    const resolvedProductKey = productKey === 'tape' ? 'tape' : 'pdrn';
-    const validVariants = ['individual', 'duo', 'familiar', 'ritual', 'evento'];
+    const resolvedProductKey =
+      productKey === 'tape' ? 'tape' : productKey === 'lash' ? 'lash' : 'pdrn';
+    const validVariants = ['individual', 'duo', 'trio', 'familiar', 'ritual', 'evento'];
     const resolvedPackVariant = validVariants.includes(packVariant) ? packVariant : 'individual';
 
     const resolvedOrderNumber = orderNumber || `#SELENNE-${Date.now()}`;
@@ -230,7 +267,13 @@ export default async function handler(req, res) {
       order: {
         quantity: safeQuantity,
         unitPrice: resolvedUnitPrice,
-        product: productName || (resolvedProductKey === 'tape' ? 'V-Shaped Face Tape' : 'PDRN Serum'),
+        product:
+          productName ||
+          (resolvedProductKey === 'tape'
+            ? 'V-Shaped Face Tape'
+            : resolvedProductKey === 'lash'
+              ? 'Serum de Pestañas'
+              : 'PDRN Serum'),
         productKey: resolvedProductKey,
         packVariant: resolvedPackVariant,
         total: safeTotal,

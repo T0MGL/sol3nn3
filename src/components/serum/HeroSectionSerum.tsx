@@ -62,7 +62,7 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
   ];
 
   useEffect(() => {
-    trackViewContent(PRODUCTS.serum);
+    trackViewContent(PRODUCTS.lash);
 
     const preloadTimer = setTimeout(() => {
       import("@/components/checkout/QuantitySelectorSerum");

@@ -10,7 +10,7 @@
 const API_URL = import.meta.env.VITE_API_URL || '';
 const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || 'https://n8n.thebrightidea.ai/webhook/solenneorder';
 
-export type ProductKey = 'pdrn' | 'tape' | 'rizador' | 'serum';
+export type ProductKey = 'pdrn' | 'tape' | 'rizador' | 'lash';
 export type PackVariant = 'individual' | 'duo' | 'familiar' | 'ritual' | 'evento' | 'trio';
 
 export interface OrderData {
