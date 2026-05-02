@@ -27,6 +27,7 @@ import {
   getFbc,
   getFbp,
 } from "@/lib/meta-matching";
+import { clearCheckoutFormStorage } from "@/hooks/useCheckoutFormPersistence";
 
 type RizadorPackVariant = Extract<PackVariant, "individual" | "duo">;
 
@@ -320,6 +321,8 @@ const RizadorElectrico = () => {
         paymentIntentId: result.paymentIntentId,
         totalPrice: result.finalTotal,
       }));
+
+      clearCheckoutFormStorage();
 
       setShowCheckout(false);
       setShowSuccess(true);
