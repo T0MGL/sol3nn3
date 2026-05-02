@@ -24,6 +24,10 @@ interface CustomerData {
   quantity: number;
 }
 
+// `customerData.address` is street + neighborhood composed in PhoneNameForm.
+// `customerData.location` is the city (or detected GPS label). Both are
+// rendered separately so the courier sees a complete delivery target.
+
 interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -94,9 +98,16 @@ const CODForm = ({ onSuccess, onCloseAttempt, amount, currency, customerData, pr
         <p className="text-sm text-muted-foreground">
           <span className="font-semibold text-foreground">Teléfono:</span> {customerData.phone}
         </p>
-        <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">Dirección:</span> {customerData.location}
-        </p>
+        {customerData.address && (
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">Dirección:</span> {customerData.address}
+          </p>
+        )}
+        {customerData.location && (
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">Ciudad:</span> {customerData.location}
+          </p>
+        )}
       </div>
 
       <div className="p-5 bg-secondary/20 rounded-lg border border-border/30">

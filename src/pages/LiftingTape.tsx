@@ -27,6 +27,7 @@ import {
   getFbc,
   getFbp,
 } from "@/lib/meta-matching";
+import { clearCheckoutFormStorage } from "@/hooks/useCheckoutFormPersistence";
 
 type TapePackVariant = Extract<PackVariant, "individual" | "ritual" | "evento">;
 
@@ -322,6 +323,8 @@ const LiftingTape = () => {
         paymentIntentId: result.paymentIntentId,
         totalPrice: result.finalTotal,
       }));
+
+      clearCheckoutFormStorage();
 
       setShowCheckout(false);
       setShowSuccess(true);

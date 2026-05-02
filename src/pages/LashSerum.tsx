@@ -28,6 +28,7 @@ import {
   getFbp,
 } from "@/lib/meta-matching";
 import { SERUM_BUNDLES, SERUM_PRODUCT_NAME } from "@/data/serumProduct";
+import { clearCheckoutFormStorage } from "@/hooks/useCheckoutFormPersistence";
 
 type SerumPackVariant = Extract<PackVariant, "individual" | "duo" | "trio">;
 
@@ -325,6 +326,8 @@ const LashSerum = () => {
         paymentIntentId: result.paymentIntentId,
         totalPrice: result.finalTotal,
       }));
+
+      clearCheckoutFormStorage();
 
       setShowCheckout(false);
       setShowSuccess(true);

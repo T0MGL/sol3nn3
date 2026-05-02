@@ -278,9 +278,16 @@ const CheckoutForm = ({
         <p className="text-sm text-muted-foreground">
           <span className="font-semibold text-foreground">Teléfono:</span> {customerData.phone}
         </p>
-        <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">Dirección:</span> {customerData.location}
-        </p>
+        {customerData.address && (
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">Dirección:</span> {customerData.address}
+          </p>
+        )}
+        {customerData.location && (
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">Ciudad:</span> {customerData.location}
+          </p>
+        )}
       </div>
 
       {/* Payment Method Selection */}
@@ -609,9 +616,16 @@ const CODCheckoutForm = ({
         <p className="text-sm text-muted-foreground">
           <span className="font-semibold text-foreground">Teléfono:</span> {customerData.phone}
         </p>
-        <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">Dirección:</span> {customerData.location}
-        </p>
+        {customerData.address && (
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">Dirección:</span> {customerData.address}
+          </p>
+        )}
+        {customerData.location && (
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">Ciudad:</span> {customerData.location}
+          </p>
+        )}
       </div>
 
       {/* Payment Method - COD only */}

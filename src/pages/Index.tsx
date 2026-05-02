@@ -28,6 +28,7 @@ import {
   getFbp,
 } from "@/lib/meta-matching";
 import { PDRN_BUNDLES, DEFAULT_BUNDLE_INDEX } from "@/lib/pdrn-bundles";
+import { clearCheckoutFormStorage } from "@/hooks/useCheckoutFormPersistence";
 
 const derivePdrnPackVariant = (quantity: number): PackVariant => {
   if (quantity <= 1) return "individual";
@@ -263,6 +264,8 @@ const Index = () => {
     })();
 
     setCheckoutData((prev) => ({ ...prev, paymentIntentId: result.paymentIntentId, totalPrice: result.finalTotal }));
+
+    clearCheckoutFormStorage();
 
     setShowCheckout(false);
     setShowSuccess(true);
