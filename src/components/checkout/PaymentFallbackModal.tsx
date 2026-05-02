@@ -136,7 +136,7 @@ export const PaymentFallbackModal = ({
               {/* Info Box */}
               <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <p className="text-xs text-blue-400 text-center">
-                  💡 El pago contra entrega es igual de seguro. Muchos clientes lo prefieren.
+                  💡 El pago contra entrega es igual de seguro. Muchas clientas lo prefieren.
                 </p>
               </div>
 

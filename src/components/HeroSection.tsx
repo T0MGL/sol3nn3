@@ -324,7 +324,7 @@ export const HeroSection = ({
                   </div>
                 </div>
                 <p className="text-sm text-foreground/80 font-medium">
-                  4.8/5 (1.174 clientes)
+                  4.8/5 (2.847 clientas)
                 </p>
               </div>
             </div>
