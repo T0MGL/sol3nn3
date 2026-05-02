@@ -402,10 +402,10 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
 
               {/* Trust Block */}
               <div className="text-center space-y-2">
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-base font-semibold text-foreground">
                   Compra sin riesgo en Paraguay
                 </p>
-                <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
+                <div className="flex flex-col items-center gap-1 text-sm text-foreground/75">
                   <span>+1.000 entregas realizadas</span>
                   <span>Soporte vía WhatsApp</span>
                   <span>Pagás al recibir</span>
@@ -817,7 +817,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                       Guardando...
                     </span>
                   ) : (
-                    "Confirmar y continuar al pago"
+                    "Confirmar pedido"
                   )}
                 </Button>
               </form>

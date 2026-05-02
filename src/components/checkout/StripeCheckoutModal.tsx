@@ -474,7 +474,7 @@ const CheckoutForm = ({
 
         {/* Trust Microcopy */}
         <div className="flex justify-center pt-2">
-          <p className="text-xs text-gray-400">
+          <p className="text-sm text-foreground/70">
             Envío seguro a todo Paraguay 🇵🇾
           </p>
         </div>
@@ -500,6 +500,10 @@ const CheckoutForm = ({
             </span>
           )}
         </Button>
+
+        <p className="text-sm text-foreground/70 text-center">
+          Delivery gratis a todo Paraguay 🇵🇾
+        </p>
 
         <Button
           type="button"
@@ -708,7 +712,7 @@ const CODCheckoutForm = ({
         </div>
 
         <div className="flex justify-center pt-2">
-          <p className="text-xs text-gray-400">Envío seguro a todo Paraguay 🇵🇾</p>
+          <p className="text-sm text-foreground/70">Envío seguro a todo Paraguay 🇵🇾</p>
         </div>
       </div>
 
@@ -724,6 +728,9 @@ const CODCheckoutForm = ({
             <span className="truncate">Confirmar Pedido - {formatPrice(finalTotal, currency)}</span>
           )}
         </Button>
+        <p className="text-sm text-foreground/70 text-center">
+          Delivery gratis a todo Paraguay 🇵🇾
+        </p>
         <Button type="button" variant="outline" size="lg" className="w-full bg-transparent border-border/50 hover:bg-secondary/50" onClick={onCloseAttempt} disabled={isProcessing}>
           Cancelar
         </Button>
