@@ -205,7 +205,7 @@ export const HeroSection = ({
                 transition={{ duration: 0.3 }}
                 className="text-foreground text-xs md:text-sm font-semibold whitespace-nowrap"
               >
-                Cosmético importado · Paraguay 🇵🇾
+                Envío gratis a todo Paraguay 🇵🇾
               </motion.p>
             </motion.div>
 
