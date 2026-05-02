@@ -16,6 +16,7 @@ import { CheckoutProgressBar } from "./CheckoutProgressBar";
 import { API_CONFIG } from "@/lib/api";
 import { PARAGUAY_CITIES } from "@/data/paraguayCities";
 import { useCheckoutFormPersistence } from "@/hooks/useCheckoutFormPersistence";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -131,16 +132,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     return () => {
@@ -847,6 +839,9 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                     "Confirmar pedido"
                   )}
                 </Button>
+                <p className="text-sm text-foreground/70 text-center">
+                  Delivery gratis a todo Paraguay 🇵🇾
+                </p>
               </form>
             </div>
           </motion.div>

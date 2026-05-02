@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { trackAddPaymentInfo } from '@/lib/meta-pixel';
 import { type ProductPixelConfig } from '@/lib/products';
 import { CheckoutProgressBar } from './CheckoutProgressBar';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 type PaymentMethod = 'card' | 'cash_on_delivery';
 
@@ -508,10 +509,6 @@ const CheckoutForm = ({
           )}
         </Button>
 
-        <p className="text-sm text-foreground/70 text-center">
-          Delivery gratis a todo Paraguay 🇵🇾
-        </p>
-
         <Button
           type="button"
           variant="outline"
@@ -742,9 +739,6 @@ const CODCheckoutForm = ({
             <span className="truncate">Confirmar Pedido - {formatPrice(finalTotal, currency)}</span>
           )}
         </Button>
-        <p className="text-sm text-foreground/70 text-center">
-          Delivery gratis a todo Paraguay 🇵🇾
-        </p>
         <Button type="button" variant="outline" size="lg" className="w-full bg-transparent border-border/50 hover:bg-secondary/50" onClick={onCloseAttempt} disabled={isProcessing}>
           Cancelar
         </Button>
@@ -797,17 +791,7 @@ export const StripeCheckoutModal = ({
     onClose();
   };
 
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   return (
     <AnimatePresence>
@@ -826,7 +810,7 @@ export const StripeCheckoutModal = ({
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[550px] bg-gradient-to-b from-secondary to-background border border-border/50 rounded-xl p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] max-h-[90dvh] overflow-y-auto"
+            className="relative w-full max-w-[550px] bg-gradient-to-b from-secondary to-background border border-border/50 rounded-xl p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] max-h-[90dvh] overflow-y-auto overscroll-contain"
           >
             {/* Close Button */}
             <button
