@@ -221,7 +221,7 @@ const CODForm = ({ onSuccess, onCloseAttempt, amount, currency, customerData, pr
         </div>
 
         <div className="flex justify-center pt-2">
-          <p className="text-xs text-gray-400">Envío seguro a todo Paraguay 🇵🇾</p>
+          <p className="text-sm text-foreground/70">Envío seguro a todo Paraguay 🇵🇾</p>
         </div>
       </div>
 
@@ -242,6 +242,9 @@ const CODForm = ({ onSuccess, onCloseAttempt, amount, currency, customerData, pr
             <span className="truncate">Confirmar Pedido - {formatPrice(finalTotal, currency)}</span>
           )}
         </Button>
+        <p className="text-sm text-foreground/70 text-center">
+          Delivery gratis a todo Paraguay 🇵🇾
+        </p>
         <Button
           type="button"
           variant="outline"
