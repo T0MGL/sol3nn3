@@ -41,6 +41,13 @@ export const HeroSection = ({
   const carouselRef = useRef<HTMLDivElement>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [hasPeeked, setHasPeeked] = useState(false);
+  const [badgeCollapsed, setBadgeCollapsed] = useState(false);
+
+  // Auto-collapse the authority badge once, 2s after mount, never expands again
+  useEffect(() => {
+    const timer = setTimeout(() => setBadgeCollapsed(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Live purchase notification
   const [showPurchaseNotification, setShowPurchaseNotification] = useState(false);
@@ -192,21 +199,37 @@ export const HeroSection = ({
             transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             className="relative order-1 w-full"
           >
-            {/* Authority Badge */}
+            {/* Authority Badge, auto-collapses to short version after 2s, one-way */}
             <motion.div
               layout
               className="absolute top-4 left-2 md:top-2 md:left-4 z-20 bg-primary px-3 py-1.5 rounded-md shadow-lg overflow-hidden"
               initial={false}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             >
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="text-foreground text-xs md:text-sm font-semibold whitespace-nowrap"
-              >
-                Envío gratis a todo Paraguay 🇵🇾
-              </motion.p>
+              <AnimatePresence mode="wait" initial={false}>
+                {!badgeCollapsed ? (
+                  <motion.p
+                    key="full"
+                    initial={{ opacity: 0, x: 0 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -40 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="text-foreground text-xs md:text-sm font-semibold whitespace-nowrap"
+                  >
+                    K-Beauty · Paraguay 🇵🇾
+                  </motion.p>
+                ) : (
+                  <motion.p
+                    key="short"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="text-foreground text-xs md:text-sm font-semibold whitespace-nowrap"
+                  >
+                    K-Beauty 🇵🇾
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </motion.div>
 
             {/* Image Carousel */}
