@@ -39,6 +39,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("+595 ");
   const [city, setCity] = useState("");
+  const [neighborhood, setNeighborhood] = useState("");
   const [address, setAddress] = useState("");
   const [wantsInvoice, setWantsInvoice] = useState(false);
   const [ruc, setRuc] = useState("");
@@ -76,6 +77,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
       setName("");
       setPhone("+595 ");
       setCity("");
+      setNeighborhood("");
       setAddress("");
       setWantsInvoice(false);
       setRuc("");
@@ -161,7 +163,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
     setPhone(formatted);
 
     if (digits.length >= 8 && isFakePhoneNumber(digits)) {
-      setErrors((prev) => ({ ...prev, phone: "Por favor, introduci un numero valido" }));
+      setErrors((prev) => ({ ...prev, phone: "Por favor, introducí un número válido" }));
     } else {
       setErrors((prev) => ({ ...prev, phone: undefined }));
     }
@@ -188,7 +190,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
     setLocationError(null);
 
     if (!navigator.geolocation) {
-      setLocationError("Tu navegador no soporta geolocalizacion");
+      setLocationError("Tu navegador no soporta geolocalización");
       setIsLoadingLocation(false);
       setShowManualLocation(true);
       return;
@@ -237,7 +239,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
       () => {
         if (!isMountedRef.current) return;
 
-        setLocationError("Permiso denegado para acceder a tu ubicacion");
+        setLocationError("Permiso denegado para acceder a tu ubicación");
         setDetectedLocation(null);
         setIsLoadingLocation(false);
         setShowManualLocation(true);
@@ -257,9 +259,9 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
     } = {};
 
     if (!name || name.trim().length < 3) {
-      newErrors.name = "Nombre requerido (min. 3 caracteres)";
+      newErrors.name = "Nombre requerido (mín. 3 caracteres)";
     } else if (name.length > 60) {
-      newErrors.name = "Nombre demasiado largo (max. 60 caracteres)";
+      newErrors.name = "Nombre demasiado largo (máx. 60 caracteres)";
     } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s-]+$/.test(name)) {
       newErrors.name = "Solo letras, espacios y guiones";
     }
@@ -267,24 +269,24 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
     if (customPrefix) {
       const allDigits = phone.replace(/\D/g, "");
       if (allDigits.length < 10) {
-        newErrors.phone = "Numero invalido (inclui codigo de pais + numero)";
+        newErrors.phone = "Número inválido (incluí código de país + número)";
       }
     } else {
       const afterPrefix = phone.slice(5);
       const phoneDigits = afterPrefix.replace(/\D/g, "");
       if (phoneDigits.length < 8 || phoneDigits.length > 10) {
-        newErrors.phone = "Telefono invalido (ej: +595 971 234567)";
+        newErrors.phone = "Teléfono inválido (ej: +595 971 234567)";
       } else if (isFakePhoneNumber(phoneDigits)) {
-        newErrors.phone = "Por favor, introduci un numero valido";
+        newErrors.phone = "Por favor, introducí un número válido";
       }
     }
 
     if (!detectedLocation) {
       if (!city.trim()) {
-        newErrors.city = "Selecciona una ciudad";
+        newErrors.city = "Seleccioná una ciudad";
       }
       if (address.trim().length < 5) {
-        newErrors.address = "Ingresa tu direccion (min. 5 caracteres)";
+        newErrors.address = "Ingresá tu dirección (mín. 5 caracteres)";
       }
     }
 
@@ -297,7 +299,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
       if (!cleanEmail) {
         newErrors.email = "Email requerido para factura";
       } else if (!EMAIL_REGEX.test(cleanEmail)) {
-        newErrors.email = "Email invalido";
+        newErrors.email = "Email inválido";
       }
     }
 
@@ -330,12 +332,17 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
 
     const trimmedEmail = email.trim();
     const trimmedRuc = ruc.trim();
+    const trimmedAddress = address.trim();
+    const trimmedNeighborhood = neighborhood.trim();
+    const composedAddress = trimmedNeighborhood
+      ? `${trimmedAddress}, ${trimmedNeighborhood}`
+      : trimmedAddress;
 
     onSubmit({
       name: name.trim(),
       phone: phone.trim(),
       location: detectedLocation || city.trim(),
-      address: address.trim(),
+      address: composedAddress,
       isGeolocated: !!detectedLocation,
       lat: locationCoords.lat,
       long: locationCoords.long,
@@ -400,8 +407,8 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                 </p>
                 <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
                   <span>+1.000 entregas realizadas</span>
-                  <span>Soporte via WhatsApp</span>
-                  <span>Pagas al recibir</span>
+                  <span>Soporte vía WhatsApp</span>
+                  <span>Pagás al recibir</span>
                 </div>
               </div>
 
@@ -421,7 +428,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                         setName(e.target.value);
                         setErrors((prev) => ({ ...prev, name: undefined }));
                       }}
-                      placeholder="Ej: Maria Lopez"
+                      placeholder="Ej: María López"
                       maxLength={60}
                       className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${
                         errors.name ? "border-red-500" : "border-border focus:border-primary"
@@ -442,7 +449,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                 {/* Telefono WhatsApp */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-foreground">
-                    Telefono WhatsApp
+                    Teléfono WhatsApp
                   </label>
                   <div className="relative">
                     <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -483,7 +490,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                     }}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {customPrefix ? "Volver a +595 (Paraguay)" : "Otro pais?"}
+                    {customPrefix ? "Volver a +595 (Paraguay)" : "¿Otro país?"}
                   </button>
                 </div>
 
@@ -598,7 +605,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                   <div className="flex items-center gap-2 pb-2 border-b border-border/30">
                     <MapPinIcon className="w-5 h-5 text-primary" />
                     <label className="block text-sm font-semibold text-foreground">
-                      Ubicacion de entrega
+                      Ubicación de entrega
                     </label>
                   </div>
 
@@ -642,32 +649,34 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                     </motion.div>
                   )}
 
-                  {/* Manual: Ciudad + Direccion (always visible when no GPS detection) */}
+                  {/* Manual: Ciudad + Barrio + Direccion (always visible when no GPS detection) */}
                   {showManualLocation && !detectedLocation && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="space-y-3"
                     >
-                      {/* GPS as secondary option */}
-                      <button
+                      {/* GPS detection as a real, prominent button */}
+                      <motion.button
                         type="button"
                         onClick={handleUseLocation}
                         disabled={isLoadingLocation}
-                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                        whileTap={{ scale: 0.985 }}
+                        aria-label="Detectar mi ubicación con GPS"
+                        className="group flex w-full items-center justify-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-4 py-3 text-sm font-medium text-foreground transition-all hover:border-primary hover:bg-primary/10 active:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {isLoadingLocation ? (
                           <>
-                            <div className="inline-block w-3 h-3 border border-foreground/30 border-t-foreground rounded-full animate-spin" />
-                            Detectando...
+                            <div className="inline-block h-4 w-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+                            <span>Detectando ubicación...</span>
                           </>
                         ) : (
                           <>
-                            <MapPinIcon className="w-3.5 h-3.5" />
-                            Usar mi ubicacion actual
+                            <MapPinIcon className="h-5 w-5 text-primary transition-transform group-hover:scale-110" />
+                            <span>Usar mi ubicación actual</span>
                           </>
                         )}
-                      </button>
+                      </motion.button>
 
                       {/* Ciudad (autocomplete) */}
                       <div className="space-y-1.5">
@@ -685,7 +694,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                             onFocus={() => {
                               if (city.trim().length >= 2) setShowCitySuggestions(true);
                             }}
-                            placeholder="Ej: Asuncion, Luque, CDE..."
+                            placeholder="Ej: Asunción, Luque, Ciudad del Este..."
                             autoComplete="off"
                             className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${
                               errors.city ? "border-red-500" : "border-border focus:border-primary"
@@ -721,9 +730,28 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                         )}
                       </div>
 
+                      {/* Barrio (opcional) */}
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-medium text-foreground">
+                          Barrio <span className="text-muted-foreground/70 font-normal">(opcional)</span>
+                        </label>
+                        <div className="relative">
+                          <MapPinIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                          <input
+                            type="text"
+                            value={neighborhood}
+                            onChange={(e) => setNeighborhood(e.target.value)}
+                            placeholder="Ej: Las Mercedes, Recoleta, Villa Morra..."
+                            maxLength={80}
+                            autoComplete="address-level3"
+                            className="w-full pl-11 pr-4 py-3 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                          />
+                        </div>
+                      </div>
+
                       {/* Direccion */}
                       <div className="space-y-1.5">
-                        <label className="block text-sm font-medium text-foreground">Direccion</label>
+                        <label className="block text-sm font-medium text-foreground">Dirección</label>
                         <div className="relative">
                           <HomeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                           <input
@@ -733,7 +761,7 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                               setAddress(e.target.value);
                               setErrors((prev) => ({ ...prev, address: undefined }));
                             }}
-                            placeholder="Ej: Av. Mariscal Lopez 1234"
+                            placeholder="Ej: Av. Mariscal López 1234"
                             className={`w-full pl-11 pr-4 py-3 bg-secondary border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all ${
                               errors.address ? "border-red-500" : "border-border focus:border-primary"
                             }`}
