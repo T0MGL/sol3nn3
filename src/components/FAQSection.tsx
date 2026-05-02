@@ -8,8 +8,8 @@ import { motion } from "framer-motion";
 
 const faqs = [
   {
-    question: "¿Es un producto original de marca?",
-    answer: "Es un suero cosmético importado, no afiliado a ninguna marca específica.",
+    question: "¿Para qué tipo de piel es?",
+    answer: "El Suero de Péptidos PDRN está formulado para todo tipo de piel, incluida la sensible. Su textura ligera se absorbe rápido sin dejar pegajosidad. Si tenés piel reactiva, te recomendamos hacer una prueba en una zona pequeña antes del uso completo.",
   },
   {
     question: "¿Es seguro?",
