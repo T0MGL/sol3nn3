@@ -269,9 +269,9 @@ export const TestimonialsSection = () => {
               <div className="hidden md:block w-px h-20 bg-border/50" />
 
               <div className="flex flex-col items-center gap-2 text-center">
-                <p className="text-3xl md:text-4xl font-bold text-foreground">2,847</p>
+                <p className="text-3xl md:text-4xl font-bold text-foreground">2.847</p>
                 <p className="text-base md:text-lg text-muted-foreground font-light">
-                  clientes satisfechos
+                  clientas satisfechas
                 </p>
                 <p className="text-xs md:text-sm text-accent/80 font-medium mt-1">
                   ★ Reviews verificadas

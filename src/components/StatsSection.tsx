@@ -69,7 +69,7 @@ const Counter: React.FC<CounterProps> = ({ from, to, duration = 2, isVisible }) 
     return () => clearInterval(interval);
   }, [isVisible, from, to, duration]);
 
-  return <span>{count}</span>;
+  return <span>{count.toLocaleString('es-PY')}</span>;
 };
 
 export const StatsSection: React.FC = () => {
