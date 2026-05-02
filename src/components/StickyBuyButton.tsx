@@ -3,12 +3,15 @@ import { motion } from "framer-motion";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { ShieldCheckIcon, TruckIcon } from "@heroicons/react/24/outline";
 import { getDeliveryDates } from "@/lib/delivery-utils";
+import { ORIGINAL_UNIT_PRICE } from "@/lib/pdrn-bundles";
 
 interface StickyBuyButtonProps {
   onBuyClick: () => void;
+  selectedPrice: number;
+  selectedQuantity: number;
 }
 
-export const StickyBuyButton = ({ onBuyClick }: StickyBuyButtonProps) => {
+export const StickyBuyButton = ({ onBuyClick, selectedPrice, selectedQuantity }: StickyBuyButtonProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const deliveryDates = useMemo(() => getDeliveryDates(), []);
 
@@ -83,9 +86,13 @@ export const StickyBuyButton = ({ onBuyClick }: StickyBuyButtonProps) => {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
               <div>
                 <p className="text-xs md:text-sm text-muted-foreground">
-                  <span className="line-through text-foreground/40">Gs. 246.000</span>
+                  <span className="line-through text-foreground/40">
+                    Gs. {(ORIGINAL_UNIT_PRICE * selectedQuantity).toLocaleString("es-PY")}
+                  </span>
                   {" "}
-                  <span className="text-xl md:text-2xl font-bold text-foreground ml-2">Gs. 189.000</span>
+                  <span className="text-xl md:text-2xl font-bold text-foreground ml-2">
+                    Gs. {selectedPrice.toLocaleString("es-PY")}
+                  </span>
                 </p>
                 <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
                   <TruckIcon className="w-4 h-4 text-gold/90" />
@@ -122,7 +129,7 @@ export const StickyBuyButton = ({ onBuyClick }: StickyBuyButtonProps) => {
                 className="w-full h-12 md:h-14 text-sm md:text-base font-bold"
                 onClick={onBuyClick}
               >
-                Comprar Ahora
+                Comprar Ahora · Gs. {selectedPrice.toLocaleString("es-PY")}
               </Button>
             </motion.div>
           </div>

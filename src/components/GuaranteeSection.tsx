@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 
 interface GuaranteeSectionProps {
   onBuyClick: () => void;
+  selectedPrice: number;
 }
 
-export const GuaranteeSection = ({ onBuyClick }: GuaranteeSectionProps) => {
+export const GuaranteeSection = ({ onBuyClick, selectedPrice }: GuaranteeSectionProps) => {
   return (
     <>
       <section className="py-8 md:py-16 px-4 md:px-6 bg-background relative overflow-hidden" id="comprar">
@@ -55,7 +56,7 @@ export const GuaranteeSection = ({ onBuyClick }: GuaranteeSectionProps) => {
                   className="w-full sm:w-auto sm:min-w-[300px] shadow-[0_0_50px_rgba(192,139,122,0.4)] text-base md:text-lg h-14 md:h-16"
                   onClick={onBuyClick}
                 >
-                  Comprar Ahora
+                  Comprar Ahora · Gs. {selectedPrice.toLocaleString("es-PY")}
                 </Button>
               </div>
 

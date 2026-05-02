@@ -16,15 +16,27 @@ import serumBenefitsImage from "@/assets/products/serum-benefits.webp";
 import firmskinImage from "@/assets/products/firmskin.webp";
 import beforeAfterImage from "@/assets/products/serumbeforeafter.webp";
 import { LivePurchaseNotification, getRandomBuyer } from "@/components/LivePurchaseNotification";
+import { BundleSelector } from "@/components/BundleSelector";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { PRODUCTS } from "@/lib/products";
 import { getDeliveryDates } from "@/lib/delivery-utils";
+import { ORIGINAL_UNIT_PRICE } from "@/lib/pdrn-bundles";
 
 interface HeroSectionProps {
   onBuyClick: () => void;
+  selectedBundleIndex: number;
+  onBundleSelect: (index: number) => void;
+  selectedPrice: number;
+  selectedQuantity: number;
 }
 
-export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
+export const HeroSection = ({
+  onBuyClick,
+  selectedBundleIndex,
+  onBundleSelect,
+  selectedPrice,
+  selectedQuantity,
+}: HeroSectionProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -92,13 +104,13 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
   useEffect(() => {
     trackViewContent(PRODUCTS.pdrn);
 
-    // Preload checkout modals after a short delay (for mobile users)
-    // This ensures instant response when user clicks CTA
+    // Preload checkout modals after a short delay so the CTA feels instant on mobile.
+    // QuantitySelector is no longer in the funnel for PDRN, the bundle picker on the
+    // landing page replaces it and we go straight to PhoneNameForm.
     const preloadTimer = setTimeout(() => {
-      import("@/components/checkout/QuantitySelector");
       import("@/components/checkout/PhoneNameForm");
       import("@/components/checkout/CheckoutModal");
-    }, 2000); // Wait 2 seconds after page load
+    }, 2000);
 
     return () => clearTimeout(preloadTimer);
   }, []);
@@ -355,10 +367,20 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
               </p>
             </div>
 
+            {/* Bundle Selector */}
+            <BundleSelector
+              selectedIndex={selectedBundleIndex}
+              onSelect={onBundleSelect}
+            />
+
             {/* Price */}
             <div className="flex items-center gap-3 py-2">
-              <span className="text-base text-foreground/40 line-through">Gs. 246.000</span>
-              <span className="text-4xl md:text-5xl font-bold text-foreground">Gs. 189.000</span>
+              <span className="text-base text-foreground/40 line-through">
+                Gs. {(ORIGINAL_UNIT_PRICE * selectedQuantity).toLocaleString("es-PY")}
+              </span>
+              <span className="text-4xl md:text-5xl font-bold text-foreground">
+                Gs. {selectedPrice.toLocaleString("es-PY")}
+              </span>
             </div>
 
             {/* Stock Urgency Indicator */}
@@ -421,7 +443,7 @@ export const HeroSection = ({ onBuyClick }: HeroSectionProps) => {
                     }}
                     onClick={onBuyClick}
                   >
-                    COMPRAR AHORA: Gs. 189.000
+                    COMPRAR AHORA: Gs. {selectedPrice.toLocaleString("es-PY")}
                   </Button>
                 </motion.div>
 

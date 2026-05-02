@@ -27,11 +27,30 @@ import {
   getFbc,
   getFbp,
 } from "@/lib/meta-matching";
+import { PDRN_BUNDLES, DEFAULT_BUNDLE_INDEX } from "@/lib/pdrn-bundles";
 
 const derivePdrnPackVariant = (quantity: number): PackVariant => {
   if (quantity <= 1) return "individual";
   if (quantity === 2) return "duo";
   return "familiar";
+};
+
+const ATC_SESSION_FLAG_KEY = "solenne-pdrn-atc-fired";
+
+const hasAtcFiredThisSession = (): boolean => {
+  try {
+    return sessionStorage.getItem(ATC_SESSION_FLAG_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+const markAtcFired = (): void => {
+  try {
+    sessionStorage.setItem(ATC_SESSION_FLAG_KEY, "1");
+  } catch {
+    // sessionStorage can throw in private mode, fail silent so we never block checkout
+  }
 };
 
 // Lazy load heavy sections that are below the fold
@@ -49,8 +68,9 @@ const StatsSection = lazy(() => import("@/components/StatsSection"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
 const GuaranteeSection = lazy(() => import("@/components/GuaranteeSection"));
 
-// Lazy load checkout modals (only loaded when user clicks buy)
-const QuantitySelector = lazy(() => import("@/components/checkout/QuantitySelector").then(module => ({ default: module.QuantitySelector })));
+// Lazy load checkout modals (only loaded when user clicks buy).
+// QuantitySelector stays in the codebase but is no longer in the PDRN funnel,
+// the bundle picker on the landing replaces it. Do not delete the component.
 const PhoneNameForm = lazy(() => import("@/components/checkout/PhoneNameForm"));
 const SuccessPage = lazy(() => import("@/components/checkout/SuccessPage"));
 const PaymentFallbackModal = lazy(() => import("@/components/checkout/PaymentFallbackModal"));
@@ -73,9 +93,16 @@ const SectionSkeleton = memo(({ height }: { height: string }) => (
 ));
 SectionSkeleton.displayName = 'SectionSkeleton';
 
+const defaultBundle = PDRN_BUNDLES[DEFAULT_BUNDLE_INDEX];
+
 const Index = () => {
+  // Bundle selection state, lifted to the page so every CTA stays in sync
+  const [selectedBundleIndex, setSelectedBundleIndex] = useState(DEFAULT_BUNDLE_INDEX);
+  const selectedBundle = PDRN_BUNDLES[selectedBundleIndex];
+  const selectedPrice = selectedBundle.price;
+  const selectedQuantity = selectedBundle.quantity;
+
   // Checkout state management
-  const [showQuantitySelector, setShowQuantitySelector] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showPaymentFallback, setShowPaymentFallback] = useState(false);
   const [showPhoneForm, setShowPhoneForm] = useState(false);
@@ -83,9 +110,9 @@ const Index = () => {
   const [checkoutInProgress, setCheckoutInProgress] = useState(false);
 
   const [checkoutData, setCheckoutData] = useState({
-    quantity: 1,
-    totalPrice: 189000,
-    unitPrice: 189000,
+    quantity: defaultBundle.quantity,
+    totalPrice: defaultBundle.price,
+    unitPrice: defaultBundle.unitPrice,
     colors: null as [string, string] | null,
     location: "",
     name: "",
@@ -137,27 +164,44 @@ const Index = () => {
     }
   }, [showPhoneForm, checkoutData.quantity, checkoutData.totalPrice]);
 
-  const handleBuyClick = useCallback(() => {
-    setCheckoutInProgress(true); // Start checkout progress tracking
-    setShowQuantitySelector(true);
-
-    import("@/components/checkout/PhoneNameForm");
-    import("@/components/checkout/CheckoutModal");
-  }, []);
-
-  const handleQuantitySelected = useCallback((quantity: number, totalPrice: number, unitPrice: number) => {
-    setCheckoutData((prev) => ({ ...prev, quantity, totalPrice, unitPrice }));
-    setShowQuantitySelector(false);
-
+  const fireAddToCart = useCallback((quantity: number, value: number) => {
+    if (hasAtcFiredThisSession()) return;
     trackAddToCart({
       product: PRODUCTS.pdrn,
       quantity,
-      value: totalPrice,
+      value,
       user_data: { fbc: getFbc(), fbp: getFbp() },
     });
+    markAtcFired();
+  }, []);
+
+  const handleBundleSelect = useCallback((index: number) => {
+    if (index === selectedBundleIndex) return;
+    const bundle = PDRN_BUNDLES[index];
+    setSelectedBundleIndex(index);
+    fireAddToCart(bundle.quantity, bundle.price);
+  }, [selectedBundleIndex, fireAddToCart]);
+
+  const handleBuyClick = useCallback(() => {
+    const bundle = PDRN_BUNDLES[selectedBundleIndex];
+    setCheckoutInProgress(true);
+    setCheckoutData((prev) => ({
+      ...prev,
+      quantity: bundle.quantity,
+      totalPrice: bundle.price,
+      unitPrice: bundle.unitPrice,
+    }));
+
+    // Fallback ATC: only fires when the user accepts the default bundle without
+    // touching the selector. Meta funnel needs ATC before InitiateCheckout, the
+    // sessionStorage guard inside fireAddToCart prevents double-emit.
+    fireAddToCart(bundle.quantity, bundle.price);
 
     setShowPhoneForm(true);
-  }, []);
+
+    import("@/components/checkout/PhoneNameForm");
+    import("@/components/checkout/CheckoutModal");
+  }, [selectedBundleIndex, fireAddToCart]);
 
   const handlePaymentSuccess = useCallback((result: {
     paymentIntentId: string;
@@ -230,10 +274,11 @@ const Index = () => {
   }, []);
 
   const resetCheckoutData = useCallback(() => {
+    const bundle = PDRN_BUNDLES[selectedBundleIndex];
     setCheckoutData({
-      quantity: 1,
-      totalPrice: 189000,
-      unitPrice: 189000,
+      quantity: bundle.quantity,
+      totalPrice: bundle.price,
+      unitPrice: bundle.unitPrice,
       colors: null,
       location: "",
       name: "",
@@ -249,13 +294,7 @@ const Index = () => {
       lat: undefined,
       long: undefined,
     });
-  }, []);
-
-  const handleQuantitySelectorClose = useCallback(() => {
-    setShowQuantitySelector(false);
-    setCheckoutInProgress(false);
-    resetCheckoutData();
-  }, [resetCheckoutData]);
+  }, [selectedBundleIndex]);
 
   const handleCheckoutClose = useCallback(() => {
     setShowCheckout(false);
@@ -387,7 +426,13 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="pt-0 pb-0 transition-all duration-300">
-        <HeroSection onBuyClick={handleBuyClick} />
+        <HeroSection
+          onBuyClick={handleBuyClick}
+          selectedBundleIndex={selectedBundleIndex}
+          onBundleSelect={handleBundleSelect}
+          selectedPrice={selectedPrice}
+          selectedQuantity={selectedQuantity}
+        />
 
         <Suspense fallback={<SectionSkeleton height="h-[300px] md:h-[340px]" />}>
           <CelebritiesMarquee />
@@ -414,7 +459,7 @@ const Index = () => {
         </Suspense>
 
         {/* CTA 1: After Benefits */}
-        <OfferCTA onBuyClick={handleBuyClick} />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={selectedPrice} />
 
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <LifestyleSection />
@@ -425,7 +470,7 @@ const Index = () => {
         </Suspense>
 
         {/* CTA 2: After Comparison */}
-        <OfferCTA onBuyClick={handleBuyClick} />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={selectedPrice} />
 
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <TestimonialsSection />
@@ -436,7 +481,7 @@ const Index = () => {
         </Suspense>
 
         {/* CTA 3: After Testimonials (minimal) */}
-        <OfferCTA onBuyClick={handleBuyClick} variant="minimal" />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={selectedPrice} variant="minimal" />
 
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <StatsSection />
@@ -447,7 +492,7 @@ const Index = () => {
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton height="h-[400px] md:h-[500px]" />}>
-          <GuaranteeSection onBuyClick={handleBuyClick} />
+          <GuaranteeSection onBuyClick={handleBuyClick} selectedPrice={selectedPrice} />
         </Suspense>
       </main>
 
@@ -455,22 +500,19 @@ const Index = () => {
       <ScrollProgress />
 
       {/* Sticky Buy Button */}
-      <StickyBuyButton onBuyClick={handleBuyClick} />
+      <StickyBuyButton
+        onBuyClick={handleBuyClick}
+        selectedPrice={selectedPrice}
+        selectedQuantity={selectedQuantity}
+      />
 
       {/* Custom Cursor (Premium Desktop Only) */}
       <CustomCursor />
 
-      {/* Checkout Modals - Lazy loaded */}
-      {showQuantitySelector && (
-        <Suspense fallback={null}>
-          <QuantitySelector
-            isOpen={showQuantitySelector}
-            onClose={handleQuantitySelectorClose}
-            onContinue={handleQuantitySelected}
-          />
-        </Suspense>
-      )}
-
+      {/* Checkout Modals - Lazy loaded.
+          QuantitySelector is intentionally not rendered: bundle picker on the
+          landing replaces it for the PDRN funnel. The component still ships in
+          the bundle for tape/rizador/lash variants. */}
       {showPhoneForm && (
         <Suspense fallback={null}>
           <PhoneNameForm

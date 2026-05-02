@@ -23,6 +23,14 @@ const faqs = [
     question: "¿Cómo se usa?",
     answer: "Aplicá 2 a 3 gotas sobre la piel limpia, mañana y noche. Masajeá hasta absorber. Se recomienda combinar con hidratante y protector solar durante el día.",
   },
+  {
+    question: "¿Cuánto dura un frasco de 30ml?",
+    answer: "Con 2 a 3 gotas mañana y noche, un frasco rinde entre 4 y 6 semanas. Para ver los resultados completos del tratamiento, visibles desde la semana 4, recomendamos comenzar con el Kit Duo.",
+  },
+  {
+    question: "¿Por qué el Kit Duo es el más vendido?",
+    answer: "Los resultados de los péptidos son acumulativos. La mayoría de nuestras clientas eligen el Kit Duo para asegurar 2 meses de uso continuo y conseguir el cambio de textura completo.",
+  },
 ];
 
 export const FAQSection = () => {

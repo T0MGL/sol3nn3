@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 interface QuantitySelectorProps {
   isOpen: boolean;
   onClose: () => void;
-  onContinue: (quantity: number, totalPrice: number) => void;
+  onContinue: (quantity: number, totalPrice: number, unitPrice: number) => void;
 }
 
 // Fixed bundle pricing strategy
@@ -92,7 +92,8 @@ export const QuantitySelector = ({ isOpen, onClose, onContinue }: QuantitySelect
   };
 
   const handleContinue = () => {
-    onContinue(finalQuantity, finalPrice);
+    const finalUnitPrice = finalQuantity > 0 ? Math.round(finalPrice / finalQuantity) : selectedBundle.unitPrice;
+    onContinue(finalQuantity, finalPrice, finalUnitPrice);
   };
 
   return (
