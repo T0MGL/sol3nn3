@@ -15,6 +15,7 @@ import {
 import { CheckoutProgressBar } from "./CheckoutProgressBar";
 import { API_CONFIG } from "@/lib/api";
 import { PARAGUAY_CITIES } from "@/data/paraguayCities";
+import { useCheckoutFormPersistence } from "@/hooks/useCheckoutFormPersistence";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -36,21 +37,26 @@ interface PhoneNameFormProps {
 }
 
 export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps) => {
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("+595 ");
-  const [city, setCity] = useState("");
-  const [neighborhood, setNeighborhood] = useState("");
-  const [address, setAddress] = useState("");
-  const [wantsInvoice, setWantsInvoice] = useState(false);
-  const [ruc, setRuc] = useState("");
-  const [email, setEmail] = useState("");
-  const [customPrefix, setCustomPrefix] = useState(false);
+  const { initialState, persist } = useCheckoutFormPersistence();
+
+  const [name, setName] = useState(initialState.name);
+  const [phone, setPhone] = useState(initialState.phone);
+  const [city, setCity] = useState(initialState.city);
+  const [neighborhood, setNeighborhood] = useState(initialState.neighborhood);
+  const [address, setAddress] = useState(initialState.address);
+  const [wantsInvoice, setWantsInvoice] = useState(initialState.wantsInvoice);
+  const [ruc, setRuc] = useState(initialState.ruc);
+  const [email, setEmail] = useState(initialState.email);
+  const [customPrefix, setCustomPrefix] = useState(initialState.customPrefix);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
-  const [detectedLocation, setDetectedLocation] = useState<string | null>(null);
-  const [showManualLocation, setShowManualLocation] = useState(true);
+  const [detectedLocation, setDetectedLocation] = useState<string | null>(initialState.detectedLocation);
+  const [showManualLocation, setShowManualLocation] = useState(!initialState.detectedLocation);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  const [locationCoords, setLocationCoords] = useState<{ lat?: number; long?: number }>({});
+  const [locationCoords, setLocationCoords] = useState<{ lat?: number; long?: number }>({
+    lat: initialState.locationLat,
+    long: initialState.locationLong,
+  });
   const [errors, setErrors] = useState<{
     name?: string;
     phone?: string;
@@ -73,26 +79,47 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      setName("");
-      setPhone("+595 ");
-      setCity("");
-      setNeighborhood("");
-      setAddress("");
-      setWantsInvoice(false);
-      setRuc("");
-      setEmail("");
-      setCustomPrefix(false);
-      setShowCitySuggestions(false);
-      setDetectedLocation(null);
-      setShowManualLocation(true);
-      setLocationError(null);
-      setIsLoadingLocation(false);
-      setLocationCoords({});
-      setErrors({});
-      setLoading(false);
-    }
+    if (!isOpen) return;
+    // Reopening the modal must NOT wipe the form. Persisted values stay so a
+    // user that bounced back from the payment screen does not retype anything.
+    // Only the transient UI state (errors, suggestions, loading) is cleared.
+    setShowCitySuggestions(false);
+    setLocationError(null);
+    setIsLoadingLocation(false);
+    setErrors({});
+    setLoading(false);
   }, [isOpen]);
+
+  useEffect(() => {
+    persist({
+      name,
+      phone,
+      customPrefix,
+      city,
+      neighborhood,
+      address,
+      wantsInvoice,
+      ruc,
+      email,
+      detectedLocation,
+      locationLat: locationCoords.lat,
+      locationLong: locationCoords.long,
+    });
+  }, [
+    name,
+    phone,
+    customPrefix,
+    city,
+    neighborhood,
+    address,
+    wantsInvoice,
+    ruc,
+    email,
+    detectedLocation,
+    locationCoords.lat,
+    locationCoords.long,
+    persist,
+  ]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
