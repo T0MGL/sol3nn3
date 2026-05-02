@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon, BanknotesIcon, CheckIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { formatPrice } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { CheckoutProgressBar } from './CheckoutProgressBar';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 const PRIORITY_SHIPPING_COST = 10000;
 
@@ -253,9 +254,6 @@ const CODForm = ({ onSuccess, onCloseAttempt, amount, currency, customerData, pr
             <span className="truncate">Confirmar Pedido - {formatPrice(finalTotal, currency)}</span>
           )}
         </Button>
-        <p className="text-sm text-foreground/70 text-center">
-          Delivery gratis a todo Paraguay 🇵🇾
-        </p>
         <Button
           type="button"
           variant="outline"
@@ -312,16 +310,7 @@ export const CheckoutModal = ({
     onClose();
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   return (
     <AnimatePresence>
@@ -340,7 +329,7 @@ export const CheckoutModal = ({
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[550px] bg-gradient-to-b from-secondary to-background border border-border/50 rounded-xl p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] max-h-[90dvh] overflow-y-auto"
+            className="relative w-full max-w-[550px] bg-gradient-to-b from-secondary to-background border border-border/50 rounded-xl p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] max-h-[90dvh] overflow-y-auto overscroll-contain"
           >
             <button
               onClick={handleCloseAttempt}
