@@ -44,5 +44,5 @@ export const PDRN_BUNDLES: readonly PdrnBundle[] = [
   },
 ];
 
-export const DEFAULT_BUNDLE_INDEX = 1;
+export const DEFAULT_BUNDLE_INDEX = 0;
 export const ORIGINAL_UNIT_PRICE = 246000;
