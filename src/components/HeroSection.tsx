@@ -319,14 +319,13 @@ export const HeroSection = ({
               <div className="h-0.5 w-10 bg-primary/40" />
 
               <motion.h1
-                className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"
+                className="text-[clamp(1.375rem,6.6vw,1.75rem)] md:text-5xl lg:text-6xl font-bold tracking-tighter md:tracking-tight text-foreground leading-tight whitespace-nowrap md:whitespace-normal"
                 initial={{ clipPath: 'inset(0 100% 0 0)' }}
                 whileInView={{ clipPath: 'inset(0 0% 0 0)' }}
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
               >
                 <span className="italic">Pink Repair</span> Peptide Serum
-                <span className="block text-2xl md:text-3xl lg:text-4xl font-light text-foreground/70 mt-2">30ml</span>
               </motion.h1>
               <p className="text-lg md:text-xl text-primary font-medium">
                 Suero ligero de péptidos para apoyar la reparación e hidratación de la piel.
