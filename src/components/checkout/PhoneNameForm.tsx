@@ -243,8 +243,14 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
 
           if (!isMountedRef.current) return;
 
-          const locationText = data.city || data.formattedAddress || "Paraguay";
-          setDetectedLocation(locationText);
+          // GPS detection populates ciudad oficial (admin_area_level_2),
+          // barrio (locality/sublocality) y address de calle si Google los devolvio.
+          // El usuario sigue pudiendo agregar/editar detalles antes de confirmar.
+          const detectedCity = data.city || "Paraguay";
+          setDetectedLocation(detectedCity);
+          setCity(detectedCity);
+          if (data.neighborhood) setNeighborhood(data.neighborhood);
+          if (data.address) setAddress(data.address);
           setLocationCoords({ lat: latitude, long: longitude });
           setIsLoadingLocation(false);
         } catch (err) {
@@ -353,14 +359,17 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
     const trimmedRuc = ruc.trim();
     const trimmedAddress = address.trim();
     const trimmedNeighborhood = neighborhood.trim();
-    const composedAddress = trimmedNeighborhood
-      ? `${trimmedAddress}, ${trimmedNeighborhood}`
-      : trimmedAddress;
+    // Address que llega a Ordefy: "Barrio, Calle 1234" o solo barrio o solo calle.
+    // El barrio NUNCA va al campo `city` (rompe carrier_coverage matching).
+    // city = ciudad oficial (con acentos); Ordefy normaliza accent-insensitive.
+    const composedAddress = [trimmedNeighborhood, trimmedAddress]
+      .filter(Boolean)
+      .join(", ");
 
     onSubmit({
       name: name.trim(),
       phone: phone.trim(),
-      location: detectedLocation || city.trim(),
+      location: (detectedLocation || city).trim(),
       address: composedAddress,
       isGeolocated: !!detectedLocation,
       lat: locationCoords.lat,
@@ -628,31 +637,69 @@ export const PhoneNameForm = ({ isOpen, onSubmit, onClose }: PhoneNameFormProps)
                     </label>
                   </div>
 
-                  {/* Detected Location (GPS) */}
+                  {/* Detected Location (GPS) + barrio/direccion editable */}
                   {detectedLocation && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-primary/10 border border-primary/30 rounded-lg"
+                      className="space-y-3"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <CheckIcon className="w-5 h-5 text-primary" />
-                          <p className="text-sm font-semibold text-foreground">
-                            {detectedLocation}
-                          </p>
+                      <div className="p-4 bg-primary/10 border border-primary/30 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <CheckIcon className="w-5 h-5 text-primary" />
+                            <p className="text-sm font-semibold text-foreground">
+                              {detectedLocation}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDetectedLocation(null);
+                              setLocationCoords({});
+                              setShowManualLocation(true);
+                            }}
+                            className="text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            Cambiar
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDetectedLocation(null);
-                            setLocationCoords({});
-                            setShowManualLocation(true);
-                          }}
-                          className="text-xs text-muted-foreground hover:text-foreground"
-                        >
-                          Cambiar
-                        </button>
+                      </div>
+
+                      {/* Barrio (editable, prefilled by GPS si Google lo detecto) */}
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-medium text-foreground">
+                          Barrio <span className="text-muted-foreground/70 font-normal">(opcional)</span>
+                        </label>
+                        <div className="relative">
+                          <MapPinIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                          <input
+                            type="text"
+                            value={neighborhood}
+                            onChange={(e) => setNeighborhood(e.target.value)}
+                            placeholder="Ej: Las Mercedes, Recoleta, Villa Morra..."
+                            maxLength={80}
+                            autoComplete="address-level3"
+                            className="w-full pl-11 pr-4 py-3 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Direccion (editable, prefilled by GPS si Google lo detecto) */}
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-medium text-foreground">
+                          Dirección <span className="text-muted-foreground/70 font-normal">(opcional, ayuda al delivery)</span>
+                        </label>
+                        <div className="relative">
+                          <HomeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                          <input
+                            type="text"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder="Ej: Av. Mariscal López 1234"
+                            className="w-full pl-11 pr-4 py-3 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                          />
+                        </div>
                       </div>
                     </motion.div>
                   )}

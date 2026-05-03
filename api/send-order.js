@@ -36,25 +36,32 @@ function isRealGpsMapsLink(link) {
   return typeof link === 'string' && GPS_MAPS_LINK_RE.test(link);
 }
 
+// city  = ciudad oficial PY con acentos (Asuncion, Lambare, San Lorenzo).
+//         Ordefy normaliza accent-insensitive en carrier_coverage matching.
+// address = barrio + calle/numero (concatenados upstream por el frontend).
+//           Nunca incluye city. Mantiene la zona/barrio para el delivery.
+// google_maps_url = solo cuando hay GPS real, separado para que el courier
+//           abra la coordenada exacta si la direccion es ambigua.
 function buildOrdefyShippingAddress({ lat, long, address, city, googleMapsLink }) {
-  if (typeof lat === 'number' && typeof long === 'number') {
-    return {
-      google_maps_url: `https://www.google.com/maps?q=${lat},${long}`,
-      notes: address || undefined,
-    };
-  }
+  const trimmedAddress = typeof address === 'string' ? address.trim() : '';
+  const trimmedCity = typeof city === 'string' ? city.trim() : '';
+  const safeCity = trimmedCity || 'Paraguay';
 
-  if (isRealGpsMapsLink(googleMapsLink)) {
-    return {
-      google_maps_url: googleMapsLink,
-      notes: address || undefined,
-    };
-  }
+  const hasRealCoords = typeof lat === 'number' && typeof long === 'number';
+  const hasMapsLink = isRealGpsMapsLink(googleMapsLink);
 
-  return {
-    address: address || city,
-    city,
+  const payload = {
+    address: trimmedAddress || safeCity,
+    city: safeCity,
   };
+
+  if (hasRealCoords) {
+    payload.google_maps_url = `https://www.google.com/maps?q=${lat},${long}`;
+  } else if (hasMapsLink) {
+    payload.google_maps_url = googleMapsLink;
+  }
+
+  return payload;
 }
 
 function getSku(productKey, packVariant) {
