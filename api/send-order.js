@@ -16,18 +16,72 @@ function generateOrdefyIdempotencyKey() {
 }
 
 /**
- * Normalizes a Paraguay phone number to E.164 format (+595XXXXXXXXX).
- * The checkout form submits "+595 9XXXXXXXX" (space after country code).
- * When this reaches Ordefy without normalization, the space is treated as
- * a digit by some parsers, producing "+5950..." which causes lookup mismatches.
+ * Normalizes any phone number we receive from the checkout form, WhatsApp
+ * webhooks, or n8n payloads to E.164 with a leading '+'.
+ *
+ * Returns null for inputs that cannot be resolved to a plausible mobile number.
+ * Output examples: '+595981234567' (PY), '+5491155667788' (AR).
+ *
+ * Tolerated inputs:
+ *   '0981234567'           -> '+595981234567'   (PY local with trunk 0)
+ *   '981234567'            -> '+595981234567'   (PY mobile, no country code)
+ *   '+595 981 234 567'     -> '+595981234567'   (formatted intl)
+ *   '(0981) 234-567'       -> '+595981234567'   (parens + dashes)
+ *   '595981234567'         -> '+595981234567'   (already E.164 sin +)
+ *   '00595981234567'       -> '+595981234567'   (european intl prefix)
+ *   '+54 11 5566 7788'     -> '+541155667788'   (foreign country code respected)
+ *   '5491155667788'        -> '+5491155667788'  (AR sin +)
  */
+const KNOWN_COUNTRY_CODES = ['595', '598', '591', '592', '593', '594', '597', '599', '54', '55', '56', '57', '58', '51', '52', '53', '1', '34', '39', '44', '49', '33', '7', '86', '81', '82', '91'];
+
 function normalizePhone(raw) {
-  if (!raw) return raw;
-  const digits = String(raw).replace(/[^\d+]/g, '');
-  if (digits.startsWith('+')) return digits;
-  if (digits.startsWith('595')) return '+' + digits;
-  if (digits.startsWith('0')) return '+595' + digits.slice(1);
-  return '+595' + digits;
+  if (raw === undefined || raw === null) return null;
+  const trimmed = String(raw).trim();
+  if (!trimmed) return null;
+
+  const hasPlus = trimmed.startsWith('+');
+  let digits = trimmed.replace(/\D/g, '');
+  if (!digits) return null;
+
+  if (hasPlus) {
+    if (digits.length < 8 || digits.length > 15) return null;
+    return '+' + digits;
+  }
+
+  if (digits.startsWith('00')) {
+    digits = digits.slice(2);
+    if (digits.length < 8 || digits.length > 15) return null;
+    return '+' + digits;
+  }
+
+  if (digits.startsWith('5950') && digits.length >= 12) {
+    return '+595' + digits.slice(4);
+  }
+
+  if (digits.startsWith('595') && digits.length >= 11 && digits.length <= 13) {
+    return '+' + digits;
+  }
+
+  if (digits.startsWith('0') && digits.length >= 9 && digits.length <= 11) {
+    return '+595' + digits.slice(1);
+  }
+
+  if (/^9\d{8}$/.test(digits)) {
+    return '+595' + digits;
+  }
+
+  for (const cc of KNOWN_COUNTRY_CODES) {
+    if (digits.startsWith(cc) && digits.length >= cc.length + 7 && digits.length <= 15) {
+      return '+' + digits;
+    }
+  }
+
+  if (digits.length >= 8 && digits.length <= 10) {
+    return '+595' + digits;
+  }
+
+  console.warn('[normalizePhone] unrecognized format', { raw, digits });
+  return null;
 }
 
 const GPS_MAPS_LINK_RE = /^https?:\/\/(?:www\.)?google\.[a-z.]+\/maps\?q=-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?/i;
@@ -246,6 +300,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Name, phone, and location are required' });
     }
 
+    const earlyPhone = normalizePhone(phone);
+    if (!earlyPhone) {
+      return res.status(400).json({
+        error: 'Phone format not recognized. Use Paraguay mobile (e.g. 0981234567) or full international (+595981234567).',
+        success: false,
+      });
+    }
+
     const resolvedProductKey =
       productKey === 'tape' ? 'tape' : productKey === 'lash' ? 'lash' : 'pdrn';
     const validVariants = ['individual', 'duo', 'trio', 'familiar', 'ritual', 'evento'];
@@ -260,7 +322,7 @@ export default async function handler(req, res) {
       quantity: safeQuantity,
     });
     const sanitizedMapsLink = isRealGpsMapsLink(googleMapsLink) ? googleMapsLink : null;
-    const resolvedPhone = normalizePhone(phone);
+    const resolvedPhone = earlyPhone;
 
     const webhookPayload = {
       orderNumber: resolvedOrderNumber,
