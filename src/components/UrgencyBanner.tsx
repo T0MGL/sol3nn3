@@ -110,15 +110,15 @@ export const UrgencyBanner = memo(({
 
               {expired ? (
                 <p className="text-[12px] sm:text-sm font-semibold tracking-tight truncate">
-                  Oferta extendida: Kit Familiar 349.000 Gs (antes 399.000)
+                  Oferta extendida: Kit Familiar 499.999 Gs (antes 567.000)
                 </p>
               ) : (
                 <p className="text-[12px] sm:text-sm font-semibold tracking-tight">
                   <span className="inline-block">
                     <span className="hidden sm:inline">Oferta limitada: </span>
                     Kit Familiar{" "}
-                    <span className="tabular-nums">349.000</span>{" "}
-                    <span className="opacity-80 line-through font-normal">399.000</span>
+                    <span className="tabular-nums">499.999</span>{" "}
+                    <span className="opacity-80 line-through font-normal">567.000</span>
                   </span>
                   <span className="mx-1.5 opacity-70">·</span>
                   <span className="inline-flex items-baseline gap-1 font-bold tabular-nums">
