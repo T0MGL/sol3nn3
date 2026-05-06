@@ -34,12 +34,12 @@ export const PDRN_BUNDLES: readonly PdrnBundle[] = [
   {
     id: "familiar",
     quantity: 3,
-    price: 399000,
-    unitPrice: 133000,
+    price: 349000,
+    unitPrice: 116333,
     label: "Kit Familiar",
     badge: "Super Ahorro",
     highlighted: false,
-    savings: 168000,
+    savings: 218000,
     subline: "3 meses de tratamiento completo",
   },
 ];

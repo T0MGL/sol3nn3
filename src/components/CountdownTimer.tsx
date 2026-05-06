@@ -6,37 +6,42 @@ interface TimeLeft {
   seconds: number;
 }
 
-// Memoized digit component to prevent unnecessary re-renders
+interface CountdownTimerProps {
+  /** Total countdown duration in hours. Defaults to 40. */
+  durationHours?: number;
+  /** localStorage key. Different keys allow multiple independent countdowns. */
+  storageKey?: string;
+}
+
 const TimerDigit = memo(({ value }: { value: string }) => (
   <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary tabular-nums">
     {value}
   </span>
 ));
-TimerDigit.displayName = 'TimerDigit';
+TimerDigit.displayName = "TimerDigit";
 
-export const CountdownTimer = memo(() => {
+export const CountdownTimer = memo(({
+  durationHours = 40,
+  storageKey = "solenne-countdown-target-v2",
+}: CountdownTimerProps) => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ hours: 0, minutes: 0, seconds: 0 });
+  const [expired, setExpired] = useState(false);
   const targetDateRef = useRef<Date | null>(null);
 
   useEffect(() => {
-    const STORAGE_KEY = 'solenne-countdown-target';
-
-    // Get or create target date
     const getTargetDate = (): Date => {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(storageKey);
 
       if (stored) {
         const storedDate = new Date(stored);
-        // If stored date is in the future, use it
-        if (storedDate.getTime() > Date.now()) {
+        if (!Number.isNaN(storedDate.getTime()) && storedDate.getTime() > Date.now()) {
           return storedDate;
         }
       }
 
-      // Create new target date 24 hours from now
       const newTarget = new Date();
-      newTarget.setHours(newTarget.getHours() + 24);
-      sessionStorage.setItem(STORAGE_KEY, newTarget.toISOString());
+      newTarget.setTime(newTarget.getTime() + durationHours * 60 * 60 * 1000);
+      localStorage.setItem(storageKey, newTarget.toISOString());
       return newTarget;
     };
 
@@ -45,22 +50,19 @@ export const CountdownTimer = memo(() => {
     const updateTimer = () => {
       if (!targetDateRef.current) return;
 
-      const now = Date.now();
-      const distance = targetDateRef.current.getTime() - now;
+      const distance = targetDateRef.current.getTime() - Date.now();
 
-      if (distance < 0) {
-        // Reset to 24 hours when countdown ends
-        targetDateRef.current = new Date();
-        targetDateRef.current.setHours(targetDateRef.current.getHours() + 24);
-        sessionStorage.setItem(STORAGE_KEY, targetDateRef.current.toISOString());
+      if (distance <= 0) {
+        setExpired(true);
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
+        return;
       }
 
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const hours = Math.floor(distance / (1000 * 60 * 60));
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      setTimeLeft(prev => {
-        // Only update if values changed to prevent unnecessary re-renders
+      setTimeLeft((prev) => {
         if (prev.hours === hours && prev.minutes === minutes && prev.seconds === seconds) {
           return prev;
         }
@@ -68,15 +70,23 @@ export const CountdownTimer = memo(() => {
       });
     };
 
-    // Initial update
     updateTimer();
-
     const timer = setInterval(updateTimer, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [durationHours, storageKey]);
 
-  const formatNumber = (num: number) => String(num).padStart(2, '0');
+  const formatNumber = (num: number) => String(num).padStart(2, "0");
+
+  if (expired) {
+    return (
+      <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 px-4 sm:px-5 py-3 backdrop-blur-sm w-full sm:w-auto">
+        <span className="text-[10px] sm:text-xs text-foreground/70 font-medium uppercase tracking-wider">
+          Oferta extendida por tiempo limitado
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 bg-primary/10 border border-primary/30 px-4 sm:px-5 py-3 backdrop-blur-sm w-full sm:w-auto">
@@ -100,4 +110,4 @@ export const CountdownTimer = memo(() => {
   );
 });
 
-CountdownTimer.displayName = 'CountdownTimer';
+CountdownTimer.displayName = "CountdownTimer";

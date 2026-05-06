@@ -33,18 +33,18 @@ const BUNDLES = [
   {
     id: 'oficina',
     quantity: 3,
-    price: 399000,
-    unitPrice: 133000,
+    price: 349000,
+    unitPrice: 116333,
     label: "Kit Familiar",
     badge: "Super Ahorro",
     highlighted: false,
-    savings: 168000, // 567.000 - 399.000
+    savings: 218000, // 567.000 - 349.000
     allowExtraUnits: true,
   },
 ] as const;
 
 // Price per unit for extra units (same as pack of 3 discount)
-const EXTRA_UNIT_PRICE = 133000;
+const EXTRA_UNIT_PRICE = 116333;
 
 export const QuantitySelector = ({ isOpen, onClose, onContinue }: QuantitySelectorProps) => {
   // Default to the highlighted bundle (Pack Pareja - 2 units)
