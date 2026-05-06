@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense, memo } from "react";
 import { Link } from "react-router-dom";
 import { DeliveryBanner } from "@/components/DeliveryBanner";
+import { UrgencyBanner } from "@/components/UrgencyBanner";
 import { HeroSection } from "@/components/HeroSection";
 import { StickyBuyButton } from "@/components/StickyBuyButton";
 import { OfferCTA } from "@/components/OfferCTA";
@@ -407,6 +408,9 @@ const Index = () => {
     <div className="grain-overlay min-h-screen bg-background text-foreground">
       {/* Delivery Banner */}
       <DeliveryBanner />
+
+      {/* Urgency Banner: Kit Familiar 349k + 40h countdown, sticks below the delivery strip */}
+      <UrgencyBanner />
 
       {/* Header */}
       <header
