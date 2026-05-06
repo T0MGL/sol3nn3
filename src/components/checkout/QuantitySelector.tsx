@@ -23,28 +23,28 @@ const BUNDLES = [
   {
     id: 'pareja',
     quantity: 2,
-    price: 349999,
-    unitPrice: 174999,
+    price: 349000,
+    unitPrice: 174500,
     label: "Kit Dúo",
-    badge: "🔥 MÁS VENDIDO: Ahorrás Gs. 28.001",
+    badge: "🔥 MÁS VENDIDO: Ahorrás Gs. 29.000",
     highlighted: true,
-    savings: 28001, // 378.000 - 349.999
+    savings: 29000, // 378.000 - 349.000
   },
   {
     id: 'oficina',
     quantity: 3,
-    price: 499999,
-    unitPrice: 166666,
+    price: 489000,
+    unitPrice: 163000,
     label: "Kit Familiar",
     badge: "Super Ahorro",
     highlighted: false,
-    savings: 67001, // 567.000 - 499.999
+    savings: 78000, // 567.000 - 489.000
     allowExtraUnits: true,
   },
 ] as const;
 
 // Price per unit for extra units (same as pack of 3 discount)
-const EXTRA_UNIT_PRICE = 166666;
+const EXTRA_UNIT_PRICE = 163000;
 
 export const QuantitySelector = ({ isOpen, onClose, onContinue }: QuantitySelectorProps) => {
   // Default to the highlighted bundle (Pack Pareja - 2 units)
