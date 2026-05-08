@@ -1,288 +1,53 @@
 /**
- * Vercel Serverless Function - /api/send-order
- * Forwardea la orden a n8n (WhatsApp) y Ordefy (fulfillment) en paralelo.
+ * POST /api/send-order
+ * Forwardea la orden a n8n (WhatsApp closer) y Ordefy (fulfillment) en paralelo.
  *
  * Reglas:
- * - googleMapsLink solo se acepta si es una URL real de coordenadas (?q=lat,lng).
- *   Texto libre no se geocodifica; el shipping_address cae a city/address plano.
- * - quantity en Ordefy siempre refleja la cantidad real por linea. Nunca qty=1 con precio de pack.
- *   unitPrice viene del cliente; si falta, se deriva como total / quantity.
+ *  - googleMapsLink solo se acepta si es URL real de coordenadas (?q=lat,lng).
+ *    Texto libre nunca se geocodifica.
+ *  - quantity en Ordefy refleja la cantidad real por linea. Bundles van qty=1
+ *    con precio total del pack; non-bundle va qty=N con unitPrice.
+ *  - Idempotencia via orderNumber (Ordefy idempotency_key).
+ *
+ * Este endpoint corre desde el browser despues de confirmPayment exitoso o
+ * tras seleccionar COD. Para tarjeta hay un segundo path: el webhook de Stripe
+ * tambien llama sendToOrdefy con el mismo orderNumber, asi si el browser muere
+ * antes de llegar aca, la orden igual cae en Ordefy.
  */
 
-function generateOrdefyIdempotencyKey() {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 10);
-  return `selenne-order-${timestamp}-${random}`;
+import { isRealGpsMapsLink, normalizePhone, sendToOrdefy } from './_lib/ordefy.js';
+import { sendToN8N } from './_lib/n8n.js';
+
+const VALID_PRODUCT_KEYS = new Set(['pdrn', 'tape', 'lash', 'rizador', 'celimax']);
+const VALID_PACK_VARIANTS = new Set(['individual', 'duo', 'trio', 'familiar', 'ritual', 'evento']);
+
+function resolveProductKey(input) {
+  if (typeof input === 'string' && VALID_PRODUCT_KEYS.has(input)) return input;
+  return 'pdrn';
 }
 
-/**
- * Normalizes any phone number we receive from the checkout form, WhatsApp
- * webhooks, or n8n payloads to E.164 with a leading '+'.
- *
- * Returns null for inputs that cannot be resolved to a plausible mobile number.
- * Output examples: '+595981234567' (PY), '+5491155667788' (AR).
- *
- * Tolerated inputs:
- *   '0981234567'           -> '+595981234567'   (PY local with trunk 0)
- *   '981234567'            -> '+595981234567'   (PY mobile, no country code)
- *   '+595 981 234 567'     -> '+595981234567'   (formatted intl)
- *   '(0981) 234-567'       -> '+595981234567'   (parens + dashes)
- *   '595981234567'         -> '+595981234567'   (already E.164 sin +)
- *   '00595981234567'       -> '+595981234567'   (european intl prefix)
- *   '+54 11 5566 7788'     -> '+541155667788'   (foreign country code respected)
- *   '5491155667788'        -> '+5491155667788'  (AR sin +)
- */
-const KNOWN_COUNTRY_CODES = ['595', '598', '591', '592', '593', '594', '597', '599', '54', '55', '56', '57', '58', '51', '52', '53', '1', '34', '39', '44', '49', '33', '7', '86', '81', '82', '91'];
-
-function normalizePhone(raw) {
-  if (raw === undefined || raw === null) return null;
-  const trimmed = String(raw).trim();
-  if (!trimmed) return null;
-
-  const hasPlus = trimmed.startsWith('+');
-  let digits = trimmed.replace(/\D/g, '');
-  if (!digits) return null;
-
-  if (hasPlus) {
-    if (digits.length < 8 || digits.length > 15) return null;
-    return '+' + digits;
-  }
-
-  if (digits.startsWith('00')) {
-    digits = digits.slice(2);
-    if (digits.length < 8 || digits.length > 15) return null;
-    return '+' + digits;
-  }
-
-  if (digits.startsWith('5950') && digits.length >= 12) {
-    return '+595' + digits.slice(4);
-  }
-
-  if (digits.startsWith('595') && digits.length >= 11 && digits.length <= 13) {
-    return '+' + digits;
-  }
-
-  if (digits.startsWith('0') && digits.length >= 9 && digits.length <= 11) {
-    return '+595' + digits.slice(1);
-  }
-
-  if (/^9\d{8}$/.test(digits)) {
-    return '+595' + digits;
-  }
-
-  for (const cc of KNOWN_COUNTRY_CODES) {
-    if (digits.startsWith(cc) && digits.length >= cc.length + 7 && digits.length <= 15) {
-      return '+' + digits;
-    }
-  }
-
-  if (digits.length >= 8 && digits.length <= 10) {
-    return '+595' + digits;
-  }
-
-  console.warn('[normalizePhone] unrecognized format', { raw, digits });
-  return null;
+function resolvePackVariant(input) {
+  if (typeof input === 'string' && VALID_PACK_VARIANTS.has(input)) return input;
+  return 'individual';
 }
 
-const GPS_MAPS_LINK_RE = /^https?:\/\/(?:www\.)?google\.[a-z.]+\/maps\?q=-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?/i;
-
-function isRealGpsMapsLink(link) {
-  return typeof link === 'string' && GPS_MAPS_LINK_RE.test(link);
-}
-
-// city  = ciudad oficial PY con acentos (Asuncion, Lambare, San Lorenzo).
-//         Ordefy normaliza accent-insensitive en carrier_coverage matching.
-// address = barrio + calle/numero (concatenados upstream por el frontend).
-//           Nunca incluye city. Mantiene la zona/barrio para el delivery.
-// google_maps_url = solo cuando hay GPS real, separado para que el courier
-//           abra la coordenada exacta si la direccion es ambigua.
-function buildOrdefyShippingAddress({ lat, long, address, city, googleMapsLink }) {
-  const trimmedAddress = typeof address === 'string' ? address.trim() : '';
-  const trimmedCity = typeof city === 'string' ? city.trim() : '';
-  const safeCity = trimmedCity || 'Paraguay';
-
-  const hasRealCoords = typeof lat === 'number' && typeof long === 'number';
-  const hasMapsLink = isRealGpsMapsLink(googleMapsLink);
-
-  const payload = {
-    address: trimmedAddress || safeCity,
-    city: safeCity,
-  };
-
-  if (hasRealCoords) {
-    payload.google_maps_url = `https://www.google.com/maps?q=${lat},${long}`;
-  } else if (hasMapsLink) {
-    payload.google_maps_url = googleMapsLink;
-  }
-
-  return payload;
-}
-
-function getSku(productKey, packVariant) {
-  if (productKey === 'tape') {
-    if (packVariant === 'individual') return 'SOLENNE-TAPE-100';
-    if (packVariant === 'ritual') return 'SOLENNE-TAPE-RITUAL';
-    if (packVariant === 'evento') return 'SOLENNE-TAPE-EVENTO';
-    return null;
-  }
-  if (productKey === 'lash') {
-    if (packVariant === 'duo') return 'SOLENNE-LASH-DUO';
-    if (packVariant === 'trio') return 'SOLENNE-LASH-TRIO';
-    return 'SOLENNE-LASH-1';
-  }
-  if (packVariant === 'individual') return 'SOLENNE-PDRN-30ML';
-  if (packVariant === 'duo') return 'SOLENNE-PDRN-DUO';
-  if (packVariant === 'familiar') return 'SOLENNE-PDRN-FAMILIAR';
-  return null;
-}
-
-function getTapeProductName(packVariant) {
-  if (packVariant === 'individual') return 'Solenne V-Shaped Face Tape';
-  if (packVariant === 'ritual') return 'Solenne V-Shaped Face Tape - Pack Ritual';
-  if (packVariant === 'evento') return 'Solenne V-Shaped Face Tape - Pack Evento';
-  return 'Solenne V-Shaped Face Tape';
-}
-
-function getTapePackPrice(packVariant) {
-  if (packVariant === 'ritual') return 249000;
-  if (packVariant === 'evento') return 339000;
-  return 149000;
-}
-
-function getLashProductName(packVariant) {
-  if (packVariant === 'duo') return 'Solenne Serum de Pestañas - Pack Dúo';
-  if (packVariant === 'trio') return 'Solenne Serum de Pestañas - Pack Trío';
-  return 'Solenne Serum de Pestañas';
-}
-
-function getLashPackPrice(packVariant) {
-  if (packVariant === 'duo') return 249000;
-  if (packVariant === 'trio') return 339000;
-  return 149000;
-}
-
-function resolveUnitPrice({ unitPrice, productPrice, quantity }) {
+function resolveUnitPriceFromBody({ unitPrice, productPrice, quantity }) {
   if (typeof unitPrice === 'number' && unitPrice > 0) return unitPrice;
   if (quantity > 0) return Math.round(productPrice / quantity);
   return productPrice;
 }
 
-async function sendToOrdefy(orderData) {
-  if (!process.env.ORDEFY_WEBHOOK_URL || !process.env.ORDEFY_API_KEY) {
-    console.warn('Ordefy not configured');
-    return { success: false, error: 'Ordefy not configured' };
-  }
-
-  const {
-    name, phone, email, location, address,
-    lat, long, googleMapsLink,
-    quantity, unitPrice, total,
-    orderNumber, paymentType, isPaid, deliveryType, productName,
-    productKey, packVariant,
-  } = orderData;
-
-  const isPriority = deliveryType === 'premium';
-  const priorityCost = isPriority ? 10000 : 0;
-  const productPrice = total - priorityCost;
-  const safeQuantity = Number.isInteger(quantity) && quantity > 0 ? quantity : 1;
-
-  const items = [];
-
-  if (productKey === 'tape') {
-    const tapeSku = getSku('tape', packVariant);
-    const tapeName = getTapeProductName(packVariant);
-
-    if (packVariant === 'ritual' || packVariant === 'evento') {
-      items.push({
-        sku: tapeSku,
-        name: tapeName,
-        quantity: 1,
-        price: getTapePackPrice(packVariant),
-      });
-    } else {
-      items.push({
-        sku: tapeSku,
-        name: tapeName,
-        quantity: safeQuantity,
-        price: 149000,
-      });
-    }
-  } else if (productKey === 'lash') {
-    const lashSku = getSku('lash', packVariant);
-    const lashName = getLashProductName(packVariant);
-
-    if (packVariant === 'duo' || packVariant === 'trio') {
-      items.push({
-        sku: lashSku,
-        name: lashName,
-        quantity: 1,
-        price: getLashPackPrice(packVariant),
-      });
-    } else {
-      items.push({
-        sku: lashSku,
-        name: lashName,
-        quantity: safeQuantity,
-        price: 149000,
-      });
-    }
-  } else {
-    const pdrnSku = getSku('pdrn', packVariant);
-    const resolvedUnitPrice = resolveUnitPrice({ unitPrice, productPrice, quantity: safeQuantity });
-    items.push({
-      sku: pdrnSku,
-      name: productName || 'PDRN Serum',
-      quantity: safeQuantity,
-      price: resolvedUnitPrice,
-    });
-  }
-
-  if (isPriority) {
-    items.push({
-      sku: 'SOLENNE-ENVIO-PRIORITARIO',
-      name: 'Envio Prioritario VIP',
-      quantity: 1,
-      price: priorityCost,
-    });
-  }
-
-  const paymentStatus = isPaid === true || paymentType === 'Card' ? 'paid' : 'pending';
-
-  const normalizedPhone = normalizePhone(phone);
-
-  const ordefyPayload = {
-    idempotency_key: orderNumber || generateOrdefyIdempotencyKey(),
-    customer: { name, phone: normalizedPhone || undefined, email: email || undefined },
-    shipping_address: buildOrdefyShippingAddress({ lat, long, address, city: location, googleMapsLink }),
-    items,
-    totals: { subtotal: total, shipping: 0, total },
-    payment_method: paymentType === 'Card' ? 'online' : 'cash_on_delivery',
-    payment_status: paymentStatus,
-  };
-
-  try {
-    const response = await fetch(process.env.ORDEFY_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': process.env.ORDEFY_API_KEY },
-      body: JSON.stringify(ordefyPayload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Ordefy error:', response.status, errorText);
-      return { success: false, error: `Ordefy API error: ${response.status}` };
-    }
-
-    const result = await response.json();
-    return { success: true, data: result };
-  } catch (error) {
-    console.error('Ordefy failed:', error.message);
-    return { success: false, error: error.message };
-  }
+function defaultProductLabel(productKey) {
+  if (productKey === 'tape') return 'V-Shaped Face Tape';
+  if (productKey === 'lash') return 'Serum de Pestanas';
+  if (productKey === 'rizador') return 'Rizador de Pestanas';
+  if (productKey === 'celimax') return 'Celimax Retinal Shot';
+  return 'PDRN Serum';
 }
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -294,40 +59,39 @@ export default async function handler(req, res) {
       paymentIntentId, email,
       paymentType, isPaid, deliveryType, productName,
       productKey, packVariant,
-    } = req.body;
+    } = req.body || {};
 
     if (!name || !phone || !location) {
       return res.status(400).json({ error: 'Name, phone, and location are required' });
     }
 
-    const earlyPhone = normalizePhone(phone);
-    if (!earlyPhone) {
+    const normalizedPhone = normalizePhone(phone);
+    if (!normalizedPhone) {
       return res.status(400).json({
         error: 'Phone format not recognized. Use Paraguay mobile (e.g. 0981234567) or full international (+595981234567).',
         success: false,
       });
     }
 
-    const resolvedProductKey =
-      productKey === 'tape' ? 'tape' : productKey === 'lash' ? 'lash' : 'pdrn';
-    const validVariants = ['individual', 'duo', 'trio', 'familiar', 'ritual', 'evento'];
-    const resolvedPackVariant = validVariants.includes(packVariant) ? packVariant : 'individual';
+    const resolvedProductKey = resolveProductKey(productKey);
+    const resolvedPackVariant = resolvePackVariant(packVariant);
 
-    const resolvedOrderNumber = orderNumber || `#SELENNE-${Date.now()}`;
+    const resolvedOrderNumber = orderNumber || `#SOL-${Date.now()}`;
     const safeQuantity = Number.isInteger(quantity) && quantity > 0 ? quantity : 1;
     const safeTotal = Number.isFinite(total) ? total : 0;
-    const resolvedUnitPrice = resolveUnitPrice({
+    const productPriceNet = safeTotal - (deliveryType === 'premium' ? 10000 : 0);
+    const resolvedUnitPrice = resolveUnitPriceFromBody({
       unitPrice,
-      productPrice: safeTotal - (deliveryType === 'premium' ? 10000 : 0),
+      productPrice: productPriceNet,
       quantity: safeQuantity,
     });
+
     const sanitizedMapsLink = isRealGpsMapsLink(googleMapsLink) ? googleMapsLink : null;
-    const resolvedPhone = earlyPhone;
 
     const webhookPayload = {
       orderNumber: resolvedOrderNumber,
       timestamp: new Date().toISOString(),
-      customer: { name, phone: resolvedPhone, email: email || null },
+      customer: { name, phone: normalizedPhone, email: email || null },
       location: {
         city: location,
         address: address || '',
@@ -336,13 +100,7 @@ export default async function handler(req, res) {
       order: {
         quantity: safeQuantity,
         unitPrice: resolvedUnitPrice,
-        product:
-          productName ||
-          (resolvedProductKey === 'tape'
-            ? 'V-Shaped Face Tape'
-            : resolvedProductKey === 'lash'
-              ? 'Serum de Pestañas'
-              : 'PDRN Serum'),
+        product: productName || defaultProductLabel(resolvedProductKey),
         productKey: resolvedProductKey,
         packVariant: resolvedPackVariant,
         total: safeTotal,
@@ -354,26 +112,20 @@ export default async function handler(req, res) {
         isPaid: isPaid === true || paymentType === 'Card',
         paymentIntentId: paymentIntentId || null,
       },
-      source: 'selenne-landing-page',
+      source: 'solenne-landing-page',
     };
 
-    console.log('Processing order:', resolvedOrderNumber, resolvedProductKey, resolvedPackVariant, 'qty:', safeQuantity);
-
     const [n8nResult, ordefyResult] = await Promise.allSettled([
-      process.env.N8N_WEBHOOK_URL
-        ? fetch(process.env.N8N_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(webhookPayload),
-          }).then(async (r) => {
-            if (!r.ok) throw new Error(`n8n webhook failed: ${r.status}`);
-            return r.json().catch(() => ({}));
-          })
-        : Promise.resolve({ skipped: true, reason: 'N8N_WEBHOOK_URL not configured' }),
-
+      sendToN8N(webhookPayload),
       sendToOrdefy({
-        name, phone: resolvedPhone, email, location, address,
-        lat, long, googleMapsLink: sanitizedMapsLink,
+        name,
+        phone: normalizedPhone,
+        email,
+        location,
+        address,
+        lat,
+        long,
+        googleMapsLink: sanitizedMapsLink,
         quantity: safeQuantity,
         unitPrice: resolvedUnitPrice,
         total: safeTotal,
@@ -381,27 +133,27 @@ export default async function handler(req, res) {
         productKey: resolvedProductKey,
         packVariant: resolvedPackVariant,
         orderNumber: resolvedOrderNumber,
-        paymentType, isPaid, deliveryType,
+        paymentType,
+        isPaid,
+        deliveryType,
       }),
     ]);
 
-    const n8nSuccess = n8nResult.status === 'fulfilled' && !n8nResult.value?.skipped;
-    const ordefySuccess = ordefyResult.status === 'fulfilled' && ordefyResult.value?.success;
+    const n8nValue = n8nResult.status === 'fulfilled' ? n8nResult.value : { error: n8nResult.reason?.message };
+    const ordefyValue = ordefyResult.status === 'fulfilled' ? ordefyResult.value : { error: ordefyResult.reason?.message };
 
-    if (n8nResult.status === 'rejected') {
-      console.error('n8n failed:', n8nResult.reason?.message);
-    }
+    const n8nSuccess = n8nResult.status === 'fulfilled' && !n8nValue?.skipped;
+    const ordefySuccess = ordefyResult.status === 'fulfilled' && ordefyValue?.success;
 
     return res.status(200).json({
       success: n8nSuccess || ordefySuccess,
       message: 'Order processed',
       orderNumber: resolvedOrderNumber,
-      n8nResponse: n8nResult.status === 'fulfilled' ? n8nResult.value : { error: n8nResult.reason?.message },
-      ordefyResponse: ordefyResult.status === 'fulfilled' ? ordefyResult.value : { error: ordefyResult.reason?.message },
+      n8nResponse: n8nValue,
+      ordefyResponse: ordefyValue,
     });
-
   } catch (error) {
-    console.error('Error:', error.message);
-    return res.status(500).json({ error: error.message || 'Failed to send order', success: false });
+    console.error('send-order error:', error?.message);
+    return res.status(500).json({ error: error?.message || 'Failed to send order', success: false });
   }
 }
