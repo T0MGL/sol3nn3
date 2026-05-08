@@ -30,12 +30,10 @@ import {
 } from "@/lib/meta-matching";
 import {
   RETINAL_CELIMAX_BUNDLES,
-  RETINAL_CELIMAX_PRODUCT_NAME,
   RETINAL_CELIMAX_SHORT_NAME,
-  buildRetinalCelimaxWhatsappMessage,
   type RetinalCelimaxBundle,
+  type RetinalCelimaxPackVariant,
 } from "@/data/retinalCelimaxProduct";
-import { buildWhatsappUrl } from "@/lib/whatsapp-deeplink";
 import { clearCheckoutFormStorage } from "@/hooks/useCheckoutFormPersistence";
 
 type CelimaxOrderVariant = Extract<PackVariant, "individual" | "duo" | "trio">;
@@ -81,6 +79,8 @@ const CheckoutModal = lazy(() =>
 const SINGLE_BUNDLE = RETINAL_CELIMAX_BUNDLES[0];
 const DEFAULT_BUNDLE =
   RETINAL_CELIMAX_BUNDLES.find((b) => b.highlighted) ?? RETINAL_CELIMAX_BUNDLES[0];
+const TRIO_BUNDLE =
+  RETINAL_CELIMAX_BUNDLES.find((b) => b.id === "trio") ?? RETINAL_CELIMAX_BUNDLES[0];
 
 const RETINAL_CELIMAX_BANNER_MESSAGES = [
   "REGALO DÍA DE LA MADRE · LLEGA ANTES DEL 15 DE MAYO",
@@ -109,12 +109,6 @@ const SectionSkeleton = memo(({ height }: { height: string }) => (
 ));
 SectionSkeleton.displayName = "SectionSkeleton";
 
-const findBundleByQuantity = (quantity: number): RetinalCelimaxBundle => {
-  return (
-    RETINAL_CELIMAX_BUNDLES.find((b) => b.quantity === quantity) ?? SINGLE_BUNDLE
-  );
-};
-
 const RetinalCelimax = () => {
   const [showQuantitySelector, setShowQuantitySelector] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -122,6 +116,15 @@ const RetinalCelimax = () => {
   const [showPhoneForm, setShowPhoneForm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [checkoutInProgress, setCheckoutInProgress] = useState(false);
+
+  const [selectedBundleId, setSelectedBundleId] =
+    useState<RetinalCelimaxPackVariant>(DEFAULT_BUNDLE.id);
+
+  const selectedBundle = useMemo(
+    () =>
+      RETINAL_CELIMAX_BUNDLES.find((b) => b.id === selectedBundleId) ?? DEFAULT_BUNDLE,
+    [selectedBundleId]
+  );
 
   const [checkoutData, setCheckoutData] = useState({
     quantity: SINGLE_BUNDLE.quantity,
@@ -142,10 +145,6 @@ const RetinalCelimax = () => {
     orderNumber: "",
     paymentIntentId: "",
   });
-
-  const stickyAnchorPrice = useMemo(() => {
-    return findBundleByQuantity(checkoutData.quantity).anchorPrice;
-  }, [checkoutData.quantity]);
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -572,7 +571,7 @@ const RetinalCelimax = () => {
               SOLENNE
             </Link>
             <button
-              onClick={handleBuyClick}
+              onClick={() => handleBuyClick(selectedBundle)}
               className="text-primary hover:text-primary/80 font-medium text-sm md:text-base transition-colors tracking-tight mix-blend-difference"
             >
               Comprar Ahora
@@ -582,7 +581,11 @@ const RetinalCelimax = () => {
       </header>
 
       <main className="pt-0 pb-0 transition-all duration-300">
-        <HeroSectionRetinalCelimax onBuyClick={handleBuyClick} />
+        <HeroSectionRetinalCelimax
+          onBuyClick={handleBuyClick}
+          selectedBundleId={selectedBundleId}
+          onBundleSelect={setSelectedBundleId}
+        />
 
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <BenefitsSectionRetinalCelimax />
@@ -592,7 +595,10 @@ const RetinalCelimax = () => {
           <RetinalCelimaxGifShowcase />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={SINGLE_BUNDLE.totalPrice} />
+        <OfferCTA
+          onBuyClick={() => handleBuyClick(selectedBundle)}
+          selectedPrice={selectedBundle.totalPrice}
+        />
 
         <Suspense fallback={<SectionSkeleton height="h-[600px] md:h-[700px]" />}>
           <HowItWorksRetinalCelimax />
@@ -602,21 +608,29 @@ const RetinalCelimax = () => {
           <ComparisonTableRetinalCelimax />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={SINGLE_BUNDLE.totalPrice} variant="mothersDay" />
+        <OfferCTA
+          onBuyClick={() => handleBuyClick(TRIO_BUNDLE)}
+          selectedPrice={TRIO_BUNDLE.totalPrice}
+          variant="mothersDay"
+          ctaLabelOverride={`Aprovechar Pack Madre · Gs. ${TRIO_BUNDLE.totalPrice.toLocaleString("es-PY")}`}
+        />
 
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <FAQSectionRetinalCelimax />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={SINGLE_BUNDLE.totalPrice} variant="minimal" />
+        <OfferCTA
+          onBuyClick={() => handleBuyClick(selectedBundle)}
+          selectedPrice={selectedBundle.totalPrice}
+          variant="minimal"
+        />
       </main>
 
       <ScrollProgress />
 
       <StickyBuyButtonRetinalCelimax
         onBuyClick={handleBuyClick}
-        selectedPrice={checkoutData.totalPrice}
-        selectedAnchorPrice={stickyAnchorPrice}
+        selectedBundle={selectedBundle}
       />
 
       <CustomCursor />

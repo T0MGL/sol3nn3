@@ -29,21 +29,20 @@ import {
 
 interface HeroSectionRetinalCelimaxProps {
   onBuyClick: (bundle: RetinalCelimaxBundle) => void;
+  selectedBundleId: RetinalCelimaxPackVariant;
+  onBundleSelect: (id: RetinalCelimaxPackVariant) => void;
 }
 
 const HERO_STOCK_STORAGE_KEY = "solenne-retinal-celimax-stock";
 
-const DEFAULT_BUNDLE_ID: RetinalCelimaxPackVariant =
-  RETINAL_CELIMAX_BUNDLES.find((b) => b.highlighted)?.id ?? "duo";
-
 export const HeroSectionRetinalCelimax = ({
   onBuyClick,
+  selectedBundleId,
+  onBundleSelect,
 }: HeroSectionRetinalCelimaxProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [hasPeeked, setHasPeeked] = useState(false);
-  const [selectedBundleId, setSelectedBundleId] =
-    useState<RetinalCelimaxPackVariant>(DEFAULT_BUNDLE_ID);
 
   const [showPurchaseNotification, setShowPurchaseNotification] = useState(false);
   const [currentBuyer, setCurrentBuyer] = useState(() => getRandomBuyer());
@@ -370,7 +369,7 @@ export const HeroSectionRetinalCelimax = ({
                 return (
                   <motion.button
                     key={bundle.id}
-                    onClick={() => setSelectedBundleId(bundle.id)}
+                    onClick={() => onBundleSelect(bundle.id)}
                     className={`${cardBase} ${isSelected ? cardSelected : cardIdle}`}
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}

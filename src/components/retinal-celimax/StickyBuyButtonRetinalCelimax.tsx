@@ -3,20 +3,21 @@ import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ShieldCheckIcon, TruckIcon } from "@heroicons/react/24/outline";
 import { getDeliveryDates } from "@/lib/delivery-utils";
-import { RETINAL_CELIMAX_BUNDLES } from "@/data/retinalCelimaxProduct";
+import {
+  RETINAL_CELIMAX_BUNDLES,
+  type RetinalCelimaxBundle,
+} from "@/data/retinalCelimaxProduct";
 
 interface StickyBuyButtonRetinalCelimaxProps {
-  onBuyClick: () => void;
-  selectedPrice: number;
-  selectedAnchorPrice: number;
+  onBuyClick: (bundle: RetinalCelimaxBundle) => void;
+  selectedBundle: RetinalCelimaxBundle;
 }
 
 const FALLBACK_BUNDLE = RETINAL_CELIMAX_BUNDLES[0];
 
 export const StickyBuyButtonRetinalCelimax = ({
   onBuyClick,
-  selectedPrice,
-  selectedAnchorPrice,
+  selectedBundle,
 }: StickyBuyButtonRetinalCelimaxProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const deliveryDates = useMemo(() => getDeliveryDates(), []);
@@ -24,9 +25,12 @@ export const StickyBuyButtonRetinalCelimax = ({
   const heroButtonRef = useRef<Element | null>(null);
   const guaranteeButtonRef = useRef<Element | null>(null);
 
-  const displayedPrice = selectedPrice > 0 ? selectedPrice : FALLBACK_BUNDLE.totalPrice;
+  const displayedPrice =
+    selectedBundle.totalPrice > 0 ? selectedBundle.totalPrice : FALLBACK_BUNDLE.totalPrice;
   const displayedAnchor =
-    selectedAnchorPrice > 0 ? selectedAnchorPrice : FALLBACK_BUNDLE.anchorPrice;
+    selectedBundle.anchorPrice > 0
+      ? selectedBundle.anchorPrice
+      : FALLBACK_BUNDLE.anchorPrice;
 
   useEffect(() => {
     let ticking = false;
@@ -123,7 +127,7 @@ export const StickyBuyButtonRetinalCelimax = ({
                 variant="hero"
                 size="lg"
                 className="w-full h-12 md:h-14 text-sm md:text-base font-bold"
-                onClick={onBuyClick}
+                onClick={() => onBuyClick(selectedBundle)}
               >
                 Comprar Ahora
               </Button>

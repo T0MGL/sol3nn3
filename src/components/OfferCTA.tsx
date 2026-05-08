@@ -7,10 +7,18 @@ interface OfferCTAProps {
   onBuyClick: () => void;
   selectedPrice: number;
   variant?: "default" | "minimal" | "mothersDay";
+  ctaLabelOverride?: string;
 }
 
-export const OfferCTA = ({ onBuyClick, selectedPrice, variant = "default" }: OfferCTAProps) => {
-  const ctaLabel = `Aprovechar Oferta · Gs. ${selectedPrice.toLocaleString("es-PY")}`;
+export const OfferCTA = ({
+  onBuyClick,
+  selectedPrice,
+  variant = "default",
+  ctaLabelOverride,
+}: OfferCTAProps) => {
+  const ctaLabel =
+    ctaLabelOverride ??
+    `Aprovechar Oferta · Gs. ${selectedPrice.toLocaleString("es-PY")}`;
 
   if (variant === "mothersDay") {
     return (
