@@ -79,6 +79,8 @@ const CheckoutModal = lazy(() =>
 );
 
 const SINGLE_BUNDLE = RETINAL_CELIMAX_BUNDLES[0];
+const DEFAULT_BUNDLE =
+  RETINAL_CELIMAX_BUNDLES.find((b) => b.highlighted) ?? RETINAL_CELIMAX_BUNDLES[0];
 
 const RETINAL_CELIMAX_BANNER_MESSAGES = [
   "REGALO DÍA DE LA MADRE · LLEGA ANTES DEL 15 DE MAYO",
@@ -486,17 +488,6 @@ const RetinalCelimax = () => {
     resetCheckoutData();
   }, [resetCheckoutData]);
 
-  const handleWhatsappClick = useCallback(() => {
-    trackLead({
-      value: SINGLE_BUNDLE.totalPrice,
-      currency: "PYG",
-      content_name: RETINAL_CELIMAX_PRODUCT_NAME,
-      user_data: { fbc: getFbc(), fbp: getFbp() },
-    });
-    const url = buildWhatsappUrl(buildRetinalCelimaxWhatsappMessage(null));
-    window.open(url, "_blank", "noopener,noreferrer");
-  }, []);
-
   const orderData = useMemo(
     () => ({
       orderNumber: checkoutData.orderNumber,
@@ -627,19 +618,13 @@ const RetinalCelimax = () => {
             <p className="text-base md:text-lg text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed">
               Cada frasco sale del depósito sellado y revisado. Si recibís el tuyo dañado o con algún defecto, avisanos por WhatsApp en las primeras 24 horas desde la entrega y te enviamos uno nuevo sin costo.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-2">
+            <div className="flex justify-center pt-2">
               <button
                 data-guarantee-cta
-                onClick={handleBuyClick}
-                className="w-full sm:w-auto sm:min-w-[280px] h-14 md:h-16 px-8 bg-primary hover:bg-primary/90 text-foreground font-bold text-base md:text-lg shadow-[0_0_50px_rgba(192,139,122,0.4)] transition-all"
+                onClick={() => handleBuyClick(DEFAULT_BUNDLE)}
+                className="w-full sm:w-auto sm:min-w-[320px] h-14 md:h-16 px-8 bg-primary hover:bg-primary/90 text-foreground font-bold text-base md:text-lg shadow-[0_0_50px_rgba(192,139,122,0.4)] transition-all"
               >
-                Comprar Ahora
-              </button>
-              <button
-                onClick={handleWhatsappClick}
-                className="w-full sm:w-auto sm:min-w-[280px] h-14 md:h-16 px-8 border border-primary/40 text-foreground hover:border-primary hover:bg-primary/5 font-medium text-base md:text-lg transition-all"
-              >
-                Consultar por WhatsApp
+                Comprar Ahora: Gs. {DEFAULT_BUNDLE.totalPrice.toLocaleString("es-PY")}
               </button>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-xs md:text-sm text-muted-foreground font-light pt-4">
