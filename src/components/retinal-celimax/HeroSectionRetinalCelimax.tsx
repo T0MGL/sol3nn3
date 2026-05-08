@@ -165,8 +165,8 @@ export const HeroSectionRetinalCelimax = ({
               </motion.p>
             </motion.div>
 
-            <div className="relative w-full lg:max-w-[640px] lg:mx-auto -mx-4 md:mx-0 leading-[0]">
-              <div className="relative w-full aspect-[4/5] md:aspect-[4/5] lg:aspect-[3/4] overflow-hidden rounded-none md:rounded-lg bg-background">
+            <div className="relative w-full lg:max-w-[560px] lg:mx-auto leading-[0]">
+              <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-background">
                 <div className="absolute inset-0 -z-10 rounded-full blur-[80px] bg-primary/20 animate-glow-breathe scale-75" />
                 <div className="absolute inset-[10%] -z-10 rounded-full blur-[40px] bg-primary/15" />
 

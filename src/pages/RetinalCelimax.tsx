@@ -45,11 +45,6 @@ const BenefitsSectionRetinalCelimax = lazy(() =>
     default: m.BenefitsSectionRetinalCelimax,
   }))
 );
-const MechanismSectionRetinalCelimax = lazy(() =>
-  import("@/components/retinal-celimax/MechanismSectionRetinalCelimax").then((m) => ({
-    default: m.MechanismSectionRetinalCelimax,
-  }))
-);
 const HowItWorksRetinalCelimax = lazy(() =>
   import("@/components/retinal-celimax/HowItWorksRetinalCelimax").then((m) => ({
     default: m.HowItWorksRetinalCelimax,
@@ -602,15 +597,11 @@ const RetinalCelimax = () => {
           <BenefitsSectionRetinalCelimax />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={SINGLE_BUNDLE.totalPrice} />
-
-        <Suspense fallback={<SectionSkeleton height="h-[600px] md:h-[700px]" />}>
-          <MechanismSectionRetinalCelimax />
-        </Suspense>
-
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <RetinalCelimaxGifShowcase />
         </Suspense>
+
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={SINGLE_BUNDLE.totalPrice} />
 
         <Suspense fallback={<SectionSkeleton height="h-[600px] md:h-[700px]" />}>
           <HowItWorksRetinalCelimax />
