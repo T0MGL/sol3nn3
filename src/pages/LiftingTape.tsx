@@ -525,7 +525,7 @@ const LiftingTape = () => {
           <BenefitsSectionTape />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={checkoutData.totalPrice} />
 
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <LifestyleSectionTape />
@@ -535,7 +535,7 @@ const LiftingTape = () => {
           <ComparisonTableTape />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={checkoutData.totalPrice} />
 
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <StatsSectionTape />
@@ -545,7 +545,7 @@ const LiftingTape = () => {
           <FAQSectionTape />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} variant="minimal" />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={checkoutData.totalPrice} variant="minimal" />
 
         <Suspense fallback={<SectionSkeleton height="h-[400px] md:h-[500px]" />}>
           <GuaranteeSectionTape onBuyClick={handleBuyClick} />

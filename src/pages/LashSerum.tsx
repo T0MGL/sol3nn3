@@ -528,7 +528,7 @@ const LashSerum = () => {
           <BenefitsSectionSerum />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={checkoutData.totalPrice} />
 
         <Suspense fallback={<SectionSkeleton height="h-[600px] md:h-[700px]" />}>
           <IngredientsSectionSerum />
@@ -542,7 +542,7 @@ const LashSerum = () => {
           <ComparisonTableSerum />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={checkoutData.totalPrice} />
 
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <StatsSectionSerum />
@@ -556,7 +556,7 @@ const LashSerum = () => {
           <FAQSectionSerum />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} variant="minimal" />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={checkoutData.totalPrice} variant="minimal" />
 
         <Suspense fallback={<SectionSkeleton height="h-[400px] md:h-[500px]" />}>
           <GuaranteeSectionSerum onBuyClick={handleBuyClick} />

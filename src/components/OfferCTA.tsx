@@ -5,7 +5,7 @@ import { fadeInUpView } from "@/lib/animations";
 
 interface OfferCTAProps {
   onBuyClick: () => void;
-  selectedPrice: number;
+  selectedPrice?: number;
   variant?: "default" | "minimal" | "mothersDay";
   ctaLabelOverride?: string;
 }
@@ -16,9 +16,10 @@ export const OfferCTA = ({
   variant = "default",
   ctaLabelOverride,
 }: OfferCTAProps) => {
+  const safePrice = typeof selectedPrice === "number" ? selectedPrice : 0;
   const ctaLabel =
     ctaLabelOverride ??
-    `Aprovechar Oferta · Gs. ${selectedPrice.toLocaleString("es-PY")}`;
+    `Aprovechar Oferta · Gs. ${safePrice.toLocaleString("es-PY")}`;
 
   if (variant === "mothersDay") {
     return (

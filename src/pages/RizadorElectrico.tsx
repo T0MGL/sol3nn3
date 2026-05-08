@@ -519,13 +519,13 @@ const RizadorElectrico = () => {
           <BenefitsSectionRizador />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={checkoutData.totalPrice} />
 
         <Suspense fallback={<SectionSkeleton height="h-[400px] md:h-[500px]" />}>
           <ProductFeatureShowcaseRizador />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={checkoutData.totalPrice} />
 
         <Suspense fallback={<SectionSkeleton height="h-[500px] md:h-[600px]" />}>
           <StatsSectionRizador />
@@ -539,7 +539,7 @@ const RizadorElectrico = () => {
           <FAQSectionRizador />
         </Suspense>
 
-        <OfferCTA onBuyClick={handleBuyClick} variant="minimal" />
+        <OfferCTA onBuyClick={handleBuyClick} selectedPrice={checkoutData.totalPrice} variant="minimal" />
 
         <Suspense fallback={<SectionSkeleton height="h-[400px] md:h-[500px]" />}>
           <GuaranteeSectionRizador onBuyClick={handleBuyClick} />
