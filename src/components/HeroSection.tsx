@@ -389,6 +389,14 @@ export const HeroSection = ({
               </p>
             </div>
 
+            {/* Mother's Day cue: anchors the duo bundle as the natural gift pick */}
+            <div className="relative rounded-lg border border-primary/30 bg-gradient-to-r from-primary/15 via-primary/8 to-primary/15 px-4 py-2.5">
+              <p className="text-[13px] md:text-sm leading-snug text-foreground/85">
+                <span className="font-semibold text-primary">Día de la Madre, 15 de mayo.</span>{" "}
+                Llevate el <span className="font-semibold text-foreground">Kit Dúo</span>: uno para vos, uno para mamá.
+              </p>
+            </div>
+
             {/* Bundle Selector */}
             <BundleSelector
               selectedIndex={selectedBundleIndex}

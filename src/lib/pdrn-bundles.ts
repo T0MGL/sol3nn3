@@ -29,7 +29,7 @@ export const PDRN_BUNDLES: readonly PdrnBundle[] = [
     badge: "MAS VENDIDO",
     highlighted: true,
     savings: 29000,
-    subline: "2 frascos, pagas menos por cada uno",
+    subline: "Uno para vos, uno para mamá. Llega antes del 15 de mayo.",
   },
   {
     id: "familiar",
