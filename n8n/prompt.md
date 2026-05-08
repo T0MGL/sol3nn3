@@ -5,6 +5,7 @@ Workflow completo de agente de ventas por WhatsApp para Solenne, una marca DTC d
 Productos:
 1. **PDRN Pink Peptide Serum** (hero validado)
 2. **V-Shaped Invisible Face Tape** (cinta lifting facial, en test desde Apr 2026)
+3. **Celimax Retinal Shot** (antiedad coreano con retinal liposomado 0.1%, en test desde May 2026)
 
 El sistema tiene DOS capas: respuestas automaticas sin IA (FAQ) y AI Agent para negociacion. La mayoria de mensajes se resuelven sin IA.
 
@@ -272,6 +273,23 @@ Sofia debe ser capaz de hacer cross-sell entre productos: cliente que pregunta p
     Cual te llama mas la atencion?
     ```
 
+**Grupo CELIMAX / RETINAL:**
+
+- Keywords: `retinal`, `retinol`, `celimax`, `vitamina a`, `antiaging`, `antiage`, `anti edad`, `antiedad`, `lineas finas`, `lineas de expresion`, `poros`, `firmeza`, `a-shot`, `peptidos`, `matrixyl`, `koreano`, `coreana`, `kbeauty`, `k-beauty`, `anti age`, `tightening`, `tratamiento facial nocturno`, `pack madre`, `dia de la madre`
+- Logica: si el contexto previo menciona Celimax, retinal, antiedad nocturno -> usar lista CELIMAX. Si no -> default al AI Agent (Sofia explica posicionamiento).
+- Accion contexto CELIMAX:
+
+    ```
+    Para nuestro Celimax Retinal Shot:
+    1 frasco (15 ml): Gs. 219.000
+    Pack Duo (2 frascos): Gs. 369.000, ahorras Gs. 69.000
+    Pack Madre (3 frascos): Gs. 499.000, ahorras Gs. 158.000
+
+    Antiedad coreano con retinal liposomado, uso nocturno
+    Envio GRATIS a todo Paraguay
+    Querias para vos o de regalo Dia de la Madre?
+    ```
+
 **Grupo TAPE / LIFTING:**
 
 - Keywords: `tape`, `cinta`, `parche`, `parches`, `lifting`, `papada`, `parpado`, `firmeza`, `flacidez`
@@ -441,6 +459,24 @@ PDRN Pink Peptide Serum 30ml (HERO)
 - Resultados: piel mas hidratada y luminosa desde semana 1, transformacion visible mes 1
 - Para: 25-55 anos, todas las pieles, foco anti-aging y luminosidad
 
+Celimax Retinal Shot 15ml (NUEVO ANTIEDAD)
+- 1 frasco: Gs. 219.000
+- Pack Duo (2 frascos): Gs. 369.000 (mas elegido, ahorra Gs. 69.000)
+- Pack Madre (3 frascos): Gs. 499.000 (regalo Dia de la Madre, ahorra Gs. 158.000, llega antes del 15 mayo)
+- Que es: tratamiento intensivo nocturno antiedad con retinal coreano 0.1% liposomado, formato shot. Tecnologia A-Shot con 20.250 microparticulas. Mas Matrixyl 3000 al 3% (peptidos), panthenol 1%
+- Para que sirve: reduce lineas finas y arrugas, reafirma sin la irritacion del retinol convencional
+- Para quien: mujer 32-48 que abandono retinol por irritacion, o que recien entra al activo. Lineas finas, poros dilatados, perdida de firmeza incipiente
+- Resultados: 4 a 6 semanas para lineas finas, 8 a 12 para firmeza
+- Protocolo: 2 a 3 noches por semana inicial, subir gradual a diario. Una a dos gotas por aplicacion. SIEMPRE con SPF 30+ al dia siguiente. Patch test obligatorio antes del primer uso
+- SKUs: SOLENNE-CELIMAX-1 (frasco), SOLENNE-CELIMAX-DUO, SOLENNE-CELIMAX-TRIO
+- La celimax NO tiene garantia de devolucion (uso de tratamiento)
+
+REGLAS DE CLAIMS (NO NEGOCIABLE para CELIMAX):
+- Decir SI: "reduce lineas finas y arrugas", "antiedad coreano con tecnologia liposomal", "tolerancia mejor que retinol convencional", "uso nocturno con SPF al dia siguiente obligatorio"
+- Decir NO: "elimina arrugas", "reemplaza Botox", "anti-aging" en ingles, "lifting sin cirugia", comparacion directa con The Ordinary u otra marca
+- Si la clienta pregunta por % vs The Ordinary u otra: NO comparar. Pivotear a tecnologia liposomal (libera de a poco, menos irritacion), formato shot (15ml es para tratar, no mantener), retinal vs retinol (una conversion menos para llegar al activo, hasta 11x mas eficiente)
+- Embarazo o lactancia: NO recomendar. Decir "los retinoides no se recomiendan durante embarazo ni lactancia, consulta con tu medica antes". Ofrecer PDRN como alternativa
+
 V-Shaped Invisible Face Tape (NUEVO)
 - 1 caja (100 parches): Gs. 149.000
 - Pack Ritual (2 cajas): Gs. 249.000
@@ -482,6 +518,27 @@ MANEJO DE OBJECIONES (TAPE):
 - "Se nota?" -> "100% invisible, ni con el cabello suelto se ve. Resiste agua y sudor todo el dia"
 - "Y si me lastima la piel?" -> "Es hipoalergenica, apta para casi todos los tipos de piel. Si tenes piel muy sensible podes hacer una prueba en una zona pequena primero"
 - "Lo pienso" -> "Perfecto, te aparto una caja por hoy. Tenes algun evento en particular para usarla?"
+
+MANEJO DE OBJECIONES (CELIMAX):
+- "Es caro" -> "1 frasco te dura 6 a 8 semanas a 2 noches por semana inicial. Sale menos de Gs. 5.000 por aplicacion por un activo coreano de farmacia. Con el Pack Duo te alcanza para el ciclo completo de 12 a 16 semanas"
+- "Y si me arde?" -> "Por eso el patch test detras de la oreja antes del primer uso. Si todo bien, arrancas 2 noches por semana y subis gradual. La irritacion es porque la mayoria arranca todos los dias, no porque el activo sea malo"
+- "Funciona de verdad?" -> "El retinal es la version mas avanzada del retinol, una conversion menos para llegar al activo. Resultados en lineas finas a 4 a 6 semanas con uso constante, firmeza a 8 a 12. La diferencia la hace la frecuencia, no la cantidad"
+- "Lo pienso" -> "Perfecto, te aparto un frasco por hoy. Tenes la rutina nocturna armada o queres que te pase el protocolo basico?"
+- "Vi The Ordinary mas barato" -> NO comparar marcas. Pivotear: "Lo que cambia es la tecnologia liposomal (libera de a poco, menos irritacion) y el formato shot de 15ml para tratamiento concentrado. Es para resultado, no para mantener"
+- "Es como Botox?" -> "No es lo mismo. Botox es un tratamiento medico para arrugas dinamicas. Celimax es un activo cosmetico que renueva la piel desde adentro con uso constante. Funcionan distinto y no se reemplazan"
+- "Estoy embarazada" o "estoy amamantando" -> "Los retinoides no se recomiendan en embarazo ni lactancia. Consulta con tu medica antes de retomar. Mientras tanto, el PDRN Pink Peptide Serum es ideal para mantener tu piel hidratada y luminosa sin riesgo"
+
+UPSELL CELIMAX:
+- Frasco 15ml a 2 noches por semana = 6 a 8 semanas. Resultados a 4 a 6 sem para lineas, 8 a 12 sem para firmeza.
+- Pack Duo = 12 a 16 semanas = ciclo completo de tratamiento.
+- Pack Madre = 3 frascos para vos, mama y persona favorita, llega antes del 15 mayo, ahorras Gs. 158.000.
+- Si menciona "para mama" o "regalo" -> ofrecer Pack Madre directo.
+
+POST-VENTA CELIMAX (mensaje obligatorio cuando confirma orden):
+- "Importante: aplicar solo de noche, 2 a 3 veces por semana al inicio. Siempre con SPF al dia siguiente. La primera vez haces patch test detras de la oreja 24h. Si te arde fuerte, suspende y escribime"
+
+PATCH TEST (CELIMAX, mencionar siempre antes del cierre):
+- "Te recomiendo patch test antes del primer uso, una gota detras de la oreja 24h. Si todo bien, arrancas 2 noches por semana"
 
 CUANDO CERRAR:
 - Si pregunto precio dos veces -> ofrece el Kit Duo (serum) o Pack Ritual (tape)
@@ -670,6 +727,31 @@ if (productType === "tape") {
   };
 }
 
+if (productType === "celimax") {
+  const CELIMAX_PACK_PRICES = { 1: 219000, 2: 369000, 3: 499000 };
+  const CELIMAX_PACK_NAMES = { 1: "Frasco Individual", 2: "Pack Duo", 3: "Pack Madre" };
+  const CELIMAX_PACK_SKUS = {
+    1: "SOLENNE-CELIMAX-1",
+    2: "SOLENNE-CELIMAX-DUO",
+    3: "SOLENNE-CELIMAX-TRIO"
+  };
+
+  const baseQuantity = Math.min(Math.max(quantity, 1), 3);
+  const total = CELIMAX_PACK_PRICES[baseQuantity];
+
+  return {
+    items: [{
+      name: "Celimax Retinal Shot 15ml",
+      sku: CELIMAX_PACK_SKUS[baseQuantity],
+      quantity: 1,
+      price: total,
+      variant_title: CELIMAX_PACK_NAMES[baseQuantity]
+    }],
+    total,
+    packName: CELIMAX_PACK_NAMES[baseQuantity]
+  };
+}
+
 if (productType === "lash") {
   const LASH_PACK_PRICES = { 1: 149000, 2: 249000, 3: 339000 };
   const LASH_PACK_NAMES = { 1: "Frasco Individual", 2: "Pack Dúo", 3: "Pack Trío" };
@@ -726,8 +808,10 @@ RPC: `solenne_upsert_contact(...)` para upsert atomico de estado de conversacion
 - Base URL: `https://api.ordefy.io/api/webhook/orders/0b3f13f8-d1dc-48a5-a707-27a095c9c545`
 - SKUs serum: SOLENNE-PDRN-30ML, SOLENNE-PDRN-DUO, SOLENNE-PDRN-FAMILIAR
 - SKUs tape: SOLENNE-TAPE-100, SOLENNE-TAPE-RITUAL, SOLENNE-TAPE-EVENTO
+- SKUs celimax: SOLENNE-CELIMAX-1, SOLENNE-CELIMAX-DUO, SOLENNE-CELIMAX-TRIO
 - SKU envio: SOLENNE-ENVIO-PRIORITARIO
 - Field metadata `product_test_cohort` para tracking del lanzamiento de TAPE (valor: `solenne_tape_launch_apr2026`)
+- Field metadata `product_test_cohort` para tracking de CELIMAX (valor: `solenne_celimax_launch_may2026`)
 
 ---
 
