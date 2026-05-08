@@ -195,7 +195,7 @@ export const HeroSectionRetinalCelimax = ({
                     <img
                       src={slides[currentSlide].image}
                       alt={slides[currentSlide].alt}
-                      className="w-full h-full object-cover select-none pointer-events-none"
+                      className="w-full h-full object-contain object-center select-none pointer-events-none"
                       loading={currentSlide === 0 ? "eager" : "lazy"}
                       decoding="async"
                       draggable={false}

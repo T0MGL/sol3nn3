@@ -233,14 +233,14 @@ export const HeroSection = ({
             </motion.div>
 
             {/* Image Carousel */}
-            <div className="relative w-full max-w-[500px] mx-auto">
-              <div className="relative w-full aspect-square overflow-hidden rounded-lg">
+            <div className="relative w-full max-w-[500px] mx-auto leading-[0]">
+              <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-background">
                 {/* Outer ambient glow, wide, soft, breathing */}
                 <div className="absolute inset-0 -z-10 rounded-full blur-[60px] bg-primary/20 animate-glow-breathe scale-75" />
                 {/* Inner contact glow, tight, slightly brighter */}
                 <div className="absolute inset-[10%] -z-10 rounded-full blur-[30px] bg-primary/15" />
 
-                {/* Animated Slides */}
+                {/* Animated Slides with swipe */}
                 <AnimatePresence mode="popLayout">
                   <motion.div
                     key={currentSlide}
@@ -248,25 +248,39 @@ export const HeroSection = ({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.15 }}
-                    className="w-full h-full absolute inset-0"
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.18}
+                    onDragEnd={(_, info) => {
+                      const threshold = 50;
+                      if (info.offset.x < -threshold) {
+                        setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+                        setHasInteracted(true);
+                      } else if (info.offset.x > threshold) {
+                        setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+                        setHasInteracted(true);
+                      }
+                    }}
+                    className="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing touch-pan-y"
                   >
                     <img
                       src={slides[currentSlide].image}
                       alt={slides[currentSlide].alt}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain object-center select-none pointer-events-none"
                       loading={currentSlide === 0 ? "eager" : "lazy"}
                       decoding="async"
+                      draggable={false}
                     />
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Navigation Buttons */}
+                {/* Navigation Buttons (desktop only) */}
                 <button
                   onClick={() => {
                     setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
                     setHasInteracted(true);
                   }}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-foreground/60 hover:bg-foreground/80 text-background w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg backdrop-blur-sm"
+                  className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-foreground/60 hover:bg-foreground/80 text-background w-9 h-9 rounded-full items-center justify-center transition-all shadow-lg backdrop-blur-sm"
                   aria-label="Slide anterior"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
@@ -278,29 +292,29 @@ export const HeroSection = ({
                     setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
                     setHasInteracted(true);
                   }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-foreground/60 hover:bg-foreground/80 text-background w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg backdrop-blur-sm"
+                  className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-foreground/60 hover:bg-foreground/80 text-background w-9 h-9 rounded-full items-center justify-center transition-all shadow-lg backdrop-blur-sm"
                   aria-label="Slide siguiente"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                     <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 1 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
                   </svg>
                 </button>
-              </div>
 
-              {/* Slide Indicators (dots) */}
-              <div className="flex justify-center gap-2 mt-4">
-                {slides.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setCurrentSlide(index);
-                      setHasInteracted(true);
-                    }}
-                    className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${index === currentSlide ? 'bg-primary w-6' : 'bg-primary/40 hover:bg-primary/60 w-2'
-                      }`}
-                    aria-label={`Ir a slide ${index + 1}`}
-                  />
-                ))}
+                {/* Slide Indicators inside frame */}
+                <div className="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 z-20 flex justify-center gap-2 px-3 py-1.5 rounded-full bg-foreground/40 backdrop-blur-md">
+                  {slides.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setCurrentSlide(index);
+                        setHasInteracted(true);
+                      }}
+                      className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${index === currentSlide ? 'bg-background w-6' : 'bg-background/50 hover:bg-background/80 w-2'
+                        }`}
+                      aria-label={`Ir a slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
