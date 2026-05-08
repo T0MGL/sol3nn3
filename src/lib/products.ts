@@ -83,6 +83,23 @@ export const PRODUCTS = {
       3: 'Pack Trío',
     },
   },
+  celimax: {
+    contentNameBase: 'Celimax Retinal Shot, Tratamiento Reafirmante',
+    contentIdBase: 'SOLENNE-CELIMAX',
+    contentCategory: 'Skincare & Beauty',
+    contentType: 'product',
+    currency: 'PYG',
+    unitPrice: 219000,
+    skuByQuantity: {
+      1: 'SOLENNE-CELIMAX-1',
+      2: 'SOLENNE-CELIMAX-DUO',
+      3: 'SOLENNE-CELIMAX-TRIO',
+    },
+    packNames: {
+      2: 'Pack Dúo',
+      3: 'Pack Familia',
+    },
+  },
 } as const satisfies Record<string, ProductPixelConfig>;
 
 export type ProductKey = keyof typeof PRODUCTS;

@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import LiftingTape from "./pages/LiftingTape";
 import RizadorElectrico from "./pages/RizadorElectrico";
 import LashSerum from "./pages/LashSerum";
+import RetinalCelimax from "./pages/RetinalCelimax";
 import NotFound from "./pages/NotFound";
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import TerminosCondiciones from "./pages/TerminosCondiciones";
@@ -42,6 +43,7 @@ const App = () => {
             <Route path="/lifting-tape" element={<LiftingTape />} />
             <Route path="/rizador-electrico" element={<RizadorElectrico />} />
             <Route path="/serum-pestanas" element={<LashSerum />} />
+            <Route path="/retinal-celimax" element={<RetinalCelimax />} />
             <Route path="/politica-de-privacidad" element={<PoliticaPrivacidad />} />
             <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
