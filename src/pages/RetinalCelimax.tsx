@@ -609,33 +609,6 @@ const RetinalCelimax = () => {
         </Suspense>
 
         <OfferCTA onBuyClick={handleBuyClick} selectedPrice={SINGLE_BUNDLE.totalPrice} variant="minimal" />
-
-        <section className="py-12 md:py-20 px-4 md:px-6 bg-background relative" id="comprar">
-          <div className="container max-w-[900px] mx-auto text-center space-y-6 md:space-y-8">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tighter">
-              Frasco sellado o lo reemplazamos
-            </h2>
-            <p className="text-base md:text-lg text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed">
-              Cada frasco sale del depósito sellado y revisado. Si recibís el tuyo dañado o con algún defecto, avisanos por WhatsApp en las primeras 24 horas desde la entrega y te enviamos uno nuevo sin costo.
-            </p>
-            <div className="flex justify-center pt-2">
-              <button
-                data-guarantee-cta
-                onClick={() => handleBuyClick(DEFAULT_BUNDLE)}
-                className="w-full sm:w-auto sm:min-w-[320px] h-14 md:h-16 px-8 bg-primary hover:bg-primary/90 text-foreground font-bold text-base md:text-lg shadow-[0_0_50px_rgba(192,139,122,0.4)] transition-all"
-              >
-                Comprar Ahora: Gs. {DEFAULT_BUNDLE.totalPrice.toLocaleString("es-PY")}
-              </button>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-xs md:text-sm text-muted-foreground font-light pt-4">
-              <span>Envío GRATIS</span>
-              <span className="hidden sm:inline">·</span>
-              <span>1 a 3 días</span>
-              <span className="hidden sm:inline">·</span>
-              <span>Pago al recibir</span>
-            </div>
-          </div>
-        </section>
       </main>
 
       <ScrollProgress />
