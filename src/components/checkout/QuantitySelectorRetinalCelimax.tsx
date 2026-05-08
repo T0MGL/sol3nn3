@@ -67,9 +67,7 @@ const BUNDLES: readonly CelimaxDisplayBundle[] = RETINAL_CELIMAX_BUNDLES.map(
   })
 );
 
-const DEFAULT_INDEX = BUNDLES.findIndex((b) => b.highlighted) >= 0
-  ? BUNDLES.findIndex((b) => b.highlighted)
-  : 0;
+const DEFAULT_INDEX = 0;
 
 export const QuantitySelectorRetinalCelimax = ({
   isOpen,

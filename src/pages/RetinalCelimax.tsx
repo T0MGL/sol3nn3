@@ -87,8 +87,7 @@ const CheckoutModal = lazy(() =>
 );
 
 const SINGLE_BUNDLE = RETINAL_CELIMAX_BUNDLES[0];
-const DEFAULT_BUNDLE =
-  RETINAL_CELIMAX_BUNDLES.find((b) => b.highlighted) ?? RETINAL_CELIMAX_BUNDLES[0];
+const DEFAULT_BUNDLE = RETINAL_CELIMAX_BUNDLES[0];
 const TRIO_BUNDLE =
   RETINAL_CELIMAX_BUNDLES.find((b) => b.id === "trio") ?? RETINAL_CELIMAX_BUNDLES[0];
 

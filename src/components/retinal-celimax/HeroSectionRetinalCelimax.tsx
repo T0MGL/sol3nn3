@@ -6,7 +6,6 @@ import {
   ArrowPathIcon,
   SunIcon,
   HeartIcon,
-  GiftIcon,
   TruckIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon } from "@heroicons/react/24/solid";
@@ -325,118 +324,168 @@ export const HeroSectionRetinalCelimax = ({
               </p>
             </div>
 
-            <div className="space-y-2.5 pt-1">
+            <div className="space-y-3 pt-1">
               <p className="text-xs font-semibold tracking-[0.18em] text-primary uppercase">
                 Elegí tu pack
               </p>
-              {RETINAL_CELIMAX_BUNDLES.map((bundle) => {
-                const isSelected = selectedBundleId === bundle.id;
-                const isGift = bundle.id === "trio";
+              <div
+                className="space-y-3 w-full"
+                role="radiogroup"
+                aria-label="Elegí tu pack"
+              >
+                {RETINAL_CELIMAX_BUNDLES.map((bundle) => {
+                  const isSelected = selectedBundleId === bundle.id;
+                  const isGift = bundle.id === "trio";
 
-                const cardBase =
-                  "relative w-full p-3.5 md:p-4 rounded-lg border-2 transition-all duration-300 text-left";
-                const cardSelected = isGift
-                  ? "border-[#C9A961] bg-[rgba(201,169,97,0.12)] shadow-md shadow-[rgba(201,169,97,0.2)]"
-                  : bundle.highlighted
-                    ? "border-primary bg-primary/10 shadow-md shadow-primary/15"
-                    : "border-primary bg-primary/5";
-                const cardIdle = isGift
-                  ? "border-[#C9A961]/45 bg-[rgba(201,169,97,0.06)] hover:border-[#C9A961]/70"
-                  : bundle.highlighted
-                    ? "border-primary/40 bg-secondary/20 hover:border-primary/60"
-                    : "border-border/40 bg-secondary/10 hover:border-border/60";
-
-                const radioBorder = isSelected
-                  ? isGift
-                    ? "border-[#C9A961]"
-                    : "border-primary"
-                  : "border-border/50";
-                const radioFill = isGift ? "bg-[#C9A961]" : "bg-primary";
-                const labelColor = isGift
-                  ? "text-[#C9A961]"
-                  : bundle.highlighted
-                    ? "text-primary"
-                    : "text-foreground";
-                const priceColor = isGift
-                  ? "text-[#C9A961]"
-                  : bundle.highlighted
-                    ? "text-primary"
-                    : "text-foreground";
-                const savingsColor = isGift ? "text-[#C9A961]/85" : "text-gold";
-
-                return (
-                  <motion.button
-                    key={bundle.id}
-                    onClick={() => onBundleSelect(bundle.id)}
-                    className={`${cardBase} ${isSelected ? cardSelected : cardIdle}`}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    aria-pressed={isSelected}
-                  >
-                    {bundle.badge && (
-                      <div
-                        className={`absolute -top-2.5 left-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap flex items-center gap-1 ${
-                          isGift
-                            ? "bg-gradient-to-r from-[#C9A961] to-[#B89248] text-black shadow"
+                  return (
+                    <motion.button
+                      key={bundle.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      aria-label={`${bundle.label}, ${bundle.quantity} ${bundle.quantity === 1 ? "unidad" : "unidades"}, ${bundle.totalPrice.toLocaleString("es-PY")} guaraníes`}
+                      onClick={() => onBundleSelect(bundle.id)}
+                      className={`
+                        relative w-full p-4 rounded-lg border-2 transition-all duration-300 text-left
+                        ${isSelected
+                          ? isGift
+                            ? "border-[#C9A961] bg-[rgba(201,169,97,0.12)] shadow-lg shadow-[rgba(201,169,97,0.15)]"
                             : bundle.highlighted
-                              ? "bg-gradient-to-r from-primary to-[#A67265] text-foreground shadow"
-                              : "bg-gold text-black"
-                        }`}
-                      >
-                        {isGift && <HeartIcon className="w-3 h-3" strokeWidth={2.5} />}
-                        {bundle.badge}
-                      </div>
-                    )}
+                              ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
+                              : "border-primary bg-primary/5"
+                          : isGift
+                            ? "border-[#C9A961]/45 bg-[rgba(201,169,97,0.06)] hover:border-[#C9A961]/70"
+                            : bundle.highlighted
+                              ? "border-primary/40 bg-secondary/20 hover:border-primary/60"
+                              : "border-border/30 bg-secondary/10 hover:border-border/50"
+                        }
+                      `}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                    >
+                      {bundle.highlighted && !isSelected && (
+                        <motion.div
+                          className="absolute inset-0 rounded-lg border-2 border-primary/30 pointer-events-none"
+                          initial={{ opacity: 0.6 }}
+                          animate={{ opacity: [0.6, 0.15, 0.6] }}
+                          transition={{ duration: 2, repeat: 1, ease: "easeInOut" }}
+                        />
+                      )}
 
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
+                      {bundle.badge && (
                         <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${radioBorder}`}
+                          className={`
+                            absolute -top-3 right-4 px-3 py-0.5 rounded text-[11px] font-bold tracking-wide uppercase flex items-center gap-1
+                            ${isGift
+                              ? "bg-gradient-to-r from-[#C9A961] to-[#B89248] text-black shadow-md"
+                              : bundle.highlighted
+                                ? "bg-gradient-to-r from-primary to-[#A67265] text-foreground shadow-md"
+                                : "bg-gold text-black"
+                            }
+                          `}
                         >
-                          {isSelected && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className={`w-2.5 h-2.5 rounded-full ${radioFill}`}
-                            />
-                          )}
+                          {isGift && <HeartIcon className="w-3 h-3" strokeWidth={2.5} />}
+                          {bundle.badge}
                         </div>
+                      )}
 
-                        <div className="min-w-0">
-                          <p className={`text-sm md:text-base font-bold ${labelColor}`}>
-                            {bundle.label}
-                          </p>
-                          <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">
-                            {bundle.unitPrice.toLocaleString("es-PY")} Gs c/frasco
-                          </p>
-                          {isGift && (
-                            <div className="flex items-center gap-1 mt-1">
-                              <GiftIcon className="w-3 h-3 text-[#C9A961]" />
-                              <p className="text-[10px] font-semibold text-[#C9A961] leading-tight">
-                                Regalo Día de la Madre
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`
+                              w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all
+                              ${isSelected
+                                ? isGift ? "border-[#C9A961]" : "border-primary"
+                                : "border-border/50"
+                              }
+                            `}
+                          >
+                            {isSelected && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                className={`w-2.5 h-2.5 rounded-full ${isGift ? "bg-[#C9A961]" : "bg-primary"}`}
+                              />
+                            )}
+                          </div>
+
+                          <div className="min-w-0">
+                            <p
+                              className={`
+                                text-sm font-bold leading-tight
+                                ${isGift
+                                  ? "text-[#C9A961]"
+                                  : bundle.highlighted ? "text-primary" : "text-foreground"
+                                }
+                              `}
+                            >
+                              {bundle.quantity} {bundle.quantity === 1 ? "Unidad" : "Unidades"} · {bundle.label}
+                            </p>
+                            {bundle.quantity > 1 && (
+                              <p
+                                className={
+                                  isGift
+                                    ? "mt-0.5 text-xs text-[#C9A961]/85 font-semibold"
+                                    : bundle.highlighted
+                                      ? "mt-0.5 text-sm font-semibold text-primary/80"
+                                      : "mt-0.5 text-xs text-muted-foreground"
+                                }
+                              >
+                                <span className="line-through text-muted-foreground/50 font-normal mr-1">
+                                  {Math.round(bundle.anchorPrice / bundle.quantity).toLocaleString("es-PY")}
+                                </span>
+                                {bundle.unitPrice.toLocaleString("es-PY")} Gs c/u
                               </p>
-                            </div>
+                            )}
+                            {bundle.subtitle && (
+                              <span
+                                className={`text-[11px] mt-0.5 block ${
+                                  isGift
+                                    ? "text-[#C9A961]/75"
+                                    : bundle.highlighted
+                                      ? "text-primary/70"
+                                      : "text-muted-foreground/70"
+                                }`}
+                              >
+                                {bundle.subtitle}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="text-right flex-shrink-0">
+                          <p
+                            className={`
+                              text-lg font-bold leading-tight
+                              ${isGift
+                                ? "text-[#C9A961]"
+                                : bundle.highlighted ? "text-primary" : "text-foreground"
+                              }
+                            `}
+                          >
+                            {bundle.totalPrice.toLocaleString("es-PY")} Gs
+                          </p>
+                          {bundle.savings > 0 && (
+                            <p
+                              className={`font-medium mt-0.5 ${
+                                isGift
+                                  ? "text-[11px] text-[#C9A961]"
+                                  : bundle.highlighted
+                                    ? "text-xs bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full inline-block"
+                                    : "text-[11px] text-gold"
+                              }`}
+                            >
+                              Ahorrás {bundle.savings.toLocaleString("es-PY")} Gs
+                            </p>
                           )}
                         </div>
                       </div>
-
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-[10px] text-muted-foreground line-through leading-tight">
-                          Gs. {bundle.anchorPrice.toLocaleString("es-PY")}
-                        </p>
-                        <p className={`text-lg md:text-xl font-bold leading-tight ${priceColor}`}>
-                          {bundle.totalPrice.toLocaleString("es-PY")} Gs
-                        </p>
-                        {bundle.savings > 0 && (
-                          <p className={`text-[10px] font-medium leading-tight mt-0.5 ${savingsColor}`}>
-                            Ahorrás {bundle.savings.toLocaleString("es-PY")} Gs
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </motion.button>
-                );
-              })}
+                    </motion.button>
+                  );
+                })}
+              </div>
 
               <div className="flex items-center justify-center gap-1.5 pt-1.5">
                 <TruckIcon className="w-4 h-4 text-primary" />
