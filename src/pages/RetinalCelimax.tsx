@@ -53,6 +53,16 @@ const RetinalCelimaxGifShowcase = lazy(() =>
     default: m.RetinalCelimaxGifShowcase,
   }))
 );
+const RetinalCelimaxLifestyleShot = lazy(() =>
+  import("@/components/retinal-celimax/RetinalCelimaxLifestyleShot").then((m) => ({
+    default: m.RetinalCelimaxLifestyleShot,
+  }))
+);
+const RetinalCelimaxAShotShowcase = lazy(() =>
+  import("@/components/retinal-celimax/RetinalCelimaxAShotShowcase").then((m) => ({
+    default: m.RetinalCelimaxAShotShowcase,
+  }))
+);
 const ComparisonTableRetinalCelimax = lazy(() =>
   import("@/components/retinal-celimax/ComparisonTableRetinalCelimax").then((m) => ({
     default: m.ComparisonTableRetinalCelimax,
@@ -595,6 +605,10 @@ const RetinalCelimax = () => {
           <RetinalCelimaxGifShowcase />
         </Suspense>
 
+        <Suspense fallback={<SectionSkeleton height="h-[400px] md:h-[500px]" />}>
+          <RetinalCelimaxLifestyleShot />
+        </Suspense>
+
         <OfferCTA
           onBuyClick={() => handleBuyClick(selectedBundle)}
           selectedPrice={selectedBundle.totalPrice}
@@ -602,6 +616,10 @@ const RetinalCelimax = () => {
 
         <Suspense fallback={<SectionSkeleton height="h-[600px] md:h-[700px]" />}>
           <HowItWorksRetinalCelimax />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton height="h-[400px] md:h-[500px]" />}>
+          <RetinalCelimaxAShotShowcase />
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton height="h-[600px] md:h-[700px]" />}>

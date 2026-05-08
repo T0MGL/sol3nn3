@@ -13,7 +13,6 @@ import { StarIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import paymentMethodsImage from "@/assets/payments/payment-methods.webp";
 import hero1Image from "@/assets/products/retinal-celimax/hero1.webp";
-import hero2Image from "@/assets/products/retinal-celimax/hero2.webp";
 import hero3Image from "@/assets/products/retinal-celimax/hero3.webp";
 import hero4Image from "@/assets/products/retinal-celimax/hero4.webp";
 import hero5Image from "@/assets/products/retinal-celimax/hero5.webp";
@@ -76,7 +75,6 @@ export const HeroSectionRetinalCelimax = ({
 
   const slides = [
     { image: hero1Image, alt: "Aplicación del Celimax Retinal Shot sobre el rostro" },
-    { image: hero2Image, alt: "Celimax Retinal Shot, booster antiedad con 0.1% nano-retinal" },
     { image: hero3Image, alt: "Antes y después del uso del Celimax Retinal Shot en poros" },
     { image: hero4Image, alt: "Beneficios del Celimax Retinal Shot" },
     { image: hero5Image, alt: "Sistema A-Shot del Celimax Retinal Shot, complejo de triple elasticidad" },
