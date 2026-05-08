@@ -1,20 +1,19 @@
 /**
  * Celimax Retinal Shot, Tratamiento Reafirmante
  *
- * Source of truth for the /retinal-celimax landing. Pricing follows the
- * existing Tape/Lash bundle convention (anchor = 2x or 3x base, savings %
- * matched to the duo/trio split that already runs in production):
+ * Source of truth for the /retinal-celimax landing. Pricing aligned with the
+ * brand-wide 189.000 Gs base after the 2026-05-08 cold test stalled at 0
+ * conversions on a 219.000 Gs entry (PDRN at 189k same-day same-cohort
+ * converted; price was the friction). Bundle steps mirror the Tape/Lash
+ * convention (single base + ~70.000 step per extra unit, ending in -9.000):
  *
- *   1u  219.000 Gs  unit 219.000 Gs  no anchor
- *   2u  369.000 Gs  unit 184.500 Gs  anchor 438.000  savings 69.000  -15.7% vs 2x
- *   3u  499.000 Gs  unit 166.333 Gs  anchor 657.000  savings 158.000 -24.0% vs 3x
+ *   1u  189.000 Gs  unit 189.000 Gs  anchor 249.000  savings 60.000
+ *   2u  319.000 Gs  unit 159.500 Gs  anchor 378.000  savings 59.000  -15.6% vs 2x
+ *   3u  439.000 Gs  unit 146.333 Gs  anchor 567.000  savings 128.000 -22.6% vs 3x
  *
- * Tape baseline: duo -16.4%, trio -24.2% on a 149.000 Gs base.
- * Lash baseline: duo -16.4%, trio -24.2% on a 149.000 Gs base.
- * Celimax matches both within 1pp on each bundle and keeps the brand-wide
- * convention that totals end in -9.000 Gs.
- *
- * Pricing decision Apr 30 2026, locked by Gaston with the Phase 2 brief.
+ * Pricing decision 2026-05-08, locked by Gaston after RETINAL-C/COLD adset
+ * pull. Net margin gates: 41.3% / 40.4% / 38.7% before ads at 79.000 COGS,
+ * 30.000 delivery absorbed, ~2.000 Ordefy/payment per order.
  *
  * Honest claim policy:
  *   ALLOWED:  reafirma, mejora textura, suaviza lineas finas con uso constante,
@@ -49,27 +48,27 @@ export const RETINAL_CELIMAX_BUNDLES: readonly RetinalCelimaxBundle[] = [
   {
     id: 'single',
     quantity: 1,
-    unitPrice: 219000,
-    totalPrice: 219000,
-    anchorPrice: 289000,
+    unitPrice: 189000,
+    totalPrice: 189000,
+    anchorPrice: 249000,
     label: '1 frasco',
     subtitle: 'Tratamiento individual de 6 a 8 semanas',
     badge: null,
     highlighted: false,
-    savings: 70000,
+    savings: 60000,
     perks: ['Envío gratis a todo Paraguay', 'Pago al recibir'],
   },
   {
     id: 'duo',
     quantity: 2,
-    unitPrice: 184500,
-    totalPrice: 369000,
-    anchorPrice: 438000,
+    unitPrice: 159500,
+    totalPrice: 319000,
+    anchorPrice: 378000,
     label: 'Pack Dúo, 2 frascos',
     subtitle: 'Tratamiento completo de 12 a 16 semanas',
     badge: 'MÁS ELEGIDO',
     highlighted: true,
-    savings: 69000,
+    savings: 59000,
     perks: [
       'Envío gratis a todo Paraguay',
       'Pago al recibir',
@@ -79,14 +78,14 @@ export const RETINAL_CELIMAX_BUNDLES: readonly RetinalCelimaxBundle[] = [
   {
     id: 'trio',
     quantity: 3,
-    unitPrice: 166333,
-    totalPrice: 499000,
-    anchorPrice: 657000,
+    unitPrice: 146333,
+    totalPrice: 439000,
+    anchorPrice: 567000,
     label: 'Pack Madre, 3 frascos',
     subtitle: 'Uno para vos. Uno para mamá. Uno para tu persona favorita.',
     badge: 'REGALO DÍA DE LA MADRE',
     highlighted: false,
-    savings: 158000,
+    savings: 128000,
     perks: [
       'Envío gratis a todo Paraguay',
       'Pago al recibir',
@@ -208,7 +207,7 @@ export const RETINAL_CELIMAX_COMPARISON: readonly RetinalCelimaxComparisonOption
       { label: 'Pasos hasta el ácido retinoico', value: '1 solo paso', isGood: true },
       { label: 'Adaptación de la piel', value: 'Suave desde la 2da semana', isGood: true },
       { label: 'Apto piel sensible', value: 'Sí, con introducción gradual', isGood: true },
-      { label: 'Costo cada 3 meses', value: 'Gs. 166k a 219k por frasco', isGood: true },
+      { label: 'Costo cada 3 meses', value: 'Gs. 146k a 189k por frasco', isGood: true },
     ],
     isHighlighted: true,
   },

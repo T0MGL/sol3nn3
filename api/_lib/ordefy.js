@@ -161,9 +161,9 @@ export function getCelimaxProductName(packVariant) {
 }
 
 export function getCelimaxPackPrice(packVariant) {
-  if (packVariant === 'duo') return 369000;
-  if (packVariant === 'trio') return 499000;
-  return 219000;
+  if (packVariant === 'duo') return 319000;
+  if (packVariant === 'trio') return 439000;
+  return 189000;
 }
 
 export function resolveUnitPrice({ unitPrice, productPrice, quantity }) {
@@ -205,7 +205,7 @@ function buildItems({ productKey, packVariant, quantity, unitPrice, total, deliv
     if (packVariant === 'duo' || packVariant === 'trio') {
       items.push({ sku, name, quantity: 1, price: getCelimaxPackPrice(packVariant) });
     } else {
-      items.push({ sku, name, quantity: safeQuantity, price: 219000 });
+      items.push({ sku, name, quantity: safeQuantity, price: 189000 });
     }
   } else {
     // pdrn

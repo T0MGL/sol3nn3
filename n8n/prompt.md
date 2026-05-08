@@ -281,9 +281,9 @@ Sofia debe ser capaz de hacer cross-sell entre productos: cliente que pregunta p
 
     ```
     Para nuestro Celimax Retinal Shot:
-    1 frasco (15 ml): Gs. 219.000
-    Pack Duo (2 frascos): Gs. 369.000, ahorras Gs. 69.000
-    Pack Madre (3 frascos): Gs. 499.000, ahorras Gs. 158.000
+    1 frasco (15 ml): Gs. 189.000
+    Pack Duo (2 frascos): Gs. 319.000, ahorras Gs. 59.000
+    Pack Madre (3 frascos): Gs. 439.000, ahorras Gs. 128.000
 
     Antiedad coreano con retinal liposomado, uso nocturno
     Envio GRATIS a todo Paraguay
@@ -460,9 +460,9 @@ PDRN Pink Peptide Serum 30ml (HERO)
 - Para: 25-55 anos, todas las pieles, foco anti-aging y luminosidad
 
 Celimax Retinal Shot 15ml (NUEVO ANTIEDAD)
-- 1 frasco: Gs. 219.000
-- Pack Duo (2 frascos): Gs. 369.000 (mas elegido, ahorra Gs. 69.000)
-- Pack Madre (3 frascos): Gs. 499.000 (regalo Dia de la Madre, ahorra Gs. 158.000, llega antes del 15 mayo)
+- 1 frasco: Gs. 189.000
+- Pack Duo (2 frascos): Gs. 319.000 (mas elegido, ahorra Gs. 59.000)
+- Pack Madre (3 frascos): Gs. 439.000 (regalo Dia de la Madre, ahorra Gs. 128.000, llega antes del 15 mayo)
 - Que es: tratamiento intensivo nocturno antiedad con retinal coreano 0.1% liposomado, formato shot. Tecnologia A-Shot con 20.250 microparticulas. Mas Matrixyl 3000 al 3% (peptidos), panthenol 1%
 - Para que sirve: reduce lineas finas y arrugas, reafirma sin la irritacion del retinol convencional
 - Para quien: mujer 32-48 que abandono retinol por irritacion, o que recien entra al activo. Lineas finas, poros dilatados, perdida de firmeza incipiente
@@ -531,7 +531,7 @@ MANEJO DE OBJECIONES (CELIMAX):
 UPSELL CELIMAX:
 - Frasco 15ml a 2 noches por semana = 6 a 8 semanas. Resultados a 4 a 6 sem para lineas, 8 a 12 sem para firmeza.
 - Pack Duo = 12 a 16 semanas = ciclo completo de tratamiento.
-- Pack Madre = 3 frascos para vos, mama y persona favorita, llega antes del 15 mayo, ahorras Gs. 158.000.
+- Pack Madre = 3 frascos para vos, mama y persona favorita, llega antes del 15 mayo, ahorras Gs. 128.000.
 - Si menciona "para mama" o "regalo" -> ofrecer Pack Madre directo.
 
 POST-VENTA CELIMAX (mensaje obligatorio cuando confirma orden):
@@ -728,7 +728,7 @@ if (productType === "tape") {
 }
 
 if (productType === "celimax") {
-  const CELIMAX_PACK_PRICES = { 1: 219000, 2: 369000, 3: 499000 };
+  const CELIMAX_PACK_PRICES = { 1: 189000, 2: 319000, 3: 439000 };
   const CELIMAX_PACK_NAMES = { 1: "Frasco Individual", 2: "Pack Duo", 3: "Pack Madre" };
   const CELIMAX_PACK_SKUS = {
     1: "SOLENNE-CELIMAX-1",

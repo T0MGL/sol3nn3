@@ -89,7 +89,7 @@ export const PRODUCTS = {
     contentCategory: 'Skincare & Beauty',
     contentType: 'product',
     currency: 'PYG',
-    unitPrice: 219000,
+    unitPrice: 189000,
     skuByQuantity: {
       1: 'SOLENNE-CELIMAX-1',
       2: 'SOLENNE-CELIMAX-DUO',
@@ -97,7 +97,7 @@ export const PRODUCTS = {
     },
     packNames: {
       2: 'Pack Dúo',
-      3: 'Pack Familia',
+      3: 'Pack Madre',
     },
   },
 } as const satisfies Record<string, ProductPixelConfig>;

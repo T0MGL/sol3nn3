@@ -154,7 +154,7 @@ const RetinalCelimax = () => {
     const previousDescription = metaDescription?.getAttribute("content") ?? "";
     metaDescription?.setAttribute(
       "content",
-      "Regalá el ritual coreano que reafirma. Pack 3 unidades a 499.000 Gs, llega antes del 15 de mayo. Retinal encapsulado, envío gratis Paraguay."
+      "Regalá el ritual coreano que reafirma. Pack 3 unidades a 439.000 Gs, llega antes del 15 de mayo. Retinal encapsulado, envío gratis Paraguay."
     );
 
     const setOrCreateMeta = (
@@ -184,7 +184,7 @@ const RetinalCelimax = () => {
       'meta[property="og:description"]',
       "property",
       "og:description",
-      "Regalá el ritual coreano que reafirma. Pack 3 unidades a 499.000 Gs, llega antes del 15 de mayo."
+      "Regalá el ritual coreano que reafirma. Pack 3 unidades a 439.000 Gs, llega antes del 15 de mayo."
     );
     const ogUrl = setOrCreateMeta(
       'meta[property="og:url"]',
@@ -208,7 +208,7 @@ const RetinalCelimax = () => {
       'meta[name="twitter:description"]',
       "name",
       "twitter:description",
-      "Regalá el ritual coreano que reafirma. Pack 3 unidades a 499.000 Gs. Llega antes del 15 de mayo."
+      "Regalá el ritual coreano que reafirma. Pack 3 unidades a 439.000 Gs. Llega antes del 15 de mayo."
     );
 
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
