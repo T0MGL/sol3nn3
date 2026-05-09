@@ -13,28 +13,30 @@
  * og:image values, so middleware always emits the absolute form.
  */
 
-export const SITE_ORIGIN = "https://bysolenne.shop" as const;
+export const SITE_ORIGIN = "https://bysolenne.shop";
+
+export type OgImageType = "image/webp" | "image/jpeg" | "image/png";
 
 export interface OgRoute {
   /** Path matched literally against URL.pathname. */
-  readonly path: string;
+  path: string;
   /** Browser tab title and og:title / twitter:title. */
-  readonly title: string;
+  title: string;
   /** og:description / twitter:description / meta description. Keep under 200 chars. */
-  readonly description: string;
+  description: string;
   /** Absolute or root-relative path to the OG image (e.g. /og/pdrn.webp). */
-  readonly image: string;
+  image: string;
   /** Image MIME type, used for og:image:type. */
-  readonly imageType: "image/webp" | "image/jpeg" | "image/png";
+  imageType: OgImageType;
   /** Image pixel width. WhatsApp prefers >=600. */
-  readonly imageWidth: number;
+  imageWidth: number;
   /** Image pixel height. */
-  readonly imageHeight: number;
+  imageHeight: number;
   /** Alt text for og:image:alt. */
-  readonly imageAlt: string;
+  imageAlt: string;
 }
 
-export const OG_ROUTES: readonly OgRoute[] = [
+export const OG_ROUTES: OgRoute[] = [
   {
     path: "/",
     title: "Solenne - Pink Repair Peptide Serum (30ml) | Paraguay",
@@ -90,9 +92,9 @@ export const OG_ROUTES: readonly OgRoute[] = [
     imageHeight: 1493,
     imageAlt: "Solenne Rizador de Pestañas Eléctrico",
   },
-] as const;
+];
 
-const ROUTE_INDEX: ReadonlyMap<string, OgRoute> = new Map(
+const ROUTE_INDEX = new Map<string, OgRoute>(
   OG_ROUTES.map((route) => [route.path, route]),
 );
 
@@ -100,24 +102,24 @@ const ROUTE_INDEX: ReadonlyMap<string, OgRoute> = new Map(
  * Look up an OG config by exact pathname match. Trailing slashes are
  * normalized so /lifting-tape and /lifting-tape/ both resolve.
  */
-export const findOgRoute = (pathname: string): OgRoute | undefined => {
+export function findOgRoute(pathname: string): OgRoute | undefined {
   if (pathname.length > 1 && pathname.endsWith("/")) {
     return ROUTE_INDEX.get(pathname.slice(0, -1));
   }
   return ROUTE_INDEX.get(pathname);
-};
+}
 
 /**
  * Build the absolute canonical URL for a route.
  */
-export const canonicalUrlFor = (route: OgRoute): string => {
+export function canonicalUrlFor(route: OgRoute): string {
   if (route.path === "/") return SITE_ORIGIN;
-  return `${SITE_ORIGIN}${route.path}`;
-};
+  return SITE_ORIGIN + route.path;
+}
 
 /**
  * Build the absolute image URL crawlers can fetch directly.
  */
-export const absoluteImageUrl = (route: OgRoute): string => {
-  return `${SITE_ORIGIN}${route.image}`;
-};
+export function absoluteImageUrl(route: OgRoute): string {
+  return SITE_ORIGIN + route.image;
+}
