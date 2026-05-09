@@ -310,7 +310,7 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
 
             <div className="flex items-center gap-3 py-2">
               <span className="text-base text-foreground/40 line-through">Gs. 199.000</span>
-              <span className="text-4xl md:text-5xl font-bold text-foreground">Gs. 149.000</span>
+              <span className="text-4xl md:text-5xl font-bold text-foreground">Gs. 139.000</span>
             </div>
 
             <motion.div
@@ -371,7 +371,7 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
                   style={{ background: "#C08B7A" }}
                   onClick={onBuyClick}
                 >
-                  COMPRAR AHORA: Gs. 149.000
+                  COMPRAR AHORA: Gs. 139.000
                 </Button>
               </motion.div>
 

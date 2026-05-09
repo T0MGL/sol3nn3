@@ -139,7 +139,7 @@ export function getTapeProductName(packVariant) {
 export function getTapePackPrice(packVariant) {
   if (packVariant === 'ritual') return 249000;
   if (packVariant === 'evento') return 339000;
-  return 149000;
+  return 139000;
 }
 
 export function getLashProductName(packVariant) {
@@ -187,7 +187,7 @@ function buildItems({ productKey, packVariant, quantity, unitPrice, total, deliv
     if (packVariant === 'ritual' || packVariant === 'evento') {
       items.push({ sku, name, quantity: 1, price: getTapePackPrice(packVariant) });
     } else {
-      items.push({ sku, name, quantity: safeQuantity, price: 149000 });
+      items.push({ sku, name, quantity: safeQuantity, price: 139000 });
     }
   } else if (productKey === 'lash') {
     const sku = getSku('lash', packVariant);
