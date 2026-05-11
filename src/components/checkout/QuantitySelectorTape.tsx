@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { XMarkIcon, TruckIcon, GiftIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, TruckIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import type { PackVariant } from "@/services/orderService";
 
@@ -25,7 +25,6 @@ interface TapeBundle {
   badge: string | null;
   highlighted: boolean;
   savings?: number;
-  gift: string | null;
   packVariant: Extract<PackVariant, "individual" | "ritual" | "evento">;
 }
 
@@ -39,7 +38,6 @@ const BUNDLES: readonly TapeBundle[] = [
     label: "1 caja, 100 parches",
     badge: null,
     highlighted: false,
-    gift: null,
     packVariant: "individual",
   },
   {
@@ -52,7 +50,6 @@ const BUNDLES: readonly TapeBundle[] = [
     badge: "MÁS ELEGIDO: Ahorrás Gs. 29.000",
     highlighted: true,
     savings: 29000,
-    gift: null,
     packVariant: "ritual",
   },
   {
@@ -61,11 +58,10 @@ const BUNDLES: readonly TapeBundle[] = [
     price: 339000,
     unitPrice: 113000,
     anchor: 417000,
-    label: "Pack Evento, 3 cajas + Bolsa Solenne",
+    label: "Pack Evento, 3 cajas",
     badge: "MÁXIMO AHORRO",
     highlighted: false,
     savings: 78000,
-    gift: "Bolsa Solenne exclusiva",
     packVariant: "evento",
   },
 ] as const;
@@ -199,14 +195,6 @@ export const QuantitySelectorTape = ({ isOpen, onClose, onContinue }: QuantitySe
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {bundle.unitPrice.toLocaleString("es-PY")} Gs c/caja
                             </p>
-                            {bundle.gift && (
-                              <div className="flex items-center gap-1 mt-1.5">
-                                <GiftIcon className="w-3.5 h-3.5 text-gold" />
-                                <p className="text-[11px] text-gold font-semibold">
-                                  {bundle.gift}
-                                </p>
-                              </div>
-                            )}
                           </div>
                         </div>
 

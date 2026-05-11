@@ -65,7 +65,7 @@ const TAPE_BANNER_MESSAGES = [
 const tapeProductLabel = (quantity: number): string => {
   if (quantity <= 1) return `${TAPE_BASE_PRODUCT_NAME} · 1 caja (100 parches)`;
   if (quantity === 2) return `${TAPE_BASE_PRODUCT_NAME} · Pack Ritual (2 cajas)`;
-  if (quantity === 3) return `${TAPE_BASE_PRODUCT_NAME} · Pack Evento (3 cajas + bolsa Solenne)`;
+  if (quantity === 3) return `${TAPE_BASE_PRODUCT_NAME} · Pack Evento (3 cajas)`;
   return `${TAPE_BASE_PRODUCT_NAME} · Pack x${quantity}`;
 };
 
