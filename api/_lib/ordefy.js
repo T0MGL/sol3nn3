@@ -137,7 +137,7 @@ export function getTapeProductName(packVariant) {
 }
 
 export function getTapePackPrice(packVariant) {
-  if (packVariant === 'ritual') return 249000;
+  if (packVariant === 'ritual') return 229000;
   if (packVariant === 'evento') return 339000;
   return 139000;
 }

@@ -212,3 +212,18 @@ COMMIT;
 -- SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'solenne_%';
 -- SELECT id, category, content, priority FROM solenne_knowledge_base ORDER BY priority DESC;
 -- SELECT id, scenario, outcome FROM solenne_few_shot_examples;
+
+-- ================================================================
+-- ORDER STATUS VOCABULARY (free-text VARCHAR(30), no CHECK constraint)
+-- ================================================================
+-- Values written by the n8n workflow (workflow-solenne.json):
+--   awaiting_confirmation_reply : se envio template pedido_recibido, esperando tap del button "Gracias, aguardo!"
+--   confirmed_acknowledged       : el cliente tapeo el button, sale del flow automatico
+--   confirmed                    : alias usado por nodos legacy (ver Is Already Confirmed?)
+--   shipped, delivered, completed: terminales, no aplican al flow del template
+--
+-- No DDL change needed: order_status es VARCHAR(30) sin CHECK. Los nuevos valores entran
+-- por simple INSERT/UPDATE. Si en el futuro se agrega un CHECK, incluir estos valores.
+--
+-- Verificar values en uso despues del rollout:
+--   SELECT order_status, COUNT(*) FROM solenne_contacts GROUP BY order_status ORDER BY 2 DESC;

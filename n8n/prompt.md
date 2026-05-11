@@ -123,7 +123,7 @@ Sofia debe ser capaz de hacer cross-sell entre productos: cliente que pregunta p
 
     V-Shaped Face Tape (lifting instantaneo)
     1 caja 100u: Gs. 139.000
-    Pack Ritual (2 cajas): Gs. 249.000
+    Pack Ritual (2 cajas): Gs. 229.000
     Pack Evento (3 cajas): Gs. 339.000
 
     El envio es GRATIS a todo Paraguay
@@ -147,7 +147,7 @@ Sofia debe ser capaz de hacer cross-sell entre productos: cliente que pregunta p
     ```
     Para nuestra V-Shaped Face Tape:
     1 caja (100 parches): Gs. 139.000
-    Pack Ritual (2 cajas): Gs. 249.000
+    Pack Ritual (2 cajas): Gs. 229.000
     Pack Evento (3 cajas): Gs. 339.000
 
     Cada caja te dura varias semanas
@@ -479,7 +479,7 @@ REGLAS DE CLAIMS (NO NEGOCIABLE para CELIMAX):
 
 V-Shaped Invisible Face Tape (NUEVO)
 - 1 caja (100 parches): Gs. 139.000
-- Pack Ritual (2 cajas): Gs. 249.000
+- Pack Ritual (2 cajas): Gs. 229.000
 - Pack Evento (3 cajas): Gs. 339.000
 - Que es: cinta adhesiva invisible que da efecto lifting al instante en mejillas, papada, contorno o parpados
 - Aplicacion: 30 segundos. Estira hacia arriba, fija detras de oreja
@@ -703,7 +703,7 @@ if (productType === "pdrn") {
 }
 
 if (productType === "tape") {
-  const TAPE_PACK_PRICES = { 1: 139000, 2: 249000, 3: 339000 };
+  const TAPE_PACK_PRICES = { 1: 139000, 2: 229000, 3: 339000 };
   const TAPE_PACK_NAMES = { 1: "Caja Individual", 2: "Pack Ritual", 3: "Pack Evento" };
   const TAPE_PACK_SKUS = {
     1: "SOLENNE-TAPE-100",

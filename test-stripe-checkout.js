@@ -94,10 +94,10 @@ async function testCreatePaymentIntent(amount = 249000, currency = 'pyg') {
         amount,
         currency,
         paymentMethodId: 'pending',
-        email: 'test@nocte.studio',
+        email: 'test@bysolenne.shop',
         metadata: {
           quantity: '1',
-          product: 'NOCTE Red-Tinted Glasses (TEST)',
+          product: 'Solenne PDRN Serum (TEST)',
         }
       })
     });

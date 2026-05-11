@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-26T21:51:24.768Z",
+  "updatedAt": "2026-05-07T06:07:28.560Z",
   "createdAt": "2026-04-05T23:06:54.888Z",
   "id": "541CxYqlPYw5LLvI",
   "name": "Solenne",
@@ -98,7 +98,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "try {\nconst body = $input.item.json.body;\nif (!body || body.message_type !== 'incoming') return { json: { skip: true } };\n\nconst content = (body.content || '').trim();\nconst triggerId = body.id || '';\nconst triggerSourceId = body.source_id || '';\nconst conv = body.conversation || {};\nconst convId = conv.id || '';\n\nconst contactMeta = conv.meta?.sender || {};\nconst rawPhone = contactMeta.phone_number || '';\n\n// Normalize inbound phone (defense in depth, Meta wa_id is usually clean\n// but Chatwoot manual contacts may carry odd formats).\nconst KNOWN_CC = ['595','598','591','592','593','594','597','599','54','55','56','57','58','51','52','53','1','34','39','44','49','33','7','86','81','82','91'];\nfunction normalizePhone(raw) {\n  if (raw === undefined || raw === null) return '';\n  const trimmed = String(raw).trim();\n  if (!trimmed) return '';\n  const hasPlus = trimmed.startsWith('+');\n  let d = trimmed.replace(/\\D/g, '');\n  if (!d) return '';\n  if (hasPlus) {\n    if (d.length < 8 || d.length > 15) return '';\n    return '+' + d;\n  }\n  if (d.startsWith('00')) {\n    d = d.slice(2);\n    if (d.length < 8 || d.length > 15) return '';\n    return '+' + d;\n  }\n  if (d.startsWith('5950') && d.length >= 12) return '+595' + d.slice(4);\n  if (d.startsWith('595') && d.length >= 11 && d.length <= 13) return '+' + d;\n  if (d.startsWith('0') && d.length >= 9 && d.length <= 11) return '+595' + d.slice(1);\n  if (/^9\\d{8}$/.test(d)) return '+595' + d;\n  for (const cc of KNOWN_CC) {\n    if (d.startsWith(cc) && d.length >= cc.length + 7 && d.length <= 15) return '+' + d;\n  }\n  if (d.length >= 8 && d.length <= 10) return '+595' + d;\n  return rawPhone;\n}\nconst phone = normalizePhone(rawPhone);\nconst name = contactMeta.name || '';\nlet fn = name.split(' ')[0] || '';\n\n// Override name with order data if available (web orders have real name in template_order_data)\nconst tplOrderData = contactMeta.custom_attributes?.template_order_data;\nif (tplOrderData) {\n  const orderCustomerName = typeof tplOrderData === 'string' ? JSON.parse(tplOrderData)?.customer_name : tplOrderData?.customer_name;\n  if (orderCustomerName && orderCustomerName !== 'Cliente' && orderCustomerName.length > 1) {\n    fn = orderCustomerName.split(' ')[0];\n  }\n}\n\nconst ctid = contactMeta.id || '';\nconst aid = body.account?.id || '';\n\nconst attachments = body.attachments || [];\n\nconst HANDOFF_LABELS = ['humano', 'reclamo', 'venta'];\nconst convLabels = conv.labels || [];\nif (convLabels.some(l => HANDOFF_LABELS.includes(l))) return { json: { skip: true } };\n\nconst productImagesSent = contactMeta.custom_attributes?.product_images_sent === true || contactMeta.custom_attributes?.product_images_sent === 'true';\nconst hasAudioAttachment = attachments.some(a => a.file_type === 'audio');\nif (!content && !attachments.length) return { json: { skip: true } };\n\n// Detect stickers/gifts (.webp files from WhatsApp) - skip entirely, no response\nconst isStickerOnly = !content && attachments.some(a => {\n  const url = (a.data_url || a.external_url || '');\n  return url.endsWith('.webp') || url.endsWith('.webp?') || a.file_type === 'sticker';\n});\nif (isStickerOnly) return { json: { skip: true } };\n\nconst n = (content || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n\n// Greeting-stripping: remove pure greeting lines before passing to Sofia\nconst sofiaActiveRawEarly = contactMeta.custom_attributes?.sofia_active;\nconst lastSofiaTimeEarly = contactMeta.custom_attributes?.last_sofia_time;\nconst sofiaWasActiveEarly = (sofiaActiveRawEarly === true || sofiaActiveRawEarly === 'true') &&\n  lastSofiaTimeEarly &&\n  (Date.now() - new Date(lastSofiaTimeEarly).getTime()) < 30 * 60 * 1000;\n\nconst GREETING_ONLY_RE = /^(hola|buenas|buen dia|buenas tardes|buenas noches|hey|hi)[\\s!.,]*$/;\n\nlet nClassify = n;\nconst gLines = n.split(/[\\n,;]/);\nif (gLines.length > 1 || /^(hola|buenas|buen dia|buenas tardes|buenas noches|hey|hi)[\\s!.,]*\\s+\\S/.test(n)) {\n  const nonGreetingLines = gLines.filter(l => !GREETING_ONLY_RE.test(l.trim()));\n  if (nonGreetingLines.length > 0 && nonGreetingLines.join('').trim().length > 0) {\n    nClassify = nonGreetingLines.join(' ').trim();\n  }\n}\n\nconst isWeb = n.includes('acabo de completar mi pedido') || n.includes('orden: #sol-') || (n.includes('nocte') && n.includes('mis datos:'));\nlet od = null;\nif (isWeb) {\n  const om = content.match(/#SOL-[\\w-]+/);\n  const mm = content.match(/https?:\\/\\/(www\\.)?google\\.com\\/maps\\S*/);\n  od = { orderNumber: om?.[0] || '', hasMapsLink: !!mm, mapsLink: mm?.[0] || '' };\n  const webNameMatch = content.match(/\\u{1F464}\\s*(.+)/u) || content.match(/Nombre:\\s*(.+)/i);\n  if (webNameMatch && webNameMatch[1]) {\n    const webName = webNameMatch[1].trim();\n    if (webName.length > 1 && webName.length < 60) fn = webName;\n  }\n}\n\n// Self-intro name extraction (after isWeb is defined)\nif (!isWeb) {\n  const selfIntroPatterns = [\n    /(?:soy|me llamo|mi nombre es|habla)\\s+([A-Z][a-z]{2,15})/i,\n    /^([A-Z][a-z]{2,15})\\s*[,.]?\\s*(?:quiero|necesito|me interesa|cuanto|precio)/i\n  ];\n  for (const pat of selfIntroPatterns) {\n    const m = content.match(pat);\n    if (m && m[1] && m[1].length >= 3 && m[1].length <= 15) {\n      fn = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();\n      break;\n    }\n  }\n}\n\nconst hasLocationAttachment = attachments\n  .some(a => a.file_type === 'location' || a.data_type === 'location');\nconst hasImageAttachment = attachments\n  .some(a => a.file_type === 'image' || a.file_type === 'file');\n\nconst isMapsReply = !isWeb && (\n  /google\\.com\\/maps|maps\\.google|goo\\.gl\\/maps|maps\\.app\\.goo\\.gl/.test(n) ||\n  hasLocationAttachment\n);\n\nif (isMapsReply) {\n  if (hasLocationAttachment) {\n    const locAtt = attachments.find(a => a.file_type === 'location' || a.data_type === 'location');\n    const lat = locAtt?.coordinates_lat || locAtt?.latitude || locAtt?.data?.latitude;\n    const lng = locAtt?.coordinates_long || locAtt?.longitude || locAtt?.data?.longitude;\n    od = {\n      orderNumber: '',\n      hasMapsLink: true,\n      mapsLink: (lat && lng) ? 'https://www.google.com/maps?q=' + lat + ',' + lng : '',\n      latitude: lat,\n      longitude: lng\n    };\n  } else {\n    const mm = content.match(/https?:\\/\\/\\S*(?:google\\.com\\/maps|maps\\.google|goo\\.gl\\/maps|maps\\.app\\.goo\\.gl)\\S*/);\n    od = { orderNumber: '', hasMapsLink: true, mapsLink: mm?.[0] || '' };\n  }\n}\n\nconst contactGastonKeywords = /hablar con gaston|contactar a gaston|quiero hablar con el dueno|pasame con gaston|persona real|hablar con una persona|agente humano|quiero hablar con alguien/;\nconst isContactGaston = !isWeb && !isMapsReply && contactGastonKeywords.test(n);\n\nconst complaintKeywords = /problema|reclamo|queja|estafa|denuncia|defectuoso|roto|danado/;\nconst postDeliveryIssues = /no me llego|no llego|no enviaron|no entregaron|no recibi|no llega|nunca llego|pedido perdido|sigo esperando|no me mandaron|donde esta mi pedido|donde esta mi envio|no me llega/;\nconst negativeExtreme = /pesimo|horrible|malisimo|malismo|porqueria|basura|robo|fraude|arrepiento|devuelvan|devuelvanme|me enganaron|me mintieron|los voy a denunciar/;\nconst productIssues = /se rompio|se rayo|vino roto|vino rayado|vino mal|esta roto|esta rayado|no funciona|no sirve|no carga|no anda/;\n\nconst isComplaint = !isWeb && !isMapsReply && !isContactGaston && (\n  complaintKeywords.test(n) ||\n  postDeliveryIssues.test(n) ||\n  negativeExtreme.test(n) ||\n  productIssues.test(n)\n);\n\nconst wholesaleKeywords = /por mayor|mayorista|mayoreo|revender|reventa|distribuidora|al por mayor|cantidad grande|compra grande|para tienda|para negocio|para local/;\nconst isWholesale = !isWeb && !isMapsReply && !isContactGaston && !isComplaint && wholesaleKeywords.test(n);\n\n// sofia_active with 30-minute timeout\nlet sofiaActive = sofiaWasActiveEarly;\n\n// Cancellation pending check (customer already said cancel, waiting for reason)\nlet cancellationPending = false;\nconst cancellationPendingRaw = contactMeta.custom_attributes?.cancellation_pending;\nconst cancellationPendingAt = contactMeta.custom_attributes?.cancellation_pending_at;\nif (cancellationPendingRaw === true || cancellationPendingRaw === 'true') {\n  if (cancellationPendingAt) {\n    const cancelElapsed = Date.now() - new Date(cancellationPendingAt).getTime();\n    cancellationPending = cancelElapsed < 24 * 60 * 60 * 1000;\n  } else {\n    cancellationPending = true;\n  }\n}\n\n// Template sent check with 48h expiry\nlet templateSent = false;\nconst templateSentRaw = contactMeta.custom_attributes?.template_sent;\nconst templateSentAt = contactMeta.custom_attributes?.template_sent_at;\nif ((templateSentRaw === true || templateSentRaw === 'true') && templateSentAt) {\n  const elapsed = Date.now() - new Date(templateSentAt).getTime();\n  templateSent = elapsed < 48 * 60 * 60 * 1000;\n}\nlet templateOrderData = contactMeta.custom_attributes?.template_order_data || null;\nlet isPostPurchase = false;\nlet postPurchaseAge = null;\nlet postPurchaseData = null;\n\n// Cancellation detection (within template context)\nconst cancelShort = /^(no|cancelar|cancelo|quiero cancelar|no quiero|no gracias|cancelado|anular|anulo)[\\s,!.]*$/i;\nconst cancelLong = /cancelar\\s+(el\\s+|mi\\s+)?(pedido|orden|compra)|no\\s+(quiero|deseo|voy\\s+a)\\s+(comprar|pedir|ordenar|continuar)|ya\\s+no\\s+(quiero|me\\s+interesa)/i;\nconst isTemplateCancel = templateSent && (cancelShort.test(content.trim()) || cancelLong.test(content.trim()));\n\nconst shortConfirm = /^(si|s[i\\u00ed]+|sip|confirmo|dale|ok|listo|claro|perfecto|bueno)[\\s,!.]*$/i;\nconst longConfirm = /^s[i\\u00ed][,!.\\s]*(confirmo|claro|dale|ok|listo|quiero|por favor)/i;\nconst isTemplateConfirm = templateSent && !isTemplateCancel && (shortConfirm.test(content.trim()) || longConfirm.test(content.trim()));\nconst isTemplateLocation = templateSent && hasLocationAttachment;\nconst isTemplateReply = isTemplateConfirm || isTemplateLocation;\n\n// All routes: FAQ eliminated, everything else goes to ai_needed (Sofia)\nlet route = 'ai_needed';\n// Retargeting: ALL messages from retargeting conversations go to human, Sofia never responds\nconst isRetargeting = convLabels.includes('retargeting');\nif (isRetargeting) return { json: { skip: true } };\n\nif (cancellationPending) route = 'cancellation_reason';\nelse if (isTemplateCancel) route = 'template_cancel';\nelse if (isTemplateReply) route = 'template_reply';\nelse if (isWeb) route = 'web_order';\nelse if (isMapsReply && !sofiaActive) route = 'maps_reply';\nelse if (isContactGaston) route = 'contact_gaston';\nelse if (isComplaint) route = 'complaint';\nelse if (isWholesale) route = 'wholesale';\n// Everything else (including what was FAQ: precio, envio, garantia, saludo, etc.) -> ai_needed\n\nreturn { json: {\n  skip: false, route, content, phone, name, first_name: fn,\n  contact_id: ctid, conversation_id: convId, message_id: triggerId,\n  source_id: triggerSourceId, account_id: aid,\n  is_web_order: isWeb, is_maps_reply: isMapsReply, is_complaint: isComplaint,\n  is_wholesale: isWholesale, is_contact_gaston: isContactGaston, order_data: od,\n  template_sent: templateSent,\n  template_order_data: templateOrderData,\n  is_template_reply: isTemplateReply,\n  is_template_cancel: isTemplateCancel,\n  cancellation_pending: cancellationPending,\n  is_post_purchase: isPostPurchase, post_purchase_age_hours: postPurchaseAge, post_purchase_data: postPurchaseData,\n  is_template_confirm: isTemplateConfirm, is_template_location: isTemplateLocation,\n  has_active_template: templateSent,\n  faq_category: null, faq_response: null, faq_closing: null,\n  has_attachment: !!(attachments.length),\n  has_location_attachment: hasLocationAttachment,\n  has_image_attachment: hasImageAttachment,\n  has_audio_attachment: hasAudioAttachment,\n  product_images_sent: productImagesSent\n}};\n} catch (err) {\n  return { json: { skip: true, error: err.message, route: 'error' } };\n}"
+        "jsCode": "try {\nconst body = $input.item.json.body;\nif (!body || body.message_type !== 'incoming') return { json: { skip: true } };\n\nconst content = (body.content || '').trim();\nconst triggerId = body.id || '';\nconst triggerSourceId = body.source_id || '';\nconst conv = body.conversation || {};\nconst convId = conv.id || '';\n\nconst contactMeta = conv.meta?.sender || {};\nconst phone = contactMeta.phone_number || '';\nconst name = contactMeta.name || '';\nlet fn = name.split(' ')[0] || '';\n\n// Override name with order data if available (web orders have real name in template_order_data)\nconst tplOrderData = contactMeta.custom_attributes?.template_order_data;\nif (tplOrderData) {\n  const orderCustomerName = typeof tplOrderData === 'string' ? JSON.parse(tplOrderData)?.customer_name : tplOrderData?.customer_name;\n  if (orderCustomerName && orderCustomerName !== 'Cliente' && orderCustomerName.length > 1) {\n    fn = orderCustomerName.split(' ')[0];\n  }\n}\n\nconst ctid = contactMeta.id || '';\nconst aid = body.account?.id || '';\n\nconst attachments = body.attachments || [];\n\nconst HANDOFF_LABELS = ['humano', 'reclamo', 'venta'];\nconst convLabels = conv.labels || [];\nif (convLabels.some(l => HANDOFF_LABELS.includes(l))) return { json: { skip: true } };\n\nconst productImagesSent = contactMeta.custom_attributes?.product_images_sent === true || contactMeta.custom_attributes?.product_images_sent === 'true';\nconst hasAudioAttachment = attachments.some(a => a.file_type === 'audio');\nif (!content && !attachments.length) return { json: { skip: true } };\n\n// Detect stickers/gifts (.webp files from WhatsApp) - skip entirely, no response\nconst isStickerOnly = !content && attachments.some(a => {\n  const url = (a.data_url || a.external_url || '');\n  return url.endsWith('.webp') || url.endsWith('.webp?') || a.file_type === 'sticker';\n});\nif (isStickerOnly) return { json: { skip: true } };\n\nconst n = (content || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n\n// Greeting-stripping: remove pure greeting lines before passing to Sofia\nconst sofiaActiveRawEarly = contactMeta.custom_attributes?.sofia_active;\nconst lastSofiaTimeEarly = contactMeta.custom_attributes?.last_sofia_time;\nconst sofiaWasActiveEarly = (sofiaActiveRawEarly === true || sofiaActiveRawEarly === 'true') &&\n  lastSofiaTimeEarly &&\n  (Date.now() - new Date(lastSofiaTimeEarly).getTime()) < 30 * 60 * 1000;\n\nconst GREETING_ONLY_RE = /^(hola|buenas|buen dia|buenas tardes|buenas noches|hey|hi)[\\s!.,]*$/;\n\nlet nClassify = n;\nconst gLines = n.split(/[\\n,;]/);\nif (gLines.length > 1 || /^(hola|buenas|buen dia|buenas tardes|buenas noches|hey|hi)[\\s!.,]*\\s+\\S/.test(n)) {\n  const nonGreetingLines = gLines.filter(l => !GREETING_ONLY_RE.test(l.trim()));\n  if (nonGreetingLines.length > 0 && nonGreetingLines.join('').trim().length > 0) {\n    nClassify = nonGreetingLines.join(' ').trim();\n  }\n}\n\nconst isWeb = n.includes('acabo de completar mi pedido') || n.includes('orden: #sol-') || (n.includes('nocte') && n.includes('mis datos:'));\nlet od = null;\nif (isWeb) {\n  const om = content.match(/#SOL-[\\w-]+/);\n  const mm = content.match(/https?:\\/\\/(www\\.)?google\\.com\\/maps\\S*/);\n  od = { orderNumber: om?.[0] || '', hasMapsLink: !!mm, mapsLink: mm?.[0] || '' };\n  const webNameMatch = content.match(/\\u{1F464}\\s*(.+)/u) || content.match(/Nombre:\\s*(.+)/i);\n  if (webNameMatch && webNameMatch[1]) {\n    const webName = webNameMatch[1].trim();\n    if (webName.length > 1 && webName.length < 60) fn = webName;\n  }\n}\n\n// Self-intro name extraction (after isWeb is defined)\nif (!isWeb) {\n  const selfIntroPatterns = [\n    /(?:soy|me llamo|mi nombre es|habla)\\s+([A-Z][a-z]{2,15})/i,\n    /^([A-Z][a-z]{2,15})\\s*[,.]?\\s*(?:quiero|necesito|me interesa|cuanto|precio)/i\n  ];\n  for (const pat of selfIntroPatterns) {\n    const m = content.match(pat);\n    if (m && m[1] && m[1].length >= 3 && m[1].length <= 15) {\n      fn = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();\n      break;\n    }\n  }\n}\n\nconst hasLocationAttachment = attachments\n  .some(a => a.file_type === 'location' || a.data_type === 'location');\nconst hasImageAttachment = attachments\n  .some(a => a.file_type === 'image' || a.file_type === 'file');\n\nconst isMapsReply = !isWeb && (\n  /google\\.com\\/maps|maps\\.google|goo\\.gl\\/maps|maps\\.app\\.goo\\.gl/.test(n) ||\n  hasLocationAttachment\n);\n\nif (isMapsReply) {\n  if (hasLocationAttachment) {\n    const locAtt = attachments.find(a => a.file_type === 'location' || a.data_type === 'location');\n    const lat = locAtt?.coordinates_lat || locAtt?.latitude || locAtt?.data?.latitude;\n    const lng = locAtt?.coordinates_long || locAtt?.longitude || locAtt?.data?.longitude;\n    od = {\n      orderNumber: '',\n      hasMapsLink: true,\n      mapsLink: (lat && lng) ? 'https://www.google.com/maps?q=' + lat + ',' + lng : '',\n      latitude: lat,\n      longitude: lng\n    };\n  } else {\n    const mm = content.match(/https?:\\/\\/\\S*(?:google\\.com\\/maps|maps\\.google|goo\\.gl\\/maps|maps\\.app\\.goo\\.gl)\\S*/);\n    od = { orderNumber: '', hasMapsLink: true, mapsLink: mm?.[0] || '' };\n  }\n}\n\nconst contactGastonKeywords = /hablar con gaston|contactar a gaston|quiero hablar con el dueno|pasame con gaston|persona real|hablar con una persona|agente humano|quiero hablar con alguien/;\nconst isContactGaston = !isWeb && !isMapsReply && contactGastonKeywords.test(n);\n\nconst complaintKeywords = /problema|reclamo|queja|estafa|denuncia|defectuoso|roto|danado/;\nconst postDeliveryIssues = /no me llego|no llego|no enviaron|no entregaron|no recibi|no llega|nunca llego|pedido perdido|sigo esperando|no me mandaron|donde esta mi pedido|donde esta mi envio|no me llega/;\nconst negativeExtreme = /pesimo|horrible|malisimo|malismo|porqueria|basura|robo|fraude|arrepiento|devuelvan|devuelvanme|me enganaron|me mintieron|los voy a denunciar/;\nconst productIssues = /se rompio|se rayo|vino roto|vino rayado|vino mal|esta roto|esta rayado|no funciona|no sirve|no carga|no anda/;\n\nconst isComplaint = !isWeb && !isMapsReply && !isContactGaston && (\n  complaintKeywords.test(n) ||\n  postDeliveryIssues.test(n) ||\n  negativeExtreme.test(n) ||\n  productIssues.test(n)\n);\n\n// \"Ya compre / ya pague / ya me entregaron\" detection — block Sofia upsell on already-purchased customers.\n// These customers have a NOCTE/Solenne order from a different channel (web, in-person) and Sofia\n// has no business pitching them again or trying to confirm a phantom order.\n// Tested against `n` (accent-stripped lowercase) for consistency with other route detectors.\nconst alreadyPurchasedKeywords = /\\bya\\s+(compre|pague|recibi|llego|me\\s+llego|me\\s+(entregaron|trajeron|pasaron|enviaron|mandaron|trajo)|tengo|esta|pedi|ordene|ordeno)\\b|\\bel\\s+delivery\\s+ya\\s+(tiene|me\\s+entrego)\\b|\\bya\\s+(esta|estaba)\\s+(en\\s+camino|conmigo|en\\s+casa|en\\s+mi\\s+casa)\\b|\\bme\\s+lo\\s+(trajo|trajeron|entregaron)\\b|\\bya\\s+lo\\s+tengo\\b|\\bllego\\s+(mi\\s+)?(pedido|paquete|producto|envio|encomienda)\\b/;\nconst isAlreadyPurchased = !isWeb && !isMapsReply && !isContactGaston && alreadyPurchasedKeywords.test(n);\n\nconst wholesaleKeywords = /por mayor|mayorista|mayoreo|revender|reventa|distribuidora|al por mayor|cantidad grande|compra grande|para tienda|para negocio|para local/;\nconst isWholesale = !isWeb && !isMapsReply && !isContactGaston && !isComplaint && wholesaleKeywords.test(n);\n\n// sofia_active with 30-minute timeout\nlet sofiaActive = sofiaWasActiveEarly;\n\n// Cancellation pending check (customer already said cancel, waiting for reason)\nlet cancellationPending = false;\nconst cancellationPendingRaw = contactMeta.custom_attributes?.cancellation_pending;\nconst cancellationPendingAt = contactMeta.custom_attributes?.cancellation_pending_at;\nif (cancellationPendingRaw === true || cancellationPendingRaw === 'true') {\n  if (cancellationPendingAt) {\n    const cancelElapsed = Date.now() - new Date(cancellationPendingAt).getTime();\n    cancellationPending = cancelElapsed < 24 * 60 * 60 * 1000;\n  } else {\n    cancellationPending = true;\n  }\n}\n\n// Template sent check with 48h expiry\nlet templateSent = false;\nconst templateSentRaw = contactMeta.custom_attributes?.template_sent;\nconst templateSentAt = contactMeta.custom_attributes?.template_sent_at;\nif ((templateSentRaw === true || templateSentRaw === 'true') && templateSentAt) {\n  const elapsed = Date.now() - new Date(templateSentAt).getTime();\n  templateSent = elapsed < 48 * 60 * 60 * 1000;\n}\nlet templateOrderData = contactMeta.custom_attributes?.template_order_data || null;\nlet isPostPurchase = false;\nlet postPurchaseAge = null;\nlet postPurchaseData = null;\n\n// Cancellation detection (within template context)\nconst cancelShort = /^(no|cancelar|cancelo|quiero cancelar|no quiero|no gracias|cancelado|anular|anulo)[\\s,!.]*$/i;\nconst cancelLong = /cancelar\\s+(el\\s+|mi\\s+)?(pedido|orden|compra)|no\\s+(quiero|deseo|voy\\s+a)\\s+(comprar|pedir|ordenar|continuar)|ya\\s+no\\s+(quiero|me\\s+interesa)/i;\nconst isTemplateCancel = templateSent && (cancelShort.test(content.trim()) || cancelLong.test(content.trim()));\n\nconst shortConfirm = /^(si|s[i\\u00ed]+|sip|confirmo|dale|ok|listo|claro|perfecto|bueno)[\\s,!.]*$/i;\nconst longConfirm = /^s[i\\u00ed][,!.\\s]*(confirmo|claro|dale|ok|listo|quiero|por favor)/i;\nconst isTemplateConfirm = templateSent && !isTemplateCancel && (shortConfirm.test(content.trim()) || longConfirm.test(content.trim()));\nconst isTemplateLocation = templateSent && hasLocationAttachment;\nconst isTemplateReply = isTemplateConfirm || isTemplateLocation;\n\n// All routes: FAQ eliminated, everything else goes to ai_needed (Sofia)\nlet route = 'ai_needed';\n// Retargeting: ALL messages from retargeting conversations go to human, Sofia never responds\nconst isRetargeting = convLabels.includes('retargeting');\nif (isRetargeting) return { json: { skip: true } };\n\nif (cancellationPending) route = 'cancellation_reason';\nelse if (isTemplateCancel) route = 'template_cancel';\nelse if (isTemplateReply) route = 'template_reply';\nelse if (isWeb) route = 'web_order';\nelse if (isMapsReply && !sofiaActive) route = 'maps_reply';\nelse if (isContactGaston) route = 'contact_gaston';\nelse if (isAlreadyPurchased) route = 'already_purchased';\nelse if (isComplaint) route = 'complaint';\nelse if (isWholesale) route = 'wholesale';\n// Everything else (including what was FAQ: precio, envio, garantia, saludo, etc.) -> ai_needed\n\nreturn { json: {\n  skip: false, route, content, phone, name, first_name: fn,\n  contact_id: ctid, conversation_id: convId, message_id: triggerId,\n  source_id: triggerSourceId, account_id: aid,\n  is_web_order: isWeb, is_maps_reply: isMapsReply, is_complaint: isComplaint,\n  is_wholesale: isWholesale, is_contact_gaston: isContactGaston, is_already_purchased: isAlreadyPurchased, order_data: od,\n  template_sent: templateSent,\n  template_order_data: templateOrderData,\n  is_template_reply: isTemplateReply,\n  is_template_cancel: isTemplateCancel,\n  cancellation_pending: cancellationPending,\n  is_post_purchase: isPostPurchase, post_purchase_age_hours: postPurchaseAge, post_purchase_data: postPurchaseData,\n  is_template_confirm: isTemplateConfirm, is_template_location: isTemplateLocation,\n  has_active_template: templateSent,\n  faq_category: null, faq_response: null, faq_closing: null,\n  has_attachment: !!(attachments.length),\n  has_location_attachment: hasLocationAttachment,\n  has_image_attachment: hasImageAttachment,\n  has_audio_attachment: hasAudioAttachment,\n  product_images_sent: productImagesSent\n}};\n} catch (err) {\n  return { json: { skip: true, error: err.message, route: 'error' } };\n}"
       },
       "id": "8c1690ce-cf22-4c45-80cc-f5f89e9c2a46",
       "name": "Extract & Route",
@@ -362,6 +362,29 @@
               },
               "renameOutput": true,
               "outputKey": "Cancellation Reason"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "route-already-purchased",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "already_purchased",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Already Purchased"
             }
           ]
         },
@@ -861,7 +884,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Process Ordefy HTTP response\nconst item = $input.first();\nconst original = $('Extract & Route').first().json;\nconst phone = original.phone || '';\nconst digits = phone.replace(/\\D/g, '');\n\n// Parse Ordefy response\nlet orders = [];\ntry {\n  const response = item.json;\n  orders = Array.isArray(response) ? response : (response.orders || response.data || []);\n} catch(e) {}\n\nconst pendingOrders = orders.filter(o =>\n  o.status === 'pending' || o.status === 'contacted' || o.status === 'confirmed' || o.status === 'shipped' ||\n  o.sleeves_status === 'pending' || o.sleeves_status === 'contacted' || o.sleeves_status === 'confirmed' || o.sleeves_status === 'shipped'\n);\nconst completedOrders = orders.filter(o =>\n  o.status === 'delivered' || o.status === 'completed' ||\n  o.sleeves_status === 'delivered' || o.sleeves_status === 'completed'\n);\n\nlet customerStatus = 'NUEVO';\nif (pendingOrders.length > 0) customerStatus = 'TIENE_ORDEN_PENDIENTE';\nelse if (completedOrders.length > 0) customerStatus = 'CLIENTE_RECURRENTE';\n\nconst hasPendingTransfer = pendingOrders.length > 0 && pendingOrders[0].payment_method === 'pending';\n\n// Sort pending orders by created_at DESC, take the most recent\nconst sortedPending = [...pendingOrders].sort((a, b) => {\n  const da = new Date(a.created_at || 0);\n  const db = new Date(b.created_at || 0);\n  return db - da;\n});\nconst latestPending = sortedPending[0] || null;\n\n// Determine if we need to resend the confirmation template.\n// Conditions: latest order is pending/contacted, template was NOT already sent\n// (or template flag expired), and the current route is not already handling\n// the order (template_reply, maps_reply, web_order, template_cancel).\nconst templateSent = original.template_sent || false;\nconst route = original.route || '';\nconst handledRoutes = ['template_reply', 'maps_reply', 'web_order', 'template_cancel', 'cancellation_reason'];\nconst isPendingStatus = latestPending && (latestPending.status === 'pending' || latestPending.status === 'contacted');\nconst needsTemplateResend = isPendingStatus && !templateSent && !handledRoutes.includes(route);\n\n// Build resend order data from the Ordefy order if needed\nlet resendOrderData = null;\nif (needsTemplateResend && latestPending) {\n  const o = latestPending;\n  const items = o.items || o.line_items || [];\n  const firstItem = items[0] || {};\n  const productName = firstItem.name || firstItem.product_name || 'Producto Solenne';\n  const totalQty = items.reduce((sum, i) => sum + (i.quantity || 1), 0);\n  const totalPrice = o.total_price || o.total || 0;\n  const fmtTotal = Number(totalPrice).toLocaleString('es-PY');\n  const customerName = o.customer_name || original.name || 'Cliente';\n  const mapsLink = o.google_maps_url || o.google_maps_link || '';\n  const city = o.city || o.shipping_city || '';\n  const address = o.address || o.shipping_address?.address || '';\n  const hasGPS = !!(mapsLink && mapsLink.length > 10 && mapsLink.includes('google'));\n  const addressText = address || city || 'Direccion pendiente';\n\n  const productMap = {\n    'PDRN Pink Peptide Serum - Personal': 'PDRN Serum Personal',\n    'PDRN Pink Peptide Serum - Kit Duo': 'Kit Duo (2 PDRN Serum)',\n    'PDRN Pink Peptide Serum - Kit Familiar': 'Kit Familiar (3 PDRN Serum)',\n    'V-Shaped Invisible Face Tape': 'Solenne V-Shaped Face Tape',\n    'V-Shaped Invisible Face Tape - Caja Individual': 'Solenne V-Shaped Face Tape',\n    'V-Shaped Invisible Face Tape - Pack Ritual': 'Pack Ritual (2 cajas Face Tape)',\n    'V-Shaped Invisible Face Tape - Pack Evento': 'Pack Evento (3 cajas Face Tape + bolsa)'\n  };\n  let productDisplay = productMap[productName] || productName;\n  const isSerumOrder = productName.toLowerCase().includes('pdrn') || productName.toLowerCase().includes('serum');\n  if (isSerumOrder && totalQty === 2) productDisplay = 'Kit Duo (2 PDRN Serum)';\n  if (isSerumOrder && totalQty === 3) productDisplay = 'Kit Familiar (3 PDRN Serum)';\n\n  resendOrderData = {\n    phone: phone,\n    customer_name: customerName,\n    product: productDisplay,\n    total: fmtTotal,\n    total_raw: totalPrice,\n    quantity: totalQty,\n    order_number: o.order_number || '',\n    maps_link: mapsLink,\n    city: city,\n    address: addressText,\n    has_gps: hasGPS,\n    payment_method: o.payment_method || 'pending',\n    payment_status: o.financial_status || 'pending'\n  };\n}\n\nreturn { json: {\n  ...original,\n  phone_digits: digits,\n  customer_status: customerStatus,\n  has_pending_order: pendingOrders.length > 0,\n  has_pending_transfer: hasPendingTransfer,\n  pending_orders: pendingOrders,\n  order_history: orders,\n  pending_order_number: pendingOrders[0]?.order_number || null,\n  needs_template_resend: needsTemplateResend,\n  resend_order_data: resendOrderData\n}};"
+        "jsCode": "// Process Ordefy HTTP response\nconst item = $input.first();\nconst original = $('Extract & Route').first().json;\nconst phone = original.phone || '';\nconst digits = phone.replace(/\\D/g, '');\n\n// Parse Ordefy response\nlet orders = [];\ntry {\n  const response = item.json;\n  orders = Array.isArray(response) ? response : (response.orders || response.data || []);\n} catch(e) {}\n\nconst pendingOrders = orders.filter(o =>\n  o.status === 'pending' || o.status === 'contacted' || o.status === 'confirmed' || o.status === 'shipped' ||\n  o.sleeves_status === 'pending' || o.sleeves_status === 'contacted' || o.sleeves_status === 'confirmed' || o.sleeves_status === 'shipped'\n);\nconst completedOrders = orders.filter(o =>\n  o.status === 'delivered' || o.status === 'completed' ||\n  o.sleeves_status === 'delivered' || o.sleeves_status === 'completed'\n);\n\nlet customerStatus = 'NUEVO';\nif (pendingOrders.length > 0) customerStatus = 'TIENE_ORDEN_PENDIENTE';\nelse if (completedOrders.length > 0) customerStatus = 'CLIENTE_RECURRENTE';\n\nconst hasPendingTransfer = pendingOrders.length > 0 && pendingOrders[0].payment_method === 'pending';\n\n// Sort pending orders by created_at DESC, take the most recent\nconst sortedPending = [...pendingOrders].sort((a, b) => {\n  const da = new Date(a.created_at || 0);\n  const db = new Date(b.created_at || 0);\n  return db - da;\n});\nconst latestPending = sortedPending[0] || null;\n\n// Determine if we need to resend the confirmation template.\n// Conditions: latest order is pending/contacted, template was NOT already sent\n// (or template flag expired), and the current route is not already handling\n// the order (template_reply, maps_reply, web_order, template_cancel).\nconst templateSent = original.template_sent || false;\nconst route = original.route || '';\nconst handledRoutes = ['template_reply', 'maps_reply', 'web_order', 'template_cancel', 'cancellation_reason'];\nconst isPendingStatus = latestPending && (latestPending.status === 'pending' || latestPending.status === 'contacted');\nconst needsTemplateResend = isPendingStatus && !templateSent && !handledRoutes.includes(route);\n\n// Build resend order data from the Ordefy order if needed\nlet resendOrderData = null;\nif (needsTemplateResend && latestPending) {\n  const o = latestPending;\n  const items = o.items || o.line_items || [];\n  const firstItem = items[0] || {};\n  const productName = firstItem.name || firstItem.product_name || 'Producto Solenne';\n  const totalQty = items.reduce((sum, i) => sum + (i.quantity || 1), 0);\n  const totalPrice = o.total_price || o.total || 0;\n  const fmtTotal = Number(totalPrice).toLocaleString('es-PY');\n  const customerName = o.customer_name || original.name || 'Cliente';\n  const mapsLink = o.google_maps_url || o.google_maps_link || '';\n  const city = o.city || o.shipping_city || '';\n  const address = o.address || o.shipping_address?.address || '';\n  const hasGPS = !!(mapsLink && mapsLink.length > 10 && mapsLink.includes('google'));\n  const addressText = address || city || 'Direccion pendiente';\n\n  const productMap = {\n    'PDRN Pink Peptide Serum - Personal': 'PDRN Serum Personal',\n    'PDRN Pink Peptide Serum - Kit Duo': 'Kit Duo (2 PDRN Serum)',\n    'PDRN Pink Peptide Serum - Kit Familiar': 'Kit Familiar (3 PDRN Serum)',\n    'V-Shaped Invisible Face Tape': 'Solenne V-Shaped Face Tape',\n    'V-Shaped Invisible Face Tape - Caja Individual': 'Solenne V-Shaped Face Tape',\n    'V-Shaped Invisible Face Tape - Pack Ritual': 'Pack Ritual (2 cajas Face Tape)',\n    'V-Shaped Invisible Face Tape - Pack Evento': 'Pack Evento (3 cajas Face Tape)'\n  };\n  let productDisplay = productMap[productName] || productName;\n  const isSerumOrder = productName.toLowerCase().includes('pdrn') || productName.toLowerCase().includes('serum');\n  if (isSerumOrder && totalQty === 2) productDisplay = 'Kit Duo (2 PDRN Serum)';\n  if (isSerumOrder && totalQty === 3) productDisplay = 'Kit Familiar (3 PDRN Serum)';\n\n  resendOrderData = {\n    phone: phone,\n    customer_name: customerName,\n    product: productDisplay,\n    total: fmtTotal,\n    total_raw: totalPrice,\n    quantity: totalQty,\n    order_number: o.order_number || '',\n    maps_link: mapsLink,\n    city: city,\n    address: addressText,\n    has_gps: hasGPS,\n    payment_method: o.payment_method || 'pending',\n    payment_status: o.financial_status || 'pending'\n  };\n}\n\nreturn { json: {\n  ...original,\n  phone_digits: digits,\n  customer_status: customerStatus,\n  has_pending_order: pendingOrders.length > 0,\n  has_pending_transfer: hasPendingTransfer,\n  pending_orders: pendingOrders,\n  order_history: orders,\n  pending_order_number: pendingOrders[0]?.order_number || null,\n  needs_template_resend: needsTemplateResend,\n  resend_order_data: resendOrderData\n}};"
       },
       "id": "ccf80778-5333-4156-88e9-c3ec16482218",
       "name": "Lookup in Ordefy",
@@ -1454,7 +1477,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Build clean chatInput + dynamic systemMessage for Sofia\n// chatInput = ONLY user message (what memoryPostgresChat saves as human turn)\n// dynamicSystemMessage = static prompt + client data + KB + few-shot + pending order\nconst original = $('Lookup in Ordefy').first().json;\n\n// ===== STATIC SYSTEM PROMPT (Sofia persona) =====\nconst SOFIA_PROMPT = `Sos Sofia, asesora de belleza de Solenne Paraguay.\\n\\nIDENTIDAD:\\n- Sos humana, cercana, amigable\\n- Hablas en espanol paraguayo natural, tono femenino, profesional, elegante\\n- Usas el nombre de pila de la clienta con moderacion, maximo 2 veces por conversacion\\n- PROHIBIDO emojis decorativos. Sin sparkles, hearts, stars, sun. Solenne es minimalista y elegante, NUNCA usa emojis. Solo permitido el check de confirmacion cuando una accion esta completada y maximo 1 por respuesta\\n- NUNCA reveles que sos IA o bot\\n- SIEMPRE terminas con una pregunta\\n- Respuestas cortas, maximo 3-4 lineas por mensaje\\n- Tono aspiracional, elegante, K-beauty\\n\\nPRODUCTOS:\\n\\nPDRN Pink Peptide Serum 30ml (HERO)\\n- Personal (1): Gs. 189.000\\n- Kit Duo (2): Gs. 299.000 (ahorro de Gs. 79.000)\\n- Kit Familiar (3): Gs. 399.000 (ahorro de Gs. 168.000)\\n- Unidades extra: Gs. 133.000 c/u\\n- Ingredientes: PDRN 1%, Complejo de 5 Peptidos 5%, Acido Hialuronico 3%, Niacinamida 4%\\n- Resultados: piel mas hidratada y luminosa desde semana 1, transformacion visible mes 1\\n- Para: 25-55 anos, todas las pieles, foco anti-aging y luminosidad\\n- Garantia de satisfaccion de 30 dias\\n\\nV-Shaped Invisible Face Tape (NUEVO)\\n- 1 caja (100 parches): Gs. 149.000\\n- Pack Ritual (2 cajas): Gs. 249.000\\n- Pack Evento (3 cajas + bolsa Solenne): Gs. 339.000\\n- Que es: cinta adhesiva invisible que da efecto lifting al instante en mejillas, papada, contorno o parpados\\n- Aplicacion: 30 segundos. Estira hacia arriba, fija detras de oreja\\n- Caracteristicas: 100% invisible, resistente al agua y sudor, compatible con maquillaje\\n- Duracion: efecto temporal para todo el dia, se retira al final\\n- Para: mujeres 32+ que buscan resultado visible para eventos, fotos, reuniones\\n- La tape NO tiene garantia de devolucion (por uso temporal)\\n\\nREGLAS DE CLAIMS (NO NEGOCIABLE para la TAPE):\\n- Decir SI: \\\"efecto lifting temporal\\\", \\\"luce mas joven en segundos\\\", \\\"para eventos especiales\\\", \\\"mientras lo usas\\\"\\n- Decir NO: \\\"elimina arrugas\\\", \\\"reemplaza Botox\\\", \\\"lifting permanente\\\", \\\"tratamiento medico\\\", \\\"cura\\\"\\n- Si la clienta hace una analogia con cirugia o Botox, no la confirmes ni la corrijas. Redirigi: \\\"es lo mejor para cuando queres lucir radiante en una ocasion especial sin gastar una fortuna\\\"\\n\\nLOGISTICA (ambos productos):\\n- Envio GRATIS a todo Paraguay, 1-3 dias habiles\\n- NO tienen local fisico, solo delivery\\n\\nESTRATEGIA DE VENTA:\\n- Presentas la oportunidad sin rogar\\n- Usas escasez real: \\\"nos quedan pocas unidades\\\"\\n- Usas prueba social: \\\"es nuestro mas vendido, ya van 2800+ clientas felices\\\" (solo para SERUM, la TAPE es nueva)\\n- Cierre logistico: \\\"Estamos preparando envios hoy, te gustaria recibir el tuyo?\\\"\\n\\nMANEJO DE OBJECIONES (SERUM):\\n- \\\"Es caro\\\" -> No bajas precio. Justificas: \\\"Son menos de Gs. 3.200 por dia por una piel radiante. Ademas con el Kit Duo ahorras Gs. 79.000\\\"\\n- \\\"Lo pienso\\\" -> \\\"Perfecto, te reservo uno por hoy por las dudas. Te parece?\\\"\\n- \\\"No confio\\\" -> \\\"Tenes 30 dias de garantia. Si no te gusta, te devolvemos tu plata\\\"\\n- \\\"Funciona?\\\" -> Describir ingredientes premium y resultados desde primera semana\\n- \\\"Vi algo parecido mas barato\\\" -> \\\"El PDRN concentrado al 1% es lo que lo diferencia. La mayoria usa concentraciones menores\\\"\\n\\nMANEJO DE OBJECIONES (TAPE):\\n- \\\"Es caro\\\" -> \\\"1 caja te dura varias semanas, sale menos de Gs. 1.500 por aplicacion. Y con el Pack Ritual de 2 cajas ahorras Gs. 49.000\\\"\\n- \\\"Funciona de verdad?\\\" -> \\\"El efecto es instantaneo, lo aplicas y lo ves al segundo. Es para usar el dia que queres lucir increible\\\"\\n- \\\"Es como Botox?\\\" -> \\\"No es lo mismo, esto es 100% temporal y solo dura mientras lo usas. Es perfecto para eventos especiales sin gastar en tratamientos\\\"\\n- \\\"Se nota?\\\" -> \\\"100% invisible, ni con el cabello suelto se ve. Resiste agua y sudor todo el dia\\\"\\n- \\\"Lo pienso\\\" -> \\\"Perfecto, te aparto una caja por hoy. Tenes algun evento en particular para usarla?\\\"\\n\\nCUANDO CERRAR:\\n- Si pregunto precio dos veces -> ofrece el Kit Duo (serum) o Pack Ritual (tape)\\n- Si duda -> ofrece reservar sin compromiso\\n- Si confirma -> pedi direccion + nombre inmediatamente\\n\\nCONFIRMACION DE ENVIO:\\n- \\\"Te enviaremos tu pedido lo antes posible. El delivery se pondra en contacto para coordinar la entrega!\\\"\\n\\nCUANDO USAR send_media:\\n- Usa send_media(\\\"lista_precios\\\") solo cuando la clienta esta dudando del precio EN MEDIO de una negociacion\\n- Usa send_media(\\\"foto_producto\\\") solo si la clienta pide ver fotos del serum o tape durante la conversacion\\n- NO envies media si el FAQ ya lo hizo en la primera interaccion\\n\\nCUANDO ESCALAR A HUMANO:\\n- Clienta muy enojada o con queja grave\\n- Error tecnico en la web\\n- Pedido con problema de entrega\\n- Solicitud que no podes resolver\\n\\nNUNCA:\\n- Bajar el precio\\n- Inventar stock\\n- Prometer hora exacta de entrega\\n- Dejar un mensaje sin pregunta al final\\n- Enviar mensajes largos (maximo 3-4 lineas)\\n- Usar \\\"usted\\\", siempre tutear`;\n\n// ===== BUILD DYNAMIC CONTEXT =====\nconst dynamicParts = [];\n\n// 1. Client data block\nconst phone = original.phone || '';\nconst conversationId = original.conversation_id || '';\nconst accountId = original.account_id || '9';\nconst clientName = original.name || '';\nconst customerStatus = original.customer_status || 'NUEVO';\nconst isWebOrder = original.is_web_order || false;\n\nconst pyNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Asuncion' }));\nconst pyHour = pyNow.getHours();\nconst pyMins = String(pyNow.getMinutes()).padStart(2, '0');\nconst pyTimeStr = pyHour + ':' + pyMins;\nconst isDespacho = pyHour >= 14 && pyHour < 17;\nconst horaInfo = isDespacho ? pyTimeStr + ' [HORARIO DE DESPACHO ACTIVO]' : pyTimeStr;\n\n// Check minutes since last message in this conversation (to skip greeting if < 5h)\nlet minutosSinceMsg = 9999;\nif (conversationId) {\n  try {\n    const sbKey = '{{SUPABASE_ANON_KEY}}';\n    const histCheck = await $helpers.httpRequest({\n      method: 'GET',\n      url: 'https://qapqhhyfzmgkvzvtoluq.supabase.co/rest/v1/solenne_chat_histories?session_id=eq.' + conversationId + '&order=id.desc&limit=1',\n      headers: {\n        'apikey': sbKey,\n        'Authorization': 'Bearer ' + sbKey\n      }\n    });\n    const rows = Array.isArray(histCheck) ? histCheck : [];\n    if (rows.length > 0 && rows[0].created_at) {\n      const lastTs = new Date(rows[0].created_at).getTime();\n      minutosSinceMsg = Math.round((Date.now() - lastTs) / 60000);\n    }\n  } catch(e) { /* keep default */ }\n}\n\n// Check if images were already sent via custom_attribute (fast, reliable)\nlet imagenEnviada = false;\nif (original.contact_id) {\n  try {\n    const contactData = await $helpers.httpRequest({\n      method: 'GET',\n      url: 'https://chat.thebrightidea.ai/api/v1/accounts/' + accountId + '/contacts/' + original.contact_id,\n      headers: { 'api_access_token': 'daxHcwWJRwDMwBu4TZ1Cs83k' }\n    });\n    const attrs = contactData?.custom_attributes || {};\n    imagenEnviada = attrs.product_images_sent === true || attrs.product_images_sent === 'true';\n  } catch(e) {\n    // Fallback: scan Chatwoot private notes\n    try {\n      const cwMessages = await $helpers.httpRequest({\n        method: 'GET',\n        url: 'https://chat.thebrightidea.ai/api/v1/accounts/' + accountId + '/conversations/' + conversationId + '/messages',\n        headers: { 'api_access_token': 'daxHcwWJRwDMwBu4TZ1Cs83k' }\n      });\n      const msgs = Array.isArray(cwMessages?.payload) ? cwMessages.payload : [];\n      imagenEnviada = msgs.some(m =>\n        m.private === true &&\n        m.content &&\n        (m.content.toLowerCase().includes('magen') || m.content.toLowerCase().includes('foto_') || m.content.toLowerCase().includes('foto '))\n      );\n    } catch(e2) { /* default false */ }\n  }\n}\n\n// Compute google_maps_url from current message's order_data (WhatsApp location pin or maps link)\nlet googleMapsUrl = '';\nconst orderDataGps = original.order_data;\nif (orderDataGps) {\n  if (orderDataGps.latitude && orderDataGps.longitude) {\n    googleMapsUrl = 'https://maps.google.com/?q=' + orderDataGps.latitude + ',' + orderDataGps.longitude;\n  } else if (orderDataGps.mapsLink) {\n    googleMapsUrl = orderDataGps.mapsLink;\n  }\n}\n\ndynamicParts.push('[DATOS DEL CLIENTE - USA ESTOS VALORES EXACTOS EN LAS TOOLS]\\nphone: ' + phone + '\\nconversation_id: ' + conversationId + '\\naccount_id: ' + accountId + '\\nname: ' + clientName + '\\ncustomer_status: ' + customerStatus + '\\nis_web_order: ' + isWebOrder + '\\nhora_paraguay: ' + horaInfo + '\\nminutos_desde_ultimo_mensaje: ' + minutosSinceMsg + '\\nimagen_enviada: ' + imagenEnviada + (googleMapsUrl ? '\\ngoogle_maps_url: ' + googleMapsUrl : '') + '\\n[FIN DATOS]');\n\n// Real-time stock from Ordefy\nlet stockSerumCtx = 0, stockTapeCtx = 0;\ntry {\n  const sbKeyOrd = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZncWVjcXFsZXVvd3ZvaW1jb3hnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNTY5NzcsImV4cCI6MjA4MjYzMjk3N30.aRX16e_vGkRgYN1RNMjF8bAOK8PmvwoFYFjGDEfa-YI';\n  const stockRes = await $helpers.httpRequest({\n    method: 'GET',\n    url: 'https://vgqecqqleuowvoimcoxg.supabase.co/rest/v1/products?select=sku,stock&store_id=eq.0b3f13f8-d1dc-48a5-a707-27a095c9c545&sku=in.(SOLENNE-PDRN-30ML,SOLENNE-TAPE-100)',\n    headers: { 'apikey': sbKeyOrd, 'Authorization': 'Bearer ' + sbKeyOrd },\n    timeout: 3000\n  });\n  const sRows = Array.isArray(stockRes) ? stockRes : [];\n  for (const r of sRows) {\n    if (r.sku === 'SOLENNE-PDRN-30ML') stockSerumCtx = r.stock || 0;\n    if (r.sku === 'SOLENNE-TAPE-100') stockTapeCtx = r.stock || 0;\n  }\n} catch(e) { stockSerumCtx = -1; stockTapeCtx = -1; }\nconst serumStatus = stockSerumCtx < 0 ? 'desconocido' : (stockSerumCtx > 0 ? 'En stock (' + stockSerumCtx + ' uds)' : 'AGOTADO');\nconst tapeStatus = stockTapeCtx < 0 ? 'desconocido' : (stockTapeCtx > 0 ? 'En stock (' + stockTapeCtx + ' uds)' : 'AGOTADO');\ndynamicParts.push('[STOCK ACTUAL]\\nPDRN SERUM: ' + serumStatus + '\\nV-SHAPED FACE TAPE: ' + tapeStatus + '\\nIMPORTANTE: Si un producto esta AGOTADO, NO lo ofrezcas. Informale que no esta disponible.\\n[FIN STOCK]');\n\n// 2. Pending order block\nif (customerStatus === 'TIENE_ORDEN_PENDIENTE' && original.pending_orders && original.pending_orders.length > 0) {\n  const po = original.pending_orders[0];\n  const items = po.items || [];\n  const productItems = items.filter(i => !i.is_upsell);\n  const itemsDesc = productItems.map(i =>\n    (i.quantity || 1) + 'x ' + (i.name || i.sku || 'Producto')\n  ).join(', ');\n  const total = po.totals?.total || po.total || '';\n  const addr = po.shipping_address?.address || '';\n  const city = po.shipping_address?.city || '';\n  const pmMap = { 'pending': 'transferencia', 'cash_on_delivery': 'contra_entrega' };\n  const pm = pmMap[po.payment_method] || po.payment_method || '';\n\n  dynamicParts.push('[ORDEN PENDIENTE DEL CLIENTE]\\n' +\n    'Pedido #: ' + (po.order_number || 'N/A') + '\\n' +\n    'Producto: ' + (itemsDesc || 'N/A') + '\\n' +\n    (total ? 'Total: ' + Number(total).toLocaleString('es-PY') + ' Gs\\n' : '') +\n    (addr ? 'Direccion: ' + addr + '\\n' : '') +\n    (city ? 'Ciudad: ' + city + '\\n' : '') +\n    (pm ? 'Forma de pago: ' + pm + '\\n' : '') +\n    'Estado: ' + (po.status || 'pendiente') + '\\n' +\n    '[FIN ORDEN PENDIENTE]');\n\n  dynamicParts.push('[REGLA CRITICA - ORDEN PRE-EXISTENTE]\\n' +\n    'El cliente YA hizo este pedido por la web o el template antes de escribirte. Los datos estan COMPLETOS.\\n' +\n    'PROHIBIDO pedir: nombre, producto, cantidad, ciudad, direccion, forma de pago.\\n' +\n    'Cuando el cliente confirme con \"si\", \"confirmo\", \"dale\", \"ok\", \"listo\", o equivalente, llama a confirm_order con EXACTAMENTE estos valores:\\n' +\n    '  nombre = \"' + (po.customer_name || clientName || '') + '\"\\n' +\n    '  ciudad = \"' + city + '\"\\n' +\n    '  direccion = \"' + addr + '\"\\n' +\n    '  producto = \"' + (itemsDesc || '') + '\"\\n' +\n    '  cantidad = ' + (productItems.reduce((s, i) => s + (i.quantity || 1), 0) || 1) + '\\n' +\n    '  forma_pago = \"' + (pm || 'contra_entrega') + '\"\\n' +\n    'Si el cliente pregunta por el envio, aclara que el delivery se contacta para coordinar. No repitas pedir direccion.\\n' +\n    'Si el cliente quiere cancelar o cambiar algo, no modifiques la orden: escala a human_handoff.\\n' +\n    '[FIN REGLA CRITICA]');\n}\n\n// 3. KB context\nlet kbContext = '';\ntry {\n  const kbResult = $('Fetch Knowledge Base').all();\n  const kbData = kbResult.map(i => i.json);\n  const entries = Array.isArray(kbData) && kbData.length > 0 && Array.isArray(kbData[0]) ? kbData[0] : kbData;\n  if (entries.length > 0 && entries[0]?.category) {\n    const msgLower = (original.content || '').toLowerCase();\n    const matched = entries.filter(e => {\n      if (!e.trigger_keywords || !Array.isArray(e.trigger_keywords)) return false;\n      return e.trigger_keywords.some(kw => msgLower.includes(kw.toLowerCase()));\n    });\n    const toUse = matched.length > 0 ? matched : entries.slice(0, 5);\n    kbContext = '--- CONTEXTO KB RELEVANTE ---\\n' + toUse.map(e =>\n      '- [' + e.category + '] ' + e.content\n    ).join('\\n').slice(0, 2000) + '\\n--- FIN CONTEXTO KB ---';\n    dynamicParts.push(kbContext);\n  }\n} catch (e) { /* KB fetch failed, continue */ }\n\n// 4. Few-shot examples\nlet fewShotContext = '';\ntry {\n  const fsResult = $('Fetch Few-Shot').all();\n  const fsData = fsResult.map(i => i.json);\n  const entries = Array.isArray(fsData) && fsData.length > 0 && Array.isArray(fsData[0]) ? fsData[0] : fsData;\n  if (entries.length > 0 && entries[0]?.scenario) {\n    fewShotContext = '--- EJEMPLOS DE REFERENCIA ---\\n' + entries.map(e =>\n      'Escenario: ' + e.scenario + '\\n' + e.conversation_text + '\\nResultado: ' + e.outcome\n    ).join('\\n---\\n').slice(0, 1500) + '\\n--- FIN EJEMPLOS ---';\n    dynamicParts.push(fewShotContext);\n  }\n} catch (e) { /* few-shot fetch failed, continue */ }\n\n// Build complete dynamic system message\nconst dynamicSystemMessage = SOFIA_PROMPT + '\\n\\n' + dynamicParts.join('\\n\\n');\n\n// ===== CLEAN CHATINPUT (user message only - this is what memoryPostgresChat saves) =====\nlet messageContent = original.content || '';\n\n// Handle location data\nconst orderData = original.order_data;\nif (orderData && (orderData.latitude || orderData.mapsLink)) {\n  let locInfo = '';\n  if (orderData.latitude) {\n    locInfo = '[Ubicacion GPS del cliente: ' + googleMapsUrl + ']';\n  } else if (orderData.mapsLink) {\n    locInfo = '[Link de ubicacion del cliente: ' + orderData.mapsLink + ']';\n  }\n  if (!messageContent || /^https?:\\/\\//.test(messageContent.trim())) {\n    messageContent = locInfo;\n  } else {\n    messageContent += '\\n' + locInfo;\n  }\n} else if (!messageContent && original.has_location_attachment) {\n  messageContent = '[El cliente compartio su ubicacion GPS por WhatsApp]';\n} else if (!messageContent && original.has_attachment) {\n  messageContent = '[El cliente envio un archivo adjunto]';\n} else if (!messageContent) {\n  messageContent = '[Mensaje del cliente sin texto]';\n}\n\nreturn [{\n  json: {\n    ...original,\n    chatInput: messageContent,\n    dynamicSystemMessage: dynamicSystemMessage,\n    kb_context: kbContext,\n    fewshot_context: fewShotContext\n  },\n  pairedItem: { item: 0 }\n}];"
+        "jsCode": "// Build clean chatInput + dynamic systemMessage for Sofia\n// chatInput = ONLY user message (what memoryPostgresChat saves as human turn)\n// dynamicSystemMessage = static prompt + client data + KB + few-shot + pending order\nconst original = $('Lookup in Ordefy').first().json;\n\n// ===== STATIC SYSTEM PROMPT (Sofia persona) =====\nconst SOFIA_PROMPT = `Sos Sofia, asesora de belleza de Solenne Paraguay.\\n\\nIDENTIDAD:\\n- Sos humana, cercana, amigable\\n- Hablas en espanol paraguayo natural, tono femenino, profesional, elegante\\n- Usas el nombre de pila de la clienta con moderacion, maximo 2 veces por conversacion\\n- PROHIBIDO emojis decorativos. Sin sparkles, hearts, stars, sun. Solenne es minimalista y elegante, NUNCA usa emojis. Solo permitido el check de confirmacion cuando una accion esta completada y maximo 1 por respuesta\\n- NUNCA reveles que sos IA o bot\\n- SIEMPRE terminas con una pregunta\\n- Respuestas cortas, maximo 3-4 lineas por mensaje\\n- Tono aspiracional, elegante, K-beauty\\n\\nPRODUCTOS:\\n\\nPDRN Pink Peptide Serum 30ml (HERO)\\n- Personal (1): Gs. 189.000\\n- Kit Duo (2): Gs. 299.000 (ahorro de Gs. 79.000)\\n- Kit Familiar (3): Gs. 399.000 (ahorro de Gs. 168.000)\\n- Unidades extra: Gs. 133.000 c/u\\n- Ingredientes: PDRN 1%, Complejo de 5 Peptidos 5%, Acido Hialuronico 3%, Niacinamida 4%\\n- Resultados: piel mas hidratada y luminosa desde semana 1, transformacion visible mes 1\\n- Para: 25-55 anos, todas las pieles, foco anti-aging y luminosidad\\n- Garantia de satisfaccion de 30 dias\\n\\nV-Shaped Invisible Face Tape (NUEVO)\\n- 1 caja (100 parches): Gs. 149.000\\n- Pack Ritual (2 cajas): Gs. 229.000\\n- Pack Evento (3 cajas): Gs. 339.000\\n- Que es: cinta adhesiva invisible que da efecto lifting al instante en mejillas, papada, contorno o parpados\\n- Aplicacion: 30 segundos. Estira hacia arriba, fija detras de oreja\\n- Caracteristicas: 100% invisible, resistente al agua y sudor, compatible con maquillaje\\n- Duracion: efecto temporal para todo el dia, se retira al final\\n- Para: mujeres 32+ que buscan resultado visible para eventos, fotos, reuniones\\n- La tape NO tiene garantia de devolucion (por uso temporal)\\n\\nREGLAS DE CLAIMS (NO NEGOCIABLE para la TAPE):\\n- Decir SI: \\\"efecto lifting temporal\\\", \\\"luce mas joven en segundos\\\", \\\"para eventos especiales\\\", \\\"mientras lo usas\\\"\\n- Decir NO: \\\"elimina arrugas\\\", \\\"reemplaza Botox\\\", \\\"lifting permanente\\\", \\\"tratamiento medico\\\", \\\"cura\\\"\\n- Si la clienta hace una analogia con cirugia o Botox, no la confirmes ni la corrijas. Redirigi: \\\"es lo mejor para cuando queres lucir radiante en una ocasion especial sin gastar una fortuna\\\"\\n\\nLOGISTICA (ambos productos):\\n- Envio GRATIS a todo Paraguay, 1-3 dias habiles\\n- NO tienen local fisico, solo delivery\\n\\nESTRATEGIA DE VENTA:\\n- Presentas la oportunidad sin rogar\\n- Usas escasez real: \\\"nos quedan pocas unidades\\\"\\n- Usas prueba social: \\\"es nuestro mas vendido, ya van 2800+ clientas felices\\\" (solo para SERUM, la TAPE es nueva)\\n- Cierre logistico: \\\"Estamos preparando envios hoy, te gustaria recibir el tuyo?\\\"\\n\\nMANEJO DE OBJECIONES (SERUM):\\n- \\\"Es caro\\\" -> No bajas precio. Justificas: \\\"Son menos de Gs. 3.200 por dia por una piel radiante. Ademas con el Kit Duo ahorras Gs. 79.000\\\"\\n- \\\"Lo pienso\\\" -> \\\"Perfecto, te reservo uno por hoy por las dudas. Te parece?\\\"\\n- \\\"No confio\\\" -> \\\"Tenes 30 dias de garantia. Si no te gusta, te devolvemos tu plata\\\"\\n- \\\"Funciona?\\\" -> Describir ingredientes premium y resultados desde primera semana\\n- \\\"Vi algo parecido mas barato\\\" -> \\\"El PDRN concentrado al 1% es lo que lo diferencia. La mayoria usa concentraciones menores\\\"\\n\\nMANEJO DE OBJECIONES (TAPE):\\n- \\\"Es caro\\\" -> \\\"1 caja te dura varias semanas, sale menos de Gs. 1.500 por aplicacion. Y con el Pack Ritual de 2 cajas ahorras Gs. 49.000\\\"\\n- \\\"Funciona de verdad?\\\" -> \\\"El efecto es instantaneo, lo aplicas y lo ves al segundo. Es para usar el dia que queres lucir increible\\\"\\n- \\\"Es como Botox?\\\" -> \\\"No es lo mismo, esto es 100% temporal y solo dura mientras lo usas. Es perfecto para eventos especiales sin gastar en tratamientos\\\"\\n- \\\"Se nota?\\\" -> \\\"100% invisible, ni con el cabello suelto se ve. Resiste agua y sudor todo el dia\\\"\\n- \\\"Lo pienso\\\" -> \\\"Perfecto, te aparto una caja por hoy. Tenes algun evento en particular para usarla?\\\"\\n\\nCUANDO CERRAR:\\n- Si pregunto precio dos veces -> ofrece el Kit Duo (serum) o Pack Ritual (tape)\\n- Si duda -> ofrece reservar sin compromiso\\n- Si confirma -> pedi direccion + nombre inmediatamente\\n\\nCONFIRMACION DE ENVIO:\\n- \\\"Te enviaremos tu pedido lo antes posible. El delivery se pondra en contacto para coordinar la entrega!\\\"\\n\\n=== REGLAS CRITICAS DE TOOLS (NO NEGOCIABLE) ===\\n\\nREGLA 1 - HONESTIDAD ABSOLUTA SOBRE RESULTADO DE TOOLS:\\n- Si confirm_order o send_media devuelven success:false, NUNCA digas \"pedido confirmado\" ni \"ya esta tu pedido en sistema\" ni equivalente.\\n- Si el resultado tiene \"error_type\":\"missing_fields\", pedi exactamente los datos que faltan al cliente y volve a llamar confirm_order con TODOS los campos.\\n- Si el resultado tiene \"error_type\":\"duplicate_order\", responde: \"Tu pedido ya esta confirmado y en proceso. Te llegara pronto\" y NO crees nuevo pedido.\\n- Si el resultado tiene \"human_handoff_required\":true o \"DO_NOT_CALL_AGAIN\":true sin error_type missing_fields, llama human_handoff inmediato y responde: \"Tuvimos un inconveniente tecnico, una asesora te confirma en breve.\"\\n- Sin excepcion. Mentir al cliente sobre el estado de su pedido es la peor falla posible.\\n\\nREGLA 2 - CAMPOS REQUERIDOS PARA confirm_order:\\n- nombre, direccion, ciudad, producto, cantidad, forma_pago.\\n- Antes de llamar la tool, verifica que TENES los 6 campos en la conversacion. Si te falta alguno, pediselo al cliente PRIMERO.\\n- NUNCA pases strings vacios o \"N/A\" como direccion o ciudad. Si el cliente no los dio, preguntale.\\n\\nREGLA 3 - CLIENTES POST-COMPRA (ya compraron):\\n- Si el cliente menciona \"ya compre\", \"ya pague\", \"ya recibi\", \"ya me llego\", \"ya me entregaron\", \"ya tengo el producto\" o similar, NO intentes upsell. NO llames confirm_order.\\n- Responde: \"Genial, gracias por avisar! Si necesitas algo mas, escribime por aqui.\" y llama human_handoff con motivo \"post_compra\".\\n- El sistema deberia rutearlos antes de que llegues a vos, pero si llegan, manejalo asi.\\n\\n\\nCUANDO USAR send_media:\\n- Usa send_media(\\\"lista_precios\\\") solo cuando la clienta esta dudando del precio EN MEDIO de una negociacion\\n- Usa send_media(\\\"foto_producto\\\") solo si la clienta pide ver fotos del serum o tape durante la conversacion\\n- NO envies media si el FAQ ya lo hizo en la primera interaccion\\n\\nCUANDO ESCALAR A HUMANO:\\n- Clienta muy enojada o con queja grave\\n- Error tecnico en la web\\n- Pedido con problema de entrega\\n- Solicitud que no podes resolver\\n\\nNUNCA:\\n- Bajar el precio\\n- Inventar stock\\n- Prometer hora exacta de entrega\\n- Dejar un mensaje sin pregunta al final\\n- Enviar mensajes largos (maximo 3-4 lineas)\\n- Usar \\\"usted\\\", siempre tutear`;\n\n// ===== BUILD DYNAMIC CONTEXT =====\nconst dynamicParts = [];\n\n// 1. Client data block\nconst phone = original.phone || '';\nconst conversationId = original.conversation_id || '';\nconst accountId = original.account_id || '9';\nconst clientName = original.name || '';\nconst customerStatus = original.customer_status || 'NUEVO';\nconst isWebOrder = original.is_web_order || false;\n\nconst pyNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Asuncion' }));\nconst pyHour = pyNow.getHours();\nconst pyMins = String(pyNow.getMinutes()).padStart(2, '0');\nconst pyTimeStr = pyHour + ':' + pyMins;\nconst isDespacho = pyHour >= 14 && pyHour < 17;\nconst horaInfo = isDespacho ? pyTimeStr + ' [HORARIO DE DESPACHO ACTIVO]' : pyTimeStr;\n\n// Check minutes since last message in this conversation (to skip greeting if < 5h)\nlet minutosSinceMsg = 9999;\nif (conversationId) {\n  try {\n    const sbKey = '{{SUPABASE_ANON_KEY}}';\n    const histCheck = await $helpers.httpRequest({\n      method: 'GET',\n      url: 'https://qapqhhyfzmgkvzvtoluq.supabase.co/rest/v1/solenne_chat_histories?session_id=eq.' + conversationId + '&order=id.desc&limit=1',\n      headers: {\n        'apikey': sbKey,\n        'Authorization': 'Bearer ' + sbKey\n      }\n    });\n    const rows = Array.isArray(histCheck) ? histCheck : [];\n    if (rows.length > 0 && rows[0].created_at) {\n      const lastTs = new Date(rows[0].created_at).getTime();\n      minutosSinceMsg = Math.round((Date.now() - lastTs) / 60000);\n    }\n  } catch(e) { /* keep default */ }\n}\n\n// Check if images were already sent via custom_attribute (fast, reliable)\nlet imagenEnviada = false;\nif (original.contact_id) {\n  try {\n    const contactData = await $helpers.httpRequest({\n      method: 'GET',\n      url: 'https://chat.thebrightidea.ai/api/v1/accounts/' + accountId + '/contacts/' + original.contact_id,\n      headers: { 'api_access_token': 'daxHcwWJRwDMwBu4TZ1Cs83k' }\n    });\n    const attrs = contactData?.custom_attributes || {};\n    imagenEnviada = attrs.product_images_sent === true || attrs.product_images_sent === 'true';\n  } catch(e) {\n    // Fallback: scan Chatwoot private notes\n    try {\n      const cwMessages = await $helpers.httpRequest({\n        method: 'GET',\n        url: 'https://chat.thebrightidea.ai/api/v1/accounts/' + accountId + '/conversations/' + conversationId + '/messages',\n        headers: { 'api_access_token': 'daxHcwWJRwDMwBu4TZ1Cs83k' }\n      });\n      const msgs = Array.isArray(cwMessages?.payload) ? cwMessages.payload : [];\n      imagenEnviada = msgs.some(m =>\n        m.private === true &&\n        m.content &&\n        (m.content.toLowerCase().includes('magen') || m.content.toLowerCase().includes('foto_') || m.content.toLowerCase().includes('foto '))\n      );\n    } catch(e2) { /* default false */ }\n  }\n}\n\n// Compute google_maps_url from current message's order_data (WhatsApp location pin or maps link)\nlet googleMapsUrl = '';\nconst orderDataGps = original.order_data;\nif (orderDataGps) {\n  if (orderDataGps.latitude && orderDataGps.longitude) {\n    googleMapsUrl = 'https://maps.google.com/?q=' + orderDataGps.latitude + ',' + orderDataGps.longitude;\n  } else if (orderDataGps.mapsLink) {\n    googleMapsUrl = orderDataGps.mapsLink;\n  }\n}\n\ndynamicParts.push('[DATOS DEL CLIENTE - USA ESTOS VALORES EXACTOS EN LAS TOOLS]\\nphone: ' + phone + '\\nconversation_id: ' + conversationId + '\\naccount_id: ' + accountId + '\\nname: ' + clientName + '\\ncustomer_status: ' + customerStatus + '\\nis_web_order: ' + isWebOrder + '\\nhora_paraguay: ' + horaInfo + '\\nminutos_desde_ultimo_mensaje: ' + minutosSinceMsg + '\\nimagen_enviada: ' + imagenEnviada + (googleMapsUrl ? '\\ngoogle_maps_url: ' + googleMapsUrl : '') + '\\n[FIN DATOS]');\n\n// Real-time stock from Ordefy\nlet stockSerumCtx = 0, stockTapeCtx = 0;\ntry {\n  const sbKeyOrd = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZncWVjcXFsZXVvd3ZvaW1jb3hnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNTY5NzcsImV4cCI6MjA4MjYzMjk3N30.aRX16e_vGkRgYN1RNMjF8bAOK8PmvwoFYFjGDEfa-YI';\n  const stockRes = await $helpers.httpRequest({\n    method: 'GET',\n    url: 'https://vgqecqqleuowvoimcoxg.supabase.co/rest/v1/products?select=sku,stock&store_id=eq.0b3f13f8-d1dc-48a5-a707-27a095c9c545&sku=in.(SOLENNE-PDRN-30ML,SOLENNE-TAPE-100)',\n    headers: { 'apikey': sbKeyOrd, 'Authorization': 'Bearer ' + sbKeyOrd },\n    timeout: 3000\n  });\n  const sRows = Array.isArray(stockRes) ? stockRes : [];\n  for (const r of sRows) {\n    if (r.sku === 'SOLENNE-PDRN-30ML') stockSerumCtx = r.stock || 0;\n    if (r.sku === 'SOLENNE-TAPE-100') stockTapeCtx = r.stock || 0;\n  }\n} catch(e) { stockSerumCtx = -1; stockTapeCtx = -1; }\nconst serumStatus = stockSerumCtx < 0 ? 'desconocido' : (stockSerumCtx > 0 ? 'En stock (' + stockSerumCtx + ' uds)' : 'AGOTADO');\nconst tapeStatus = stockTapeCtx < 0 ? 'desconocido' : (stockTapeCtx > 0 ? 'En stock (' + stockTapeCtx + ' uds)' : 'AGOTADO');\ndynamicParts.push('[STOCK ACTUAL]\\nPDRN SERUM: ' + serumStatus + '\\nV-SHAPED FACE TAPE: ' + tapeStatus + '\\nIMPORTANTE: Si un producto esta AGOTADO, NO lo ofrezcas. Informale que no esta disponible.\\n[FIN STOCK]');\n\n// 2. Pending order block\nif (customerStatus === 'TIENE_ORDEN_PENDIENTE' && original.pending_orders && original.pending_orders.length > 0) {\n  const po = original.pending_orders[0];\n  const items = po.items || [];\n  const productItems = items.filter(i => !i.is_upsell);\n  const itemsDesc = productItems.map(i =>\n    (i.quantity || 1) + 'x ' + (i.name || i.sku || 'Producto')\n  ).join(', ');\n  const total = po.totals?.total || po.total || '';\n  const addr = po.shipping_address?.address || '';\n  const city = po.shipping_address?.city || '';\n  const pmMap = { 'pending': 'transferencia', 'cash_on_delivery': 'contra_entrega' };\n  const pm = pmMap[po.payment_method] || po.payment_method || '';\n\n  dynamicParts.push('[ORDEN PENDIENTE DEL CLIENTE]\\n' +\n    'Pedido #: ' + (po.order_number || 'N/A') + '\\n' +\n    'Producto: ' + (itemsDesc || 'N/A') + '\\n' +\n    (total ? 'Total: ' + Number(total).toLocaleString('es-PY') + ' Gs\\n' : '') +\n    (addr ? 'Direccion: ' + addr + '\\n' : '') +\n    (city ? 'Ciudad: ' + city + '\\n' : '') +\n    (pm ? 'Forma de pago: ' + pm + '\\n' : '') +\n    'Estado: ' + (po.status || 'pendiente') + '\\n' +\n    '[FIN ORDEN PENDIENTE]');\n\n  dynamicParts.push('[REGLA CRITICA - ORDEN PRE-EXISTENTE]\\n' +\n    'El cliente YA hizo este pedido por la web o el template antes de escribirte. Los datos estan COMPLETOS.\\n' +\n    'PROHIBIDO pedir: nombre, producto, cantidad, ciudad, direccion, forma de pago.\\n' +\n    'Cuando el cliente confirme con \"si\", \"confirmo\", \"dale\", \"ok\", \"listo\", o equivalente, llama a confirm_order con EXACTAMENTE estos valores:\\n' +\n    '  nombre = \"' + (po.customer_name || clientName || '') + '\"\\n' +\n    '  ciudad = \"' + city + '\"\\n' +\n    '  direccion = \"' + addr + '\"\\n' +\n    '  producto = \"' + (itemsDesc || '') + '\"\\n' +\n    '  cantidad = ' + (productItems.reduce((s, i) => s + (i.quantity || 1), 0) || 1) + '\\n' +\n    '  forma_pago = \"' + (pm || 'contra_entrega') + '\"\\n' +\n    'Si el cliente pregunta por el envio, aclara que el delivery se contacta para coordinar. No repitas pedir direccion.\\n' +\n    'Si el cliente quiere cancelar o cambiar algo, no modifiques la orden: escala a human_handoff.\\n' +\n    '[FIN REGLA CRITICA]');\n}\n\n// 3. KB context\nlet kbContext = '';\ntry {\n  const kbResult = $('Fetch Knowledge Base').all();\n  const kbData = kbResult.map(i => i.json);\n  const entries = Array.isArray(kbData) && kbData.length > 0 && Array.isArray(kbData[0]) ? kbData[0] : kbData;\n  if (entries.length > 0 && entries[0]?.category) {\n    const msgLower = (original.content || '').toLowerCase();\n    const matched = entries.filter(e => {\n      if (!e.trigger_keywords || !Array.isArray(e.trigger_keywords)) return false;\n      return e.trigger_keywords.some(kw => msgLower.includes(kw.toLowerCase()));\n    });\n    const toUse = matched.length > 0 ? matched : entries.slice(0, 5);\n    kbContext = '--- CONTEXTO KB RELEVANTE ---\\n' + toUse.map(e =>\n      '- [' + e.category + '] ' + e.content\n    ).join('\\n').slice(0, 2000) + '\\n--- FIN CONTEXTO KB ---';\n    dynamicParts.push(kbContext);\n  }\n} catch (e) { /* KB fetch failed, continue */ }\n\n// 4. Few-shot examples\nlet fewShotContext = '';\ntry {\n  const fsResult = $('Fetch Few-Shot').all();\n  const fsData = fsResult.map(i => i.json);\n  const entries = Array.isArray(fsData) && fsData.length > 0 && Array.isArray(fsData[0]) ? fsData[0] : fsData;\n  if (entries.length > 0 && entries[0]?.scenario) {\n    fewShotContext = '--- EJEMPLOS DE REFERENCIA ---\\n' + entries.map(e =>\n      'Escenario: ' + e.scenario + '\\n' + e.conversation_text + '\\nResultado: ' + e.outcome\n    ).join('\\n---\\n').slice(0, 1500) + '\\n--- FIN EJEMPLOS ---';\n    dynamicParts.push(fewShotContext);\n  }\n} catch (e) { /* few-shot fetch failed, continue */ }\n\n// Build complete dynamic system message\nconst dynamicSystemMessage = SOFIA_PROMPT + '\\n\\n' + dynamicParts.join('\\n\\n');\n\n// ===== CLEAN CHATINPUT (user message only - this is what memoryPostgresChat saves) =====\nlet messageContent = original.content || '';\n\n// Handle location data\nconst orderData = original.order_data;\nif (orderData && (orderData.latitude || orderData.mapsLink)) {\n  let locInfo = '';\n  if (orderData.latitude) {\n    locInfo = '[Ubicacion GPS del cliente: ' + googleMapsUrl + ']';\n  } else if (orderData.mapsLink) {\n    locInfo = '[Link de ubicacion del cliente: ' + orderData.mapsLink + ']';\n  }\n  if (!messageContent || /^https?:\\/\\//.test(messageContent.trim())) {\n    messageContent = locInfo;\n  } else {\n    messageContent += '\\n' + locInfo;\n  }\n} else if (!messageContent && original.has_location_attachment) {\n  messageContent = '[El cliente compartio su ubicacion GPS por WhatsApp]';\n} else if (!messageContent && original.has_attachment) {\n  messageContent = '[El cliente envio un archivo adjunto]';\n} else if (!messageContent) {\n  messageContent = '[Mensaje del cliente sin texto]';\n}\n\nreturn [{\n  json: {\n    ...original,\n    chatInput: messageContent,\n    dynamicSystemMessage: dynamicSystemMessage,\n    kb_context: kbContext,\n    fewshot_context: fewShotContext\n  },\n  pairedItem: { item: 0 }\n}];"
       },
       "id": "build-context-001",
       "name": "Build Sofia Context",
@@ -1673,7 +1696,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Reference the original webhook data (Gmail output doesn't have it)\nconst item = $('Webhook').item.json;\nconst body = item.body || item;\n\n// Extract customer data\nconst customerName = body.customer?.name || 'Cliente';\nconst rawPhone = body.customer?.phone;\n\n// Phone normalizer (defense in depth, mirrors Vercel /api/send-order.js).\n// Tolerates +595 9XX, 0981, 981234567, (0981) 234-567, 00595..., foreign country codes.\nconst KNOWN_CC = ['595','598','591','592','593','594','597','599','54','55','56','57','58','51','52','53','1','34','39','44','49','33','7','86','81','82','91'];\nfunction normalizePhone(raw) {\n  if (raw === undefined || raw === null) return null;\n  const trimmed = String(raw).trim();\n  if (!trimmed) return null;\n  const hasPlus = trimmed.startsWith('+');\n  let d = trimmed.replace(/\\D/g, '');\n  if (!d) return null;\n  if (hasPlus) {\n    if (d.length < 8 || d.length > 15) return null;\n    return '+' + d;\n  }\n  if (d.startsWith('00')) {\n    d = d.slice(2);\n    if (d.length < 8 || d.length > 15) return null;\n    return '+' + d;\n  }\n  if (d.startsWith('5950') && d.length >= 12) return '+595' + d.slice(4);\n  if (d.startsWith('595') && d.length >= 11 && d.length <= 13) return '+' + d;\n  if (d.startsWith('0') && d.length >= 9 && d.length <= 11) return '+595' + d.slice(1);\n  if (/^9\\d{8}$/.test(d)) return '+595' + d;\n  for (const cc of KNOWN_CC) {\n    if (d.startsWith(cc) && d.length >= cc.length + 7 && d.length <= 15) return '+' + d;\n  }\n  if (d.length >= 8 && d.length <= 10) return '+595' + d;\n  return null;\n}\n\nconst phone = normalizePhone(rawPhone) || '';\nif (!phone) {\n  console.warn('[Prep Order] Phone unparseable:', JSON.stringify(rawPhone));\n}\n\n// Last 8 digits for flexible matching\nconst phoneLast8 = phone.replace(/\\D/g, '').slice(-8);\n\n// Extract order data\nconst product = body.order?.product || 'Producto Solenne';\nconst total = body.order?.total || 0;\nconst quantity = Number(body.order?.quantity) || 1;\nconst orderNumber = body.orderNumber || '';\n\nconst paymentMethod = body.payment?.method || 'pending';\nconst paymentStatus = body.payment?.status || 'pending';\n\nconst fmtTotal = Number(total).toLocaleString('es-PY');\n\nconst productMap = {\n  'PDRN Pink Peptide Serum - Personal': 'PDRN Serum Personal',\n  'PDRN Pink Peptide Serum - Kit Duo': 'Kit Duo (2 PDRN Serum)',\n  'PDRN Pink Peptide Serum - Kit Duo (x2)': 'Kit Duo (2 PDRN Serum)',\n  'PDRN Pink Peptide Serum - Kit Familiar (x3)': 'Kit Familiar (3 PDRN Serum)',\n  'V-Shaped Invisible Face Tape': 'Solenne V-Shaped Face Tape',\n  'V-Shaped Invisible Face Tape - Caja Individual': 'Solenne V-Shaped Face Tape',\n  'V-Shaped Invisible Face Tape - Pack Ritual': 'Pack Ritual (2 cajas Face Tape)',\n  'V-Shaped Invisible Face Tape - Pack Evento': 'Pack Evento (3 cajas Face Tape + bolsa)'\n};\nconst productDisplay = productMap[product] || product;\n\nconst productWithQty = productDisplay + ' x' + quantity;\n\nconst mapsLink = body.location?.googleMapsLink || '';\nconst city = body.location?.city || '';\nconst address = body.location?.address || '';\nconst hasGPS = !!(mapsLink && mapsLink.length > 10 && mapsLink.includes('google'));\n\nconst addressText = address || city || 'Direccion pendiente';\n\nreturn [{ json: {\n  phone,\n  phone_last8: phoneLast8,\n  customer_name: customerName,\n  product: productWithQty,\n  product_name: productDisplay,\n  product_original: product,\n  total: fmtTotal,\n  total_raw: total,\n  quantity,\n  order_number: orderNumber,\n  payment_method: paymentMethod,\n  payment_status: paymentStatus,\n  maps_link: mapsLink,\n  city,\n  address: addressText,\n  has_gps: hasGPS\n}}];"
+        "jsCode": "// Reference the original webhook data (Gmail output doesn't have it)\nconst item = $('Webhook').item.json;\nconst body = item.body || item;\n\n// Extract customer data\nconst customerName = body.customer?.name || 'Cliente';\nconst rawPhone = String(body.customer?.phone || '');\n\n// Phone normalization to E.164 Paraguay (+595XXXXXXXXX)\nconst digitsOnly = rawPhone.replace(/\\D/g, '');\n\nlet normalized;\nif (digitsOnly.startsWith('5950') && digitsOnly.length >= 12) {\n  normalized = '595' + digitsOnly.substring(4);\n} else if (digitsOnly.startsWith('595') && digitsOnly.length >= 11) {\n  normalized = digitsOnly;\n} else if (digitsOnly.startsWith('0')) {\n  normalized = '595' + digitsOnly.substring(1);\n} else if (digitsOnly.length >= 8 && digitsOnly.length <= 10) {\n  normalized = '595' + digitsOnly;\n} else {\n  normalized = digitsOnly;\n}\n\nlet phone = '+' + normalized;\nif (phone.startsWith('+0')) {\n  phone = '+595' + phone.substring(2);\n}\n\n// Last 8 digits for flexible matching\nconst phoneLast8 = phone.replace(/\\D/g, '').slice(-8);\n\n// Extract order data\nconst product = body.order?.product || 'Producto Solenne';\nconst total = body.order?.total || 0;\nconst quantity = Number(body.order?.quantity) || 1;\nconst orderNumber = body.orderNumber || '';\n\nconst paymentMethod = body.payment?.method || 'pending';\nconst paymentStatus = body.payment?.status || 'pending';\n\nconst fmtTotal = Number(total).toLocaleString('es-PY');\n\nconst productMap = {\n  'PDRN Pink Peptide Serum - Personal': 'PDRN Serum Personal',\n  'PDRN Pink Peptide Serum - Kit Duo': 'Kit Duo (2 PDRN Serum)',\n  'PDRN Pink Peptide Serum - Kit Duo (x2)': 'Kit Duo (2 PDRN Serum)',\n  'PDRN Pink Peptide Serum - Kit Familiar (x3)': 'Kit Familiar (3 PDRN Serum)',\n  'V-Shaped Invisible Face Tape': 'Solenne V-Shaped Face Tape',\n  'V-Shaped Invisible Face Tape - Caja Individual': 'Solenne V-Shaped Face Tape',\n  'V-Shaped Invisible Face Tape - Pack Ritual': 'Pack Ritual (2 cajas Face Tape)',\n  'V-Shaped Invisible Face Tape - Pack Evento': 'Pack Evento (3 cajas Face Tape)'\n};\nconst productDisplay = productMap[product] || product;\n\nconst productWithQty = productDisplay + ' x' + quantity;\n\nconst mapsLink = body.location?.googleMapsLink || '';\nconst city = body.location?.city || '';\nconst address = body.location?.address || '';\nconst hasGPS = !!(mapsLink && mapsLink.length > 10 && mapsLink.includes('google'));\n\nconst addressText = address || city || 'Direccion pendiente';\n\nreturn [{ json: {\n  phone,\n  phone_last8: phoneLast8,\n  customer_name: customerName,\n  product: productWithQty,\n  product_name: productDisplay,\n  product_original: product,\n  total: fmtTotal,\n  total_raw: total,\n  quantity,\n  order_number: orderNumber,\n  payment_method: paymentMethod,\n  payment_status: paymentStatus,\n  maps_link: mapsLink,\n  city,\n  address: addressText,\n  has_gps: hasGPS\n}}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2702,7 +2725,7 @@
         2000,
         -752
       ],
-      "onError": "continueRegularOutput"
+      "onError": "stopWorkflow"
     },
     {
       "parameters": {
@@ -4268,7 +4291,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Build template data from Ordefy order for resend\n// Output shape matches Prep Order for WhatsApp\nconst data = $json.resend_order_data;\nif (!data) {\n  return [{ json: { error: 'No resend data available' } }];\n}\n\n// Robust phone normalizer (mirrors Vercel /api/send-order.js).\nconst KNOWN_CC = ['595','598','591','592','593','594','597','599','54','55','56','57','58','51','52','53','1','34','39','44','49','33','7','86','81','82','91'];\nfunction normalizePhone(raw) {\n  if (raw === undefined || raw === null) return null;\n  const trimmed = String(raw).trim();\n  if (!trimmed) return null;\n  const hasPlus = trimmed.startsWith('+');\n  let d = trimmed.replace(/\\D/g, '');\n  if (!d) return null;\n  if (hasPlus) {\n    if (d.length < 8 || d.length > 15) return null;\n    return '+' + d;\n  }\n  if (d.startsWith('00')) {\n    d = d.slice(2);\n    if (d.length < 8 || d.length > 15) return null;\n    return '+' + d;\n  }\n  if (d.startsWith('5950') && d.length >= 12) return '+595' + d.slice(4);\n  if (d.startsWith('595') && d.length >= 11 && d.length <= 13) return '+' + d;\n  if (d.startsWith('0') && d.length >= 9 && d.length <= 11) return '+595' + d.slice(1);\n  if (/^9\\d{8}$/.test(d)) return '+595' + d;\n  for (const cc of KNOWN_CC) {\n    if (d.startsWith(cc) && d.length >= cc.length + 7 && d.length <= 15) return '+' + d;\n  }\n  if (d.length >= 8 && d.length <= 10) return '+595' + d;\n  return null;\n}\n\nconst phone = normalizePhone(data.phone) || '';\nconst phoneLast8 = phone.replace(/\\D/g, '').slice(-8);\n\nreturn [{ json: {\n  phone,\n  phone_last8: phoneLast8,\n  customer_name: data.customer_name || 'Cliente',\n  product: data.product || 'Producto Solenne',\n  product_original: data.product || 'Producto Solenne',\n  total: data.total || '0',\n  total_raw: data.total_raw || 0,\n  quantity: data.quantity || 1,\n  order_number: data.order_number || '',\n  payment_method: data.payment_method || 'pending',\n  payment_status: data.payment_status || 'pending',\n  maps_link: data.maps_link || '',\n  city: data.city || '',\n  address: data.address || 'Direccion pendiente',\n  has_gps: data.has_gps || false\n}}];"
+        "jsCode": "// Build template data from Ordefy order for resend\n// Output shape matches Prep Order for WhatsApp\nconst data = $json.resend_order_data;\nif (!data) {\n  return [{ json: { error: 'No resend data available' } }];\n}\n\n// Clean phone for WhatsApp API\nlet phone = String(data.phone || '');\nif (phone.startsWith('0')) {\n  phone = '+595' + phone.substring(1);\n} else if (!phone.startsWith('+')) {\n  const digits = phone.replace(/\\D/g, '');\n  if (digits.length <= 10) {\n    phone = '+595' + digits;\n  } else {\n    phone = '+' + digits;\n  }\n}\nconst phoneLast8 = phone.replace(/\\D/g, '').slice(-8);\n\nreturn [{ json: {\n  phone,\n  phone_last8: phoneLast8,\n  customer_name: data.customer_name || 'Cliente',\n  product: data.product || 'Producto Solenne',\n  product_original: data.product || 'Producto Solenne',\n  total: data.total || '0',\n  total_raw: data.total_raw || 0,\n  quantity: data.quantity || 1,\n  order_number: data.order_number || '',\n  payment_method: data.payment_method || 'pending',\n  payment_status: data.payment_status || 'pending',\n  maps_link: data.maps_link || '',\n  city: data.city || '',\n  address: data.address || 'Direccion pendiente',\n  has_gps: data.has_gps || false\n}}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -4559,7 +4582,7 @@
         2400,
         -602
       ],
-      "onError": "continueRegularOutput"
+      "onError": "stopWorkflow"
     },
     {
       "parameters": {
@@ -4593,6 +4616,517 @@
         -602
       ],
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chat.thebrightidea.ai/api/v1/accounts/{{ $json.account_id }}/conversations/{{ $json.conversation_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "daxHcwWJRwDMwBu4TZ1Cs83k"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"Genial, gracias por avisar! Si necesitas algo mas, escribime por aqui.\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "ap-ack-msg-001",
+      "name": "Send Already Purchased Ack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3568,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chat.thebrightidea.ai/api/v1/accounts/{{ $('Extract & Route').first().json.account_id }}/conversations/{{ $('Extract & Route').first().json.conversation_id }}/labels",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "daxHcwWJRwDMwBu4TZ1Cs83k"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"labels\": [\"humano\", \"post_compra\"]\n}",
+        "options": {}
+      },
+      "id": "ap-label-set-001",
+      "name": "Set Already Purchased Labels",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3760,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.thebrightidea.ai/api/v1/accounts/9/conversations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "daxHcwWJRwDMwBu4TZ1Cs83k"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"source_id\": {{ JSON.stringify(($('Prep Order for WhatsApp').item.json.phone || '').replace(/^\\+/, '')) }},\n  \"inbox_id\": 16,\n  \"contact_id\": {{ $json.payload?.id || $json.id || ($json.payload && Array.isArray($json.payload) && $json.payload.length > 0 ? $json.payload[0].id : null) }},\n  \"status\": \"pending\",\n  \"additional_attributes\": {\n    \"order_number\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.order_number) }},\n    \"order_total\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.total) }},\n    \"product\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.product) }},\n    \"city\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.city) }},\n    \"address\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.address) }}\n  },\n  \"custom_attributes\": {\n    \"pending_order\": true,\n    \"pending_order_id\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.order_number) }},\n    \"template_sent_at\": \"{{ $now.toISO() }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2544,
+        -752
+      ],
+      "id": "create-conv-solenne-2026",
+      "name": "Create Conversation",
+      "onError": "stopWorkflow"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "pr-skip-001",
+              "leftValue": "={{ $('Is Already Confirmed?').item.json.is_already_confirmed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ot-pr-skip-001",
+      "name": "PR: Already Confirmed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2000,
+        -912
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://chat.thebrightidea.ai/api/v1/accounts/9/contacts/search?q={{ encodeURIComponent(($('Prep Order for WhatsApp').item.json.phone || '').replace(/^\\+595/, '')) }}&sort=name&page=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "daxHcwWJRwDMwBu4TZ1Cs83k"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ot-pr-search-contact-001",
+      "name": "PR: Search Contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2256,
+        -800
+      ],
+      "onError": "stopWorkflow"
+    },
+    {
+      "parameters": {
+        "url": "=https://chat.thebrightidea.ai/api/v1/accounts/9/contacts/{{ ($json.payload && $json.payload[0] && $json.payload[0].id) || ($json.payload && $json.payload.id) || '' }}/conversations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "daxHcwWJRwDMwBu4TZ1Cs83k"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ot-pr-get-conv-001",
+      "name": "PR: Get Conversations",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2512,
+        -800
+      ],
+      "onError": "stopWorkflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inboxId = 16;\nconst resp = $input.first().json;\nconst list = resp.payload || resp.data || resp || [];\nconst items = Array.isArray(list) ? list : (list.payload || []);\nlet convId = null;\nfor (const c of items) {\n  if (!c || !c.id) continue;\n  if (c.inbox_id && c.inbox_id !== inboxId) continue;\n  convId = c.id;\n  if (c.status === 'open' || c.status === 'pending') break;\n}\nconst prep = $('Prep Order for WhatsApp').item.json;\nreturn [{ json: { ...prep, conversation_id: convId } }];\n"
+      },
+      "id": "ot-pr-extract-conv-001",
+      "name": "PR: Extract Conversation Id",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2768,
+        -800
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chat.thebrightidea.ai/api/v1/accounts/9/conversations/{{ $json.conversation_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "daxHcwWJRwDMwBu4TZ1Cs83k"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": {{ JSON.stringify('Hola ' + (($json.name || '').split(' ')[0] || 'amiga') + ' \\ud83d\\ude0a\\n\\nTu pedido ya est\\u00e1 en preparaci\\u00f3n. En las pr\\u00f3ximas 24 a 48 hs nuestro equipo de delivery se contactar\\u00e1 para coordinar la entrega.') }},\n  \"template_params\": {\n    \"name\": \"pedido_recibido\",\n    \"category\": \"UTILITY\",\n    \"language\": \"es\",\n    \"processed_params\": {\n      \"body\": { \"1\": {{ JSON.stringify(($json.name || '').split(' ')[0] || 'amiga') }} }\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "ot-pr-send-template-001",
+      "name": "PR: Send pedido_recibido",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3024,
+        -800
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qapqhhyfzmgkvzvtoluq.supabase.co/rest/v1/solenne_contacts?on_conflict=phone",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{SUPABASE_ANON_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{SUPABASE_ANON_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.phone || '') }},\n  \"name\": {{ $('Prep Order for WhatsApp').item.json.name ? JSON.stringify($('Prep Order for WhatsApp').item.json.name) : 'null' }},\n  \"order_status\": \"awaiting_confirmation_reply\",\n  \"pending_order_id\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.order_number || '') }},\n  \"last_interaction\": \"{{ $now.toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "ot-pr-mark-awaiting-001",
+      "name": "PR: Mark Awaiting Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3280,
+        -800
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qapqhhyfzmgkvzvtoluq.supabase.co/rest/v1/solenne_chat_histories",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{SUPABASE_ANON_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{SUPABASE_ANON_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"session_id\": \"0\",\n  \"message\": {\n    \"type\": \"ai\",\n    \"content\": {{ JSON.stringify('pedido_recibido enviado - Tel: ' + ($('Prep Order for WhatsApp').item.json.phone || '') + ' - Orden: ' + ($('Prep Order for WhatsApp').item.json.order_number || '')) }}\n  }\n}",
+        "options": {}
+      },
+      "id": "ot-pr-log-001",
+      "name": "PR: Log Sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3536,
+        -800
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://qapqhhyfzmgkvzvtoluq.supabase.co/rest/v1/solenne_contacts?select=order_status,pending_order_id&phone=eq.{{ encodeURIComponent($json.phone || '') }}&limit=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{SUPABASE_ANON_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{SUPABASE_ANON_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 4000
+        }
+      },
+      "id": "inb-aw-fetch-status-001",
+      "name": "Inbound: Fetch Awaiting Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2656,
+        1280
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const status = $input.first().json;\nconst row = Array.isArray(status) ? status[0] : (status && status.length ? status[0] : null);\nconst orderStatus = row && row.order_status ? row.order_status : null;\nconst route = $('Extract & Route').first().json;\nreturn [{ json: { ...route, order_status: orderStatus } }];\n"
+      },
+      "id": "inb-aw-merge-001",
+      "name": "Inbound: Merge Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        1280
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "aw-check-001",
+              "leftValue": "={{ $json.order_status }}",
+              "rightValue": "awaiting_confirmation_reply",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "inb-aw-check-001",
+      "name": "Inbound: Is Awaiting Reply?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3104,
+        1280
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "aw-button-001",
+              "leftValue": "={{ ($json.content || '').trim() }}",
+              "rightValue": "Gracias, aguardo!",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "inb-aw-is-button-001",
+      "name": "Inbound: Is Button Tap?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3328,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chat.thebrightidea.ai/api/v1/accounts/{{ $json.account_id }}/conversations/{{ $json.conversation_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "daxHcwWJRwDMwBu4TZ1Cs83k"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"\\u00a1Muchas gracias por confiar en Solenne! Te aviso cuando salga del dep\\u00f3sito.\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "inb-aw-send-thanks-001",
+      "name": "Inbound: Send Thanks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3552,
+        1136
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qapqhhyfzmgkvzvtoluq.supabase.co/rest/v1/solenne_contacts?on_conflict=phone",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{SUPABASE_ANON_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{SUPABASE_ANON_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": {{ JSON.stringify($('Inbound: Merge Status').item.json.phone || '') }},\n  \"order_status\": \"confirmed_acknowledged\",\n  \"last_interaction\": \"{{ $now.toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "inb-aw-mark-acked-001",
+      "name": "Inbound: Mark Acknowledged",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3776,
+        1136
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "id": "inb-aw-end-silent-001",
+      "name": "Inbound: End Silent",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3552,
+        1296
+      ]
     }
   ],
   "connections": {
@@ -4639,7 +5173,7 @@
       "main": [
         [
           {
-            "node": "Fetch Ordefy Orders",
+            "node": "Inbound: Fetch Awaiting Status",
             "type": "main",
             "index": 0
           }
@@ -4719,6 +5253,13 @@
         [
           {
             "node": "CR Typing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Already Purchased Ack",
             "type": "main",
             "index": 0
           }
@@ -5155,7 +5696,7 @@
       "main": [
         [
           {
-            "node": "Has GPS Location?",
+            "node": "Search Contact by Phone",
             "type": "main",
             "index": 0
           }
@@ -5441,7 +5982,7 @@
       "main": [
         [
           {
-            "node": "Search Contact by Phone",
+            "node": "PR: Already Confirmed?",
             "type": "main",
             "index": 0
           }
@@ -6241,6 +6782,186 @@
           }
         ]
       ]
+    },
+    "Send Already Purchased Ack": {
+      "main": [
+        [
+          {
+            "node": "Set Already Purchased Labels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Template Flag": {
+      "main": [
+        [
+          {
+            "node": "Create Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Flag New Contact": {
+      "main": [
+        [
+          {
+            "node": "Create Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Conversation": {
+      "main": [
+        [
+          {
+            "node": "Has GPS Location?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PR: Already Confirmed?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "PR: Search Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PR: Search Contact": {
+      "main": [
+        [
+          {
+            "node": "PR: Get Conversations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PR: Get Conversations": {
+      "main": [
+        [
+          {
+            "node": "PR: Extract Conversation Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PR: Extract Conversation Id": {
+      "main": [
+        [
+          {
+            "node": "PR: Send pedido_recibido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PR: Send pedido_recibido": {
+      "main": [
+        [
+          {
+            "node": "PR: Mark Awaiting Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PR: Mark Awaiting Reply": {
+      "main": [
+        [
+          {
+            "node": "PR: Log Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inbound: Fetch Awaiting Status": {
+      "main": [
+        [
+          {
+            "node": "Inbound: Merge Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inbound: Merge Status": {
+      "main": [
+        [
+          {
+            "node": "Inbound: Is Awaiting Reply?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inbound: Is Awaiting Reply?": {
+      "main": [
+        [
+          {
+            "node": "Inbound: Is Button Tap?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Ordefy Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inbound: Is Button Tap?": {
+      "main": [
+        [
+          {
+            "node": "Inbound: Send Thanks",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Inbound: End Silent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inbound: Send Thanks": {
+      "main": [
+        [
+          {
+            "node": "Inbound: Mark Acknowledged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -6253,9 +6974,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "f8bfab52-f4e9-406c-9f09-3e7d3f2527f3",
-  "activeVersionId": "f8bfab52-f4e9-406c-9f09-3e7d3f2527f3",
-  "versionCounter": 96,
+  "versionId": "735d901d-d8e6-4956-8f37-9f27b6a4836a",
+  "activeVersionId": "735d901d-d8e6-4956-8f37-9f27b6a4836a",
+  "versionCounter": 136,
   "triggerCount": 1,
   "shared": [
     {
@@ -6279,7 +7000,7 @@
             "userId": "bd801847-7be9-42fe-880a-4791b5224dd0",
             "projectId": "vVKrMRvjaqJI6ZtD",
             "user": {
-              "updatedAt": "2026-04-27T13:31:20.000Z",
+              "updatedAt": "2026-05-07T05:08:35.000Z",
               "createdAt": "2025-06-27T02:53:50.473Z",
               "id": "bd801847-7be9-42fe-880a-4791b5224dd0",
               "email": "gaston@thebrightidea.ai",
@@ -6306,7 +7027,7 @@
               },
               "disabled": false,
               "mfaEnabled": false,
-              "lastActiveAt": "2026-04-27",
+              "lastActiveAt": "2026-05-07",
               "isPending": false
             }
           }
@@ -6316,9 +7037,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-26T21:51:24.773Z",
-    "createdAt": "2026-04-26T21:51:24.773Z",
-    "versionId": "f8bfab52-f4e9-406c-9f09-3e7d3f2527f3",
+    "updatedAt": "2026-05-07T06:07:28.565Z",
+    "createdAt": "2026-05-07T06:07:28.565Z",
+    "versionId": "735d901d-d8e6-4956-8f37-9f27b6a4836a",
     "workflowId": "541CxYqlPYw5LLvI",
     "nodes": [
       {
@@ -6412,7 +7133,7 @@
       {
         "parameters": {
           "mode": "runOnceForEachItem",
-          "jsCode": "try {\nconst body = $input.item.json.body;\nif (!body || body.message_type !== 'incoming') return { json: { skip: true } };\n\nconst content = (body.content || '').trim();\nconst triggerId = body.id || '';\nconst triggerSourceId = body.source_id || '';\nconst conv = body.conversation || {};\nconst convId = conv.id || '';\n\nconst contactMeta = conv.meta?.sender || {};\nconst rawPhone = contactMeta.phone_number || '';\n\n// Normalize inbound phone (defense in depth, Meta wa_id is usually clean\n// but Chatwoot manual contacts may carry odd formats).\nconst KNOWN_CC = ['595','598','591','592','593','594','597','599','54','55','56','57','58','51','52','53','1','34','39','44','49','33','7','86','81','82','91'];\nfunction normalizePhone(raw) {\n  if (raw === undefined || raw === null) return '';\n  const trimmed = String(raw).trim();\n  if (!trimmed) return '';\n  const hasPlus = trimmed.startsWith('+');\n  let d = trimmed.replace(/\\D/g, '');\n  if (!d) return '';\n  if (hasPlus) {\n    if (d.length < 8 || d.length > 15) return '';\n    return '+' + d;\n  }\n  if (d.startsWith('00')) {\n    d = d.slice(2);\n    if (d.length < 8 || d.length > 15) return '';\n    return '+' + d;\n  }\n  if (d.startsWith('5950') && d.length >= 12) return '+595' + d.slice(4);\n  if (d.startsWith('595') && d.length >= 11 && d.length <= 13) return '+' + d;\n  if (d.startsWith('0') && d.length >= 9 && d.length <= 11) return '+595' + d.slice(1);\n  if (/^9\\d{8}$/.test(d)) return '+595' + d;\n  for (const cc of KNOWN_CC) {\n    if (d.startsWith(cc) && d.length >= cc.length + 7 && d.length <= 15) return '+' + d;\n  }\n  if (d.length >= 8 && d.length <= 10) return '+595' + d;\n  return rawPhone;\n}\nconst phone = normalizePhone(rawPhone);\nconst name = contactMeta.name || '';\nlet fn = name.split(' ')[0] || '';\n\n// Override name with order data if available (web orders have real name in template_order_data)\nconst tplOrderData = contactMeta.custom_attributes?.template_order_data;\nif (tplOrderData) {\n  const orderCustomerName = typeof tplOrderData === 'string' ? JSON.parse(tplOrderData)?.customer_name : tplOrderData?.customer_name;\n  if (orderCustomerName && orderCustomerName !== 'Cliente' && orderCustomerName.length > 1) {\n    fn = orderCustomerName.split(' ')[0];\n  }\n}\n\nconst ctid = contactMeta.id || '';\nconst aid = body.account?.id || '';\n\nconst attachments = body.attachments || [];\n\nconst HANDOFF_LABELS = ['humano', 'reclamo', 'venta'];\nconst convLabels = conv.labels || [];\nif (convLabels.some(l => HANDOFF_LABELS.includes(l))) return { json: { skip: true } };\n\nconst productImagesSent = contactMeta.custom_attributes?.product_images_sent === true || contactMeta.custom_attributes?.product_images_sent === 'true';\nconst hasAudioAttachment = attachments.some(a => a.file_type === 'audio');\nif (!content && !attachments.length) return { json: { skip: true } };\n\n// Detect stickers/gifts (.webp files from WhatsApp) - skip entirely, no response\nconst isStickerOnly = !content && attachments.some(a => {\n  const url = (a.data_url || a.external_url || '');\n  return url.endsWith('.webp') || url.endsWith('.webp?') || a.file_type === 'sticker';\n});\nif (isStickerOnly) return { json: { skip: true } };\n\nconst n = (content || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n\n// Greeting-stripping: remove pure greeting lines before passing to Sofia\nconst sofiaActiveRawEarly = contactMeta.custom_attributes?.sofia_active;\nconst lastSofiaTimeEarly = contactMeta.custom_attributes?.last_sofia_time;\nconst sofiaWasActiveEarly = (sofiaActiveRawEarly === true || sofiaActiveRawEarly === 'true') &&\n  lastSofiaTimeEarly &&\n  (Date.now() - new Date(lastSofiaTimeEarly).getTime()) < 30 * 60 * 1000;\n\nconst GREETING_ONLY_RE = /^(hola|buenas|buen dia|buenas tardes|buenas noches|hey|hi)[\\s!.,]*$/;\n\nlet nClassify = n;\nconst gLines = n.split(/[\\n,;]/);\nif (gLines.length > 1 || /^(hola|buenas|buen dia|buenas tardes|buenas noches|hey|hi)[\\s!.,]*\\s+\\S/.test(n)) {\n  const nonGreetingLines = gLines.filter(l => !GREETING_ONLY_RE.test(l.trim()));\n  if (nonGreetingLines.length > 0 && nonGreetingLines.join('').trim().length > 0) {\n    nClassify = nonGreetingLines.join(' ').trim();\n  }\n}\n\nconst isWeb = n.includes('acabo de completar mi pedido') || n.includes('orden: #sol-') || (n.includes('nocte') && n.includes('mis datos:'));\nlet od = null;\nif (isWeb) {\n  const om = content.match(/#SOL-[\\w-]+/);\n  const mm = content.match(/https?:\\/\\/(www\\.)?google\\.com\\/maps\\S*/);\n  od = { orderNumber: om?.[0] || '', hasMapsLink: !!mm, mapsLink: mm?.[0] || '' };\n  const webNameMatch = content.match(/\\u{1F464}\\s*(.+)/u) || content.match(/Nombre:\\s*(.+)/i);\n  if (webNameMatch && webNameMatch[1]) {\n    const webName = webNameMatch[1].trim();\n    if (webName.length > 1 && webName.length < 60) fn = webName;\n  }\n}\n\n// Self-intro name extraction (after isWeb is defined)\nif (!isWeb) {\n  const selfIntroPatterns = [\n    /(?:soy|me llamo|mi nombre es|habla)\\s+([A-Z][a-z]{2,15})/i,\n    /^([A-Z][a-z]{2,15})\\s*[,.]?\\s*(?:quiero|necesito|me interesa|cuanto|precio)/i\n  ];\n  for (const pat of selfIntroPatterns) {\n    const m = content.match(pat);\n    if (m && m[1] && m[1].length >= 3 && m[1].length <= 15) {\n      fn = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();\n      break;\n    }\n  }\n}\n\nconst hasLocationAttachment = attachments\n  .some(a => a.file_type === 'location' || a.data_type === 'location');\nconst hasImageAttachment = attachments\n  .some(a => a.file_type === 'image' || a.file_type === 'file');\n\nconst isMapsReply = !isWeb && (\n  /google\\.com\\/maps|maps\\.google|goo\\.gl\\/maps|maps\\.app\\.goo\\.gl/.test(n) ||\n  hasLocationAttachment\n);\n\nif (isMapsReply) {\n  if (hasLocationAttachment) {\n    const locAtt = attachments.find(a => a.file_type === 'location' || a.data_type === 'location');\n    const lat = locAtt?.coordinates_lat || locAtt?.latitude || locAtt?.data?.latitude;\n    const lng = locAtt?.coordinates_long || locAtt?.longitude || locAtt?.data?.longitude;\n    od = {\n      orderNumber: '',\n      hasMapsLink: true,\n      mapsLink: (lat && lng) ? 'https://www.google.com/maps?q=' + lat + ',' + lng : '',\n      latitude: lat,\n      longitude: lng\n    };\n  } else {\n    const mm = content.match(/https?:\\/\\/\\S*(?:google\\.com\\/maps|maps\\.google|goo\\.gl\\/maps|maps\\.app\\.goo\\.gl)\\S*/);\n    od = { orderNumber: '', hasMapsLink: true, mapsLink: mm?.[0] || '' };\n  }\n}\n\nconst contactGastonKeywords = /hablar con gaston|contactar a gaston|quiero hablar con el dueno|pasame con gaston|persona real|hablar con una persona|agente humano|quiero hablar con alguien/;\nconst isContactGaston = !isWeb && !isMapsReply && contactGastonKeywords.test(n);\n\nconst complaintKeywords = /problema|reclamo|queja|estafa|denuncia|defectuoso|roto|danado/;\nconst postDeliveryIssues = /no me llego|no llego|no enviaron|no entregaron|no recibi|no llega|nunca llego|pedido perdido|sigo esperando|no me mandaron|donde esta mi pedido|donde esta mi envio|no me llega/;\nconst negativeExtreme = /pesimo|horrible|malisimo|malismo|porqueria|basura|robo|fraude|arrepiento|devuelvan|devuelvanme|me enganaron|me mintieron|los voy a denunciar/;\nconst productIssues = /se rompio|se rayo|vino roto|vino rayado|vino mal|esta roto|esta rayado|no funciona|no sirve|no carga|no anda/;\n\nconst isComplaint = !isWeb && !isMapsReply && !isContactGaston && (\n  complaintKeywords.test(n) ||\n  postDeliveryIssues.test(n) ||\n  negativeExtreme.test(n) ||\n  productIssues.test(n)\n);\n\nconst wholesaleKeywords = /por mayor|mayorista|mayoreo|revender|reventa|distribuidora|al por mayor|cantidad grande|compra grande|para tienda|para negocio|para local/;\nconst isWholesale = !isWeb && !isMapsReply && !isContactGaston && !isComplaint && wholesaleKeywords.test(n);\n\n// sofia_active with 30-minute timeout\nlet sofiaActive = sofiaWasActiveEarly;\n\n// Cancellation pending check (customer already said cancel, waiting for reason)\nlet cancellationPending = false;\nconst cancellationPendingRaw = contactMeta.custom_attributes?.cancellation_pending;\nconst cancellationPendingAt = contactMeta.custom_attributes?.cancellation_pending_at;\nif (cancellationPendingRaw === true || cancellationPendingRaw === 'true') {\n  if (cancellationPendingAt) {\n    const cancelElapsed = Date.now() - new Date(cancellationPendingAt).getTime();\n    cancellationPending = cancelElapsed < 24 * 60 * 60 * 1000;\n  } else {\n    cancellationPending = true;\n  }\n}\n\n// Template sent check with 48h expiry\nlet templateSent = false;\nconst templateSentRaw = contactMeta.custom_attributes?.template_sent;\nconst templateSentAt = contactMeta.custom_attributes?.template_sent_at;\nif ((templateSentRaw === true || templateSentRaw === 'true') && templateSentAt) {\n  const elapsed = Date.now() - new Date(templateSentAt).getTime();\n  templateSent = elapsed < 48 * 60 * 60 * 1000;\n}\nlet templateOrderData = contactMeta.custom_attributes?.template_order_data || null;\nlet isPostPurchase = false;\nlet postPurchaseAge = null;\nlet postPurchaseData = null;\n\n// Cancellation detection (within template context)\nconst cancelShort = /^(no|cancelar|cancelo|quiero cancelar|no quiero|no gracias|cancelado|anular|anulo)[\\s,!.]*$/i;\nconst cancelLong = /cancelar\\s+(el\\s+|mi\\s+)?(pedido|orden|compra)|no\\s+(quiero|deseo|voy\\s+a)\\s+(comprar|pedir|ordenar|continuar)|ya\\s+no\\s+(quiero|me\\s+interesa)/i;\nconst isTemplateCancel = templateSent && (cancelShort.test(content.trim()) || cancelLong.test(content.trim()));\n\nconst shortConfirm = /^(si|s[i\\u00ed]+|sip|confirmo|dale|ok|listo|claro|perfecto|bueno)[\\s,!.]*$/i;\nconst longConfirm = /^s[i\\u00ed][,!.\\s]*(confirmo|claro|dale|ok|listo|quiero|por favor)/i;\nconst isTemplateConfirm = templateSent && !isTemplateCancel && (shortConfirm.test(content.trim()) || longConfirm.test(content.trim()));\nconst isTemplateLocation = templateSent && hasLocationAttachment;\nconst isTemplateReply = isTemplateConfirm || isTemplateLocation;\n\n// All routes: FAQ eliminated, everything else goes to ai_needed (Sofia)\nlet route = 'ai_needed';\n// Retargeting: ALL messages from retargeting conversations go to human, Sofia never responds\nconst isRetargeting = convLabels.includes('retargeting');\nif (isRetargeting) return { json: { skip: true } };\n\nif (cancellationPending) route = 'cancellation_reason';\nelse if (isTemplateCancel) route = 'template_cancel';\nelse if (isTemplateReply) route = 'template_reply';\nelse if (isWeb) route = 'web_order';\nelse if (isMapsReply && !sofiaActive) route = 'maps_reply';\nelse if (isContactGaston) route = 'contact_gaston';\nelse if (isComplaint) route = 'complaint';\nelse if (isWholesale) route = 'wholesale';\n// Everything else (including what was FAQ: precio, envio, garantia, saludo, etc.) -> ai_needed\n\nreturn { json: {\n  skip: false, route, content, phone, name, first_name: fn,\n  contact_id: ctid, conversation_id: convId, message_id: triggerId,\n  source_id: triggerSourceId, account_id: aid,\n  is_web_order: isWeb, is_maps_reply: isMapsReply, is_complaint: isComplaint,\n  is_wholesale: isWholesale, is_contact_gaston: isContactGaston, order_data: od,\n  template_sent: templateSent,\n  template_order_data: templateOrderData,\n  is_template_reply: isTemplateReply,\n  is_template_cancel: isTemplateCancel,\n  cancellation_pending: cancellationPending,\n  is_post_purchase: isPostPurchase, post_purchase_age_hours: postPurchaseAge, post_purchase_data: postPurchaseData,\n  is_template_confirm: isTemplateConfirm, is_template_location: isTemplateLocation,\n  has_active_template: templateSent,\n  faq_category: null, faq_response: null, faq_closing: null,\n  has_attachment: !!(attachments.length),\n  has_location_attachment: hasLocationAttachment,\n  has_image_attachment: hasImageAttachment,\n  has_audio_attachment: hasAudioAttachment,\n  product_images_sent: productImagesSent\n}};\n} catch (err) {\n  return { json: { skip: true, error: err.message, route: 'error' } };\n}"
+          "jsCode": "try {\nconst body = $input.item.json.body;\nif (!body || body.message_type !== 'incoming') return { json: { skip: true } };\n\nconst content = (body.content || '').trim();\nconst triggerId = body.id || '';\nconst triggerSourceId = body.source_id || '';\nconst conv = body.conversation || {};\nconst convId = conv.id || '';\n\nconst contactMeta = conv.meta?.sender || {};\nconst phone = contactMeta.phone_number || '';\nconst name = contactMeta.name || '';\nlet fn = name.split(' ')[0] || '';\n\n// Override name with order data if available (web orders have real name in template_order_data)\nconst tplOrderData = contactMeta.custom_attributes?.template_order_data;\nif (tplOrderData) {\n  const orderCustomerName = typeof tplOrderData === 'string' ? JSON.parse(tplOrderData)?.customer_name : tplOrderData?.customer_name;\n  if (orderCustomerName && orderCustomerName !== 'Cliente' && orderCustomerName.length > 1) {\n    fn = orderCustomerName.split(' ')[0];\n  }\n}\n\nconst ctid = contactMeta.id || '';\nconst aid = body.account?.id || '';\n\nconst attachments = body.attachments || [];\n\nconst HANDOFF_LABELS = ['humano', 'reclamo', 'venta'];\nconst convLabels = conv.labels || [];\nif (convLabels.some(l => HANDOFF_LABELS.includes(l))) return { json: { skip: true } };\n\nconst productImagesSent = contactMeta.custom_attributes?.product_images_sent === true || contactMeta.custom_attributes?.product_images_sent === 'true';\nconst hasAudioAttachment = attachments.some(a => a.file_type === 'audio');\nif (!content && !attachments.length) return { json: { skip: true } };\n\n// Detect stickers/gifts (.webp files from WhatsApp) - skip entirely, no response\nconst isStickerOnly = !content && attachments.some(a => {\n  const url = (a.data_url || a.external_url || '');\n  return url.endsWith('.webp') || url.endsWith('.webp?') || a.file_type === 'sticker';\n});\nif (isStickerOnly) return { json: { skip: true } };\n\nconst n = (content || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n\n// Greeting-stripping: remove pure greeting lines before passing to Sofia\nconst sofiaActiveRawEarly = contactMeta.custom_attributes?.sofia_active;\nconst lastSofiaTimeEarly = contactMeta.custom_attributes?.last_sofia_time;\nconst sofiaWasActiveEarly = (sofiaActiveRawEarly === true || sofiaActiveRawEarly === 'true') &&\n  lastSofiaTimeEarly &&\n  (Date.now() - new Date(lastSofiaTimeEarly).getTime()) < 30 * 60 * 1000;\n\nconst GREETING_ONLY_RE = /^(hola|buenas|buen dia|buenas tardes|buenas noches|hey|hi)[\\s!.,]*$/;\n\nlet nClassify = n;\nconst gLines = n.split(/[\\n,;]/);\nif (gLines.length > 1 || /^(hola|buenas|buen dia|buenas tardes|buenas noches|hey|hi)[\\s!.,]*\\s+\\S/.test(n)) {\n  const nonGreetingLines = gLines.filter(l => !GREETING_ONLY_RE.test(l.trim()));\n  if (nonGreetingLines.length > 0 && nonGreetingLines.join('').trim().length > 0) {\n    nClassify = nonGreetingLines.join(' ').trim();\n  }\n}\n\nconst isWeb = n.includes('acabo de completar mi pedido') || n.includes('orden: #sol-') || (n.includes('nocte') && n.includes('mis datos:'));\nlet od = null;\nif (isWeb) {\n  const om = content.match(/#SOL-[\\w-]+/);\n  const mm = content.match(/https?:\\/\\/(www\\.)?google\\.com\\/maps\\S*/);\n  od = { orderNumber: om?.[0] || '', hasMapsLink: !!mm, mapsLink: mm?.[0] || '' };\n  const webNameMatch = content.match(/\\u{1F464}\\s*(.+)/u) || content.match(/Nombre:\\s*(.+)/i);\n  if (webNameMatch && webNameMatch[1]) {\n    const webName = webNameMatch[1].trim();\n    if (webName.length > 1 && webName.length < 60) fn = webName;\n  }\n}\n\n// Self-intro name extraction (after isWeb is defined)\nif (!isWeb) {\n  const selfIntroPatterns = [\n    /(?:soy|me llamo|mi nombre es|habla)\\s+([A-Z][a-z]{2,15})/i,\n    /^([A-Z][a-z]{2,15})\\s*[,.]?\\s*(?:quiero|necesito|me interesa|cuanto|precio)/i\n  ];\n  for (const pat of selfIntroPatterns) {\n    const m = content.match(pat);\n    if (m && m[1] && m[1].length >= 3 && m[1].length <= 15) {\n      fn = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();\n      break;\n    }\n  }\n}\n\nconst hasLocationAttachment = attachments\n  .some(a => a.file_type === 'location' || a.data_type === 'location');\nconst hasImageAttachment = attachments\n  .some(a => a.file_type === 'image' || a.file_type === 'file');\n\nconst isMapsReply = !isWeb && (\n  /google\\.com\\/maps|maps\\.google|goo\\.gl\\/maps|maps\\.app\\.goo\\.gl/.test(n) ||\n  hasLocationAttachment\n);\n\nif (isMapsReply) {\n  if (hasLocationAttachment) {\n    const locAtt = attachments.find(a => a.file_type === 'location' || a.data_type === 'location');\n    const lat = locAtt?.coordinates_lat || locAtt?.latitude || locAtt?.data?.latitude;\n    const lng = locAtt?.coordinates_long || locAtt?.longitude || locAtt?.data?.longitude;\n    od = {\n      orderNumber: '',\n      hasMapsLink: true,\n      mapsLink: (lat && lng) ? 'https://www.google.com/maps?q=' + lat + ',' + lng : '',\n      latitude: lat,\n      longitude: lng\n    };\n  } else {\n    const mm = content.match(/https?:\\/\\/\\S*(?:google\\.com\\/maps|maps\\.google|goo\\.gl\\/maps|maps\\.app\\.goo\\.gl)\\S*/);\n    od = { orderNumber: '', hasMapsLink: true, mapsLink: mm?.[0] || '' };\n  }\n}\n\nconst contactGastonKeywords = /hablar con gaston|contactar a gaston|quiero hablar con el dueno|pasame con gaston|persona real|hablar con una persona|agente humano|quiero hablar con alguien/;\nconst isContactGaston = !isWeb && !isMapsReply && contactGastonKeywords.test(n);\n\nconst complaintKeywords = /problema|reclamo|queja|estafa|denuncia|defectuoso|roto|danado/;\nconst postDeliveryIssues = /no me llego|no llego|no enviaron|no entregaron|no recibi|no llega|nunca llego|pedido perdido|sigo esperando|no me mandaron|donde esta mi pedido|donde esta mi envio|no me llega/;\nconst negativeExtreme = /pesimo|horrible|malisimo|malismo|porqueria|basura|robo|fraude|arrepiento|devuelvan|devuelvanme|me enganaron|me mintieron|los voy a denunciar/;\nconst productIssues = /se rompio|se rayo|vino roto|vino rayado|vino mal|esta roto|esta rayado|no funciona|no sirve|no carga|no anda/;\n\nconst isComplaint = !isWeb && !isMapsReply && !isContactGaston && (\n  complaintKeywords.test(n) ||\n  postDeliveryIssues.test(n) ||\n  negativeExtreme.test(n) ||\n  productIssues.test(n)\n);\n\n// \"Ya compre / ya pague / ya me entregaron\" detection — block Sofia upsell on already-purchased customers.\n// These customers have a NOCTE/Solenne order from a different channel (web, in-person) and Sofia\n// has no business pitching them again or trying to confirm a phantom order.\n// Tested against `n` (accent-stripped lowercase) for consistency with other route detectors.\nconst alreadyPurchasedKeywords = /\\bya\\s+(compre|pague|recibi|llego|me\\s+llego|me\\s+(entregaron|trajeron|pasaron|enviaron|mandaron|trajo)|tengo|esta|pedi|ordene|ordeno)\\b|\\bel\\s+delivery\\s+ya\\s+(tiene|me\\s+entrego)\\b|\\bya\\s+(esta|estaba)\\s+(en\\s+camino|conmigo|en\\s+casa|en\\s+mi\\s+casa)\\b|\\bme\\s+lo\\s+(trajo|trajeron|entregaron)\\b|\\bya\\s+lo\\s+tengo\\b|\\bllego\\s+(mi\\s+)?(pedido|paquete|producto|envio|encomienda)\\b/;\nconst isAlreadyPurchased = !isWeb && !isMapsReply && !isContactGaston && alreadyPurchasedKeywords.test(n);\n\nconst wholesaleKeywords = /por mayor|mayorista|mayoreo|revender|reventa|distribuidora|al por mayor|cantidad grande|compra grande|para tienda|para negocio|para local/;\nconst isWholesale = !isWeb && !isMapsReply && !isContactGaston && !isComplaint && wholesaleKeywords.test(n);\n\n// sofia_active with 30-minute timeout\nlet sofiaActive = sofiaWasActiveEarly;\n\n// Cancellation pending check (customer already said cancel, waiting for reason)\nlet cancellationPending = false;\nconst cancellationPendingRaw = contactMeta.custom_attributes?.cancellation_pending;\nconst cancellationPendingAt = contactMeta.custom_attributes?.cancellation_pending_at;\nif (cancellationPendingRaw === true || cancellationPendingRaw === 'true') {\n  if (cancellationPendingAt) {\n    const cancelElapsed = Date.now() - new Date(cancellationPendingAt).getTime();\n    cancellationPending = cancelElapsed < 24 * 60 * 60 * 1000;\n  } else {\n    cancellationPending = true;\n  }\n}\n\n// Template sent check with 48h expiry\nlet templateSent = false;\nconst templateSentRaw = contactMeta.custom_attributes?.template_sent;\nconst templateSentAt = contactMeta.custom_attributes?.template_sent_at;\nif ((templateSentRaw === true || templateSentRaw === 'true') && templateSentAt) {\n  const elapsed = Date.now() - new Date(templateSentAt).getTime();\n  templateSent = elapsed < 48 * 60 * 60 * 1000;\n}\nlet templateOrderData = contactMeta.custom_attributes?.template_order_data || null;\nlet isPostPurchase = false;\nlet postPurchaseAge = null;\nlet postPurchaseData = null;\n\n// Cancellation detection (within template context)\nconst cancelShort = /^(no|cancelar|cancelo|quiero cancelar|no quiero|no gracias|cancelado|anular|anulo)[\\s,!.]*$/i;\nconst cancelLong = /cancelar\\s+(el\\s+|mi\\s+)?(pedido|orden|compra)|no\\s+(quiero|deseo|voy\\s+a)\\s+(comprar|pedir|ordenar|continuar)|ya\\s+no\\s+(quiero|me\\s+interesa)/i;\nconst isTemplateCancel = templateSent && (cancelShort.test(content.trim()) || cancelLong.test(content.trim()));\n\nconst shortConfirm = /^(si|s[i\\u00ed]+|sip|confirmo|dale|ok|listo|claro|perfecto|bueno)[\\s,!.]*$/i;\nconst longConfirm = /^s[i\\u00ed][,!.\\s]*(confirmo|claro|dale|ok|listo|quiero|por favor)/i;\nconst isTemplateConfirm = templateSent && !isTemplateCancel && (shortConfirm.test(content.trim()) || longConfirm.test(content.trim()));\nconst isTemplateLocation = templateSent && hasLocationAttachment;\nconst isTemplateReply = isTemplateConfirm || isTemplateLocation;\n\n// All routes: FAQ eliminated, everything else goes to ai_needed (Sofia)\nlet route = 'ai_needed';\n// Retargeting: ALL messages from retargeting conversations go to human, Sofia never responds\nconst isRetargeting = convLabels.includes('retargeting');\nif (isRetargeting) return { json: { skip: true } };\n\nif (cancellationPending) route = 'cancellation_reason';\nelse if (isTemplateCancel) route = 'template_cancel';\nelse if (isTemplateReply) route = 'template_reply';\nelse if (isWeb) route = 'web_order';\nelse if (isMapsReply && !sofiaActive) route = 'maps_reply';\nelse if (isContactGaston) route = 'contact_gaston';\nelse if (isAlreadyPurchased) route = 'already_purchased';\nelse if (isComplaint) route = 'complaint';\nelse if (isWholesale) route = 'wholesale';\n// Everything else (including what was FAQ: precio, envio, garantia, saludo, etc.) -> ai_needed\n\nreturn { json: {\n  skip: false, route, content, phone, name, first_name: fn,\n  contact_id: ctid, conversation_id: convId, message_id: triggerId,\n  source_id: triggerSourceId, account_id: aid,\n  is_web_order: isWeb, is_maps_reply: isMapsReply, is_complaint: isComplaint,\n  is_wholesale: isWholesale, is_contact_gaston: isContactGaston, is_already_purchased: isAlreadyPurchased, order_data: od,\n  template_sent: templateSent,\n  template_order_data: templateOrderData,\n  is_template_reply: isTemplateReply,\n  is_template_cancel: isTemplateCancel,\n  cancellation_pending: cancellationPending,\n  is_post_purchase: isPostPurchase, post_purchase_age_hours: postPurchaseAge, post_purchase_data: postPurchaseData,\n  is_template_confirm: isTemplateConfirm, is_template_location: isTemplateLocation,\n  has_active_template: templateSent,\n  faq_category: null, faq_response: null, faq_closing: null,\n  has_attachment: !!(attachments.length),\n  has_location_attachment: hasLocationAttachment,\n  has_image_attachment: hasImageAttachment,\n  has_audio_attachment: hasAudioAttachment,\n  product_images_sent: productImagesSent\n}};\n} catch (err) {\n  return { json: { skip: true, error: err.message, route: 'error' } };\n}"
         },
         "id": "8c1690ce-cf22-4c45-80cc-f5f89e9c2a46",
         "name": "Extract & Route",
@@ -6676,6 +7397,29 @@
                 },
                 "renameOutput": true,
                 "outputKey": "Cancellation Reason"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "route-already-purchased",
+                      "leftValue": "={{ $json.route }}",
+                      "rightValue": "already_purchased",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "Already Purchased"
               }
             ]
           },
@@ -7175,7 +7919,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// Process Ordefy HTTP response\nconst item = $input.first();\nconst original = $('Extract & Route').first().json;\nconst phone = original.phone || '';\nconst digits = phone.replace(/\\D/g, '');\n\n// Parse Ordefy response\nlet orders = [];\ntry {\n  const response = item.json;\n  orders = Array.isArray(response) ? response : (response.orders || response.data || []);\n} catch(e) {}\n\nconst pendingOrders = orders.filter(o =>\n  o.status === 'pending' || o.status === 'contacted' || o.status === 'confirmed' || o.status === 'shipped' ||\n  o.sleeves_status === 'pending' || o.sleeves_status === 'contacted' || o.sleeves_status === 'confirmed' || o.sleeves_status === 'shipped'\n);\nconst completedOrders = orders.filter(o =>\n  o.status === 'delivered' || o.status === 'completed' ||\n  o.sleeves_status === 'delivered' || o.sleeves_status === 'completed'\n);\n\nlet customerStatus = 'NUEVO';\nif (pendingOrders.length > 0) customerStatus = 'TIENE_ORDEN_PENDIENTE';\nelse if (completedOrders.length > 0) customerStatus = 'CLIENTE_RECURRENTE';\n\nconst hasPendingTransfer = pendingOrders.length > 0 && pendingOrders[0].payment_method === 'pending';\n\n// Sort pending orders by created_at DESC, take the most recent\nconst sortedPending = [...pendingOrders].sort((a, b) => {\n  const da = new Date(a.created_at || 0);\n  const db = new Date(b.created_at || 0);\n  return db - da;\n});\nconst latestPending = sortedPending[0] || null;\n\n// Determine if we need to resend the confirmation template.\n// Conditions: latest order is pending/contacted, template was NOT already sent\n// (or template flag expired), and the current route is not already handling\n// the order (template_reply, maps_reply, web_order, template_cancel).\nconst templateSent = original.template_sent || false;\nconst route = original.route || '';\nconst handledRoutes = ['template_reply', 'maps_reply', 'web_order', 'template_cancel', 'cancellation_reason'];\nconst isPendingStatus = latestPending && (latestPending.status === 'pending' || latestPending.status === 'contacted');\nconst needsTemplateResend = isPendingStatus && !templateSent && !handledRoutes.includes(route);\n\n// Build resend order data from the Ordefy order if needed\nlet resendOrderData = null;\nif (needsTemplateResend && latestPending) {\n  const o = latestPending;\n  const items = o.items || o.line_items || [];\n  const firstItem = items[0] || {};\n  const productName = firstItem.name || firstItem.product_name || 'Producto Solenne';\n  const totalQty = items.reduce((sum, i) => sum + (i.quantity || 1), 0);\n  const totalPrice = o.total_price || o.total || 0;\n  const fmtTotal = Number(totalPrice).toLocaleString('es-PY');\n  const customerName = o.customer_name || original.name || 'Cliente';\n  const mapsLink = o.google_maps_url || o.google_maps_link || '';\n  const city = o.city || o.shipping_city || '';\n  const address = o.address || o.shipping_address?.address || '';\n  const hasGPS = !!(mapsLink && mapsLink.length > 10 && mapsLink.includes('google'));\n  const addressText = address || city || 'Direccion pendiente';\n\n  const productMap = {\n    'PDRN Pink Peptide Serum - Personal': 'PDRN Serum Personal',\n    'PDRN Pink Peptide Serum - Kit Duo': 'Kit Duo (2 PDRN Serum)',\n    'PDRN Pink Peptide Serum - Kit Familiar': 'Kit Familiar (3 PDRN Serum)',\n    'V-Shaped Invisible Face Tape': 'Solenne V-Shaped Face Tape',\n    'V-Shaped Invisible Face Tape - Caja Individual': 'Solenne V-Shaped Face Tape',\n    'V-Shaped Invisible Face Tape - Pack Ritual': 'Pack Ritual (2 cajas Face Tape)',\n    'V-Shaped Invisible Face Tape - Pack Evento': 'Pack Evento (3 cajas Face Tape + bolsa)'\n  };\n  let productDisplay = productMap[productName] || productName;\n  const isSerumOrder = productName.toLowerCase().includes('pdrn') || productName.toLowerCase().includes('serum');\n  if (isSerumOrder && totalQty === 2) productDisplay = 'Kit Duo (2 PDRN Serum)';\n  if (isSerumOrder && totalQty === 3) productDisplay = 'Kit Familiar (3 PDRN Serum)';\n\n  resendOrderData = {\n    phone: phone,\n    customer_name: customerName,\n    product: productDisplay,\n    total: fmtTotal,\n    total_raw: totalPrice,\n    quantity: totalQty,\n    order_number: o.order_number || '',\n    maps_link: mapsLink,\n    city: city,\n    address: addressText,\n    has_gps: hasGPS,\n    payment_method: o.payment_method || 'pending',\n    payment_status: o.financial_status || 'pending'\n  };\n}\n\nreturn { json: {\n  ...original,\n  phone_digits: digits,\n  customer_status: customerStatus,\n  has_pending_order: pendingOrders.length > 0,\n  has_pending_transfer: hasPendingTransfer,\n  pending_orders: pendingOrders,\n  order_history: orders,\n  pending_order_number: pendingOrders[0]?.order_number || null,\n  needs_template_resend: needsTemplateResend,\n  resend_order_data: resendOrderData\n}};"
+          "jsCode": "// Process Ordefy HTTP response\nconst item = $input.first();\nconst original = $('Extract & Route').first().json;\nconst phone = original.phone || '';\nconst digits = phone.replace(/\\D/g, '');\n\n// Parse Ordefy response\nlet orders = [];\ntry {\n  const response = item.json;\n  orders = Array.isArray(response) ? response : (response.orders || response.data || []);\n} catch(e) {}\n\nconst pendingOrders = orders.filter(o =>\n  o.status === 'pending' || o.status === 'contacted' || o.status === 'confirmed' || o.status === 'shipped' ||\n  o.sleeves_status === 'pending' || o.sleeves_status === 'contacted' || o.sleeves_status === 'confirmed' || o.sleeves_status === 'shipped'\n);\nconst completedOrders = orders.filter(o =>\n  o.status === 'delivered' || o.status === 'completed' ||\n  o.sleeves_status === 'delivered' || o.sleeves_status === 'completed'\n);\n\nlet customerStatus = 'NUEVO';\nif (pendingOrders.length > 0) customerStatus = 'TIENE_ORDEN_PENDIENTE';\nelse if (completedOrders.length > 0) customerStatus = 'CLIENTE_RECURRENTE';\n\nconst hasPendingTransfer = pendingOrders.length > 0 && pendingOrders[0].payment_method === 'pending';\n\n// Sort pending orders by created_at DESC, take the most recent\nconst sortedPending = [...pendingOrders].sort((a, b) => {\n  const da = new Date(a.created_at || 0);\n  const db = new Date(b.created_at || 0);\n  return db - da;\n});\nconst latestPending = sortedPending[0] || null;\n\n// Determine if we need to resend the confirmation template.\n// Conditions: latest order is pending/contacted, template was NOT already sent\n// (or template flag expired), and the current route is not already handling\n// the order (template_reply, maps_reply, web_order, template_cancel).\nconst templateSent = original.template_sent || false;\nconst route = original.route || '';\nconst handledRoutes = ['template_reply', 'maps_reply', 'web_order', 'template_cancel', 'cancellation_reason'];\nconst isPendingStatus = latestPending && (latestPending.status === 'pending' || latestPending.status === 'contacted');\nconst needsTemplateResend = isPendingStatus && !templateSent && !handledRoutes.includes(route);\n\n// Build resend order data from the Ordefy order if needed\nlet resendOrderData = null;\nif (needsTemplateResend && latestPending) {\n  const o = latestPending;\n  const items = o.items || o.line_items || [];\n  const firstItem = items[0] || {};\n  const productName = firstItem.name || firstItem.product_name || 'Producto Solenne';\n  const totalQty = items.reduce((sum, i) => sum + (i.quantity || 1), 0);\n  const totalPrice = o.total_price || o.total || 0;\n  const fmtTotal = Number(totalPrice).toLocaleString('es-PY');\n  const customerName = o.customer_name || original.name || 'Cliente';\n  const mapsLink = o.google_maps_url || o.google_maps_link || '';\n  const city = o.city || o.shipping_city || '';\n  const address = o.address || o.shipping_address?.address || '';\n  const hasGPS = !!(mapsLink && mapsLink.length > 10 && mapsLink.includes('google'));\n  const addressText = address || city || 'Direccion pendiente';\n\n  const productMap = {\n    'PDRN Pink Peptide Serum - Personal': 'PDRN Serum Personal',\n    'PDRN Pink Peptide Serum - Kit Duo': 'Kit Duo (2 PDRN Serum)',\n    'PDRN Pink Peptide Serum - Kit Familiar': 'Kit Familiar (3 PDRN Serum)',\n    'V-Shaped Invisible Face Tape': 'Solenne V-Shaped Face Tape',\n    'V-Shaped Invisible Face Tape - Caja Individual': 'Solenne V-Shaped Face Tape',\n    'V-Shaped Invisible Face Tape - Pack Ritual': 'Pack Ritual (2 cajas Face Tape)',\n    'V-Shaped Invisible Face Tape - Pack Evento': 'Pack Evento (3 cajas Face Tape)'\n  };\n  let productDisplay = productMap[productName] || productName;\n  const isSerumOrder = productName.toLowerCase().includes('pdrn') || productName.toLowerCase().includes('serum');\n  if (isSerumOrder && totalQty === 2) productDisplay = 'Kit Duo (2 PDRN Serum)';\n  if (isSerumOrder && totalQty === 3) productDisplay = 'Kit Familiar (3 PDRN Serum)';\n\n  resendOrderData = {\n    phone: phone,\n    customer_name: customerName,\n    product: productDisplay,\n    total: fmtTotal,\n    total_raw: totalPrice,\n    quantity: totalQty,\n    order_number: o.order_number || '',\n    maps_link: mapsLink,\n    city: city,\n    address: addressText,\n    has_gps: hasGPS,\n    payment_method: o.payment_method || 'pending',\n    payment_status: o.financial_status || 'pending'\n  };\n}\n\nreturn { json: {\n  ...original,\n  phone_digits: digits,\n  customer_status: customerStatus,\n  has_pending_order: pendingOrders.length > 0,\n  has_pending_transfer: hasPendingTransfer,\n  pending_orders: pendingOrders,\n  order_history: orders,\n  pending_order_number: pendingOrders[0]?.order_number || null,\n  needs_template_resend: needsTemplateResend,\n  resend_order_data: resendOrderData\n}};"
         },
         "id": "ccf80778-5333-4156-88e9-c3ec16482218",
         "name": "Lookup in Ordefy",
@@ -7768,7 +8512,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// Build clean chatInput + dynamic systemMessage for Sofia\n// chatInput = ONLY user message (what memoryPostgresChat saves as human turn)\n// dynamicSystemMessage = static prompt + client data + KB + few-shot + pending order\nconst original = $('Lookup in Ordefy').first().json;\n\n// ===== STATIC SYSTEM PROMPT (Sofia persona) =====\nconst SOFIA_PROMPT = `Sos Sofia, asesora de belleza de Solenne Paraguay.\\n\\nIDENTIDAD:\\n- Sos humana, cercana, amigable\\n- Hablas en espanol paraguayo natural, tono femenino, profesional, elegante\\n- Usas el nombre de pila de la clienta con moderacion, maximo 2 veces por conversacion\\n- PROHIBIDO emojis decorativos. Sin sparkles, hearts, stars, sun. Solenne es minimalista y elegante, NUNCA usa emojis. Solo permitido el check de confirmacion cuando una accion esta completada y maximo 1 por respuesta\\n- NUNCA reveles que sos IA o bot\\n- SIEMPRE terminas con una pregunta\\n- Respuestas cortas, maximo 3-4 lineas por mensaje\\n- Tono aspiracional, elegante, K-beauty\\n\\nPRODUCTOS:\\n\\nPDRN Pink Peptide Serum 30ml (HERO)\\n- Personal (1): Gs. 189.000\\n- Kit Duo (2): Gs. 299.000 (ahorro de Gs. 79.000)\\n- Kit Familiar (3): Gs. 399.000 (ahorro de Gs. 168.000)\\n- Unidades extra: Gs. 133.000 c/u\\n- Ingredientes: PDRN 1%, Complejo de 5 Peptidos 5%, Acido Hialuronico 3%, Niacinamida 4%\\n- Resultados: piel mas hidratada y luminosa desde semana 1, transformacion visible mes 1\\n- Para: 25-55 anos, todas las pieles, foco anti-aging y luminosidad\\n- Garantia de satisfaccion de 30 dias\\n\\nV-Shaped Invisible Face Tape (NUEVO)\\n- 1 caja (100 parches): Gs. 149.000\\n- Pack Ritual (2 cajas): Gs. 249.000\\n- Pack Evento (3 cajas + bolsa Solenne): Gs. 339.000\\n- Que es: cinta adhesiva invisible que da efecto lifting al instante en mejillas, papada, contorno o parpados\\n- Aplicacion: 30 segundos. Estira hacia arriba, fija detras de oreja\\n- Caracteristicas: 100% invisible, resistente al agua y sudor, compatible con maquillaje\\n- Duracion: efecto temporal para todo el dia, se retira al final\\n- Para: mujeres 32+ que buscan resultado visible para eventos, fotos, reuniones\\n- La tape NO tiene garantia de devolucion (por uso temporal)\\n\\nREGLAS DE CLAIMS (NO NEGOCIABLE para la TAPE):\\n- Decir SI: \\\"efecto lifting temporal\\\", \\\"luce mas joven en segundos\\\", \\\"para eventos especiales\\\", \\\"mientras lo usas\\\"\\n- Decir NO: \\\"elimina arrugas\\\", \\\"reemplaza Botox\\\", \\\"lifting permanente\\\", \\\"tratamiento medico\\\", \\\"cura\\\"\\n- Si la clienta hace una analogia con cirugia o Botox, no la confirmes ni la corrijas. Redirigi: \\\"es lo mejor para cuando queres lucir radiante en una ocasion especial sin gastar una fortuna\\\"\\n\\nLOGISTICA (ambos productos):\\n- Envio GRATIS a todo Paraguay, 1-3 dias habiles\\n- NO tienen local fisico, solo delivery\\n\\nESTRATEGIA DE VENTA:\\n- Presentas la oportunidad sin rogar\\n- Usas escasez real: \\\"nos quedan pocas unidades\\\"\\n- Usas prueba social: \\\"es nuestro mas vendido, ya van 2800+ clientas felices\\\" (solo para SERUM, la TAPE es nueva)\\n- Siempre intentas el upsell al Kit Duo / Pack Ritual cuando es natural\\n- Cierre logistico: \\\"Estamos preparando envios hoy, te gustaria recibir el tuyo?\\\"\\n\\nCROSS-SELL ASIMETRICO (REGLA CRITICA):\\n- Compradora de SERUM -> NO ofrecer tape. La clienta del serum busca skincare activo, no lifting temporal. Cerrar la venta del serum sin cross-sell de tape.\\n- Compradora de TAPE -> SI ofrecer serum. \\\"Despues del lifting con el tape, el serum te potencia el glow desde adentro. Sumate el PDRN Serum por Gs. [precio]. Es el combo perfecto para tu proximo evento.\\\"\\n- NUNCA sugerir el camino inverso serum -> tape.\\n\\nMANEJO DE OBJECIONES (SERUM):\\n- \\\"Es caro\\\" -> No bajas precio. Justificas: \\\"Son menos de Gs. 3.200 por dia por una piel radiante. Ademas con el Kit Duo ahorras Gs. 79.000\\\"\\n- \\\"Lo pienso\\\" -> \\\"Perfecto, te reservo uno por hoy por las dudas. Te parece?\\\"\\n- \\\"No confio\\\" -> \\\"Tenes 30 dias de garantia. Si no te gusta, te devolvemos tu plata\\\"\\n- \\\"Funciona?\\\" -> Describir ingredientes premium y resultados desde primera semana\\n- \\\"Vi algo parecido mas barato\\\" -> \\\"El PDRN concentrado al 1% es lo que lo diferencia. La mayoria usa concentraciones menores\\\"\\n\\nMANEJO DE OBJECIONES (TAPE):\\n- \\\"Es caro\\\" -> \\\"1 caja te dura varias semanas, sale menos de Gs. 1.500 por aplicacion. Y con el Pack Ritual de 2 cajas ahorras Gs. 49.000\\\"\\n- \\\"Funciona de verdad?\\\" -> \\\"El efecto es instantaneo, lo aplicas y lo ves al segundo. Es para usar el dia que queres lucir increible\\\"\\n- \\\"Es como Botox?\\\" -> \\\"No es lo mismo, esto es 100% temporal y solo dura mientras lo usas. Es perfecto para eventos especiales sin gastar en tratamientos\\\"\\n- \\\"Se nota?\\\" -> \\\"100% invisible, ni con el cabello suelto se ve. Resiste agua y sudor todo el dia\\\"\\n- \\\"Lo pienso\\\" -> \\\"Perfecto, te aparto una caja por hoy. Tenes algun evento en particular para usarla?\\\"\\n\\nCUANDO CERRAR:\\n- Si pregunto precio dos veces -> ofrece el Kit Duo (serum) o Pack Ritual (tape)\\n- Si duda -> ofrece reservar sin compromiso\\n- Si confirma -> pedi direccion + nombre inmediatamente\\n\\nCONFIRMACION DE ENVIO:\\n- \\\"Te enviaremos tu pedido lo antes posible. El delivery se pondra en contacto para coordinar la entrega!\\\"\\n\\nCUANDO USAR send_media:\\n- Usa send_media(\\\"lista_precios\\\") solo cuando la clienta esta dudando del precio EN MEDIO de una negociacion\\n- Usa send_media(\\\"pack_comparativo\\\") cuando hay oportunidad clara de upsell\\n- Usa send_media(\\\"foto_producto\\\") solo si la clienta pide ver fotos del serum o tape durante la conversacion\\n- NO envies media si el FAQ ya lo hizo en la primera interaccion\\n\\nCUANDO ESCALAR A HUMANO:\\n- Clienta muy enojada o con queja grave\\n- Error tecnico en la web\\n- Pedido con problema de entrega\\n- Solicitud que no podes resolver\\n\\nNUNCA:\\n- Bajar el precio\\n- Inventar stock\\n- Prometer hora exacta de entrega\\n- Dejar un mensaje sin pregunta al final\\n- Enviar mensajes largos (maximo 3-4 lineas)\\n- Usar \\\"usted\\\", siempre tutear`;\n\n// ===== BUILD DYNAMIC CONTEXT =====\nconst dynamicParts = [];\n\n// 1. Client data block\nconst phone = original.phone || '';\nconst conversationId = original.conversation_id || '';\nconst accountId = original.account_id || '9';\nconst clientName = original.name || '';\nconst customerStatus = original.customer_status || 'NUEVO';\nconst isWebOrder = original.is_web_order || false;\n\nconst pyNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Asuncion' }));\nconst pyHour = pyNow.getHours();\nconst pyMins = String(pyNow.getMinutes()).padStart(2, '0');\nconst pyTimeStr = pyHour + ':' + pyMins;\nconst isDespacho = pyHour >= 14 && pyHour < 17;\nconst horaInfo = isDespacho ? pyTimeStr + ' [HORARIO DE DESPACHO ACTIVO]' : pyTimeStr;\n\n// Check minutes since last message in this conversation (to skip greeting if < 5h)\nlet minutosSinceMsg = 9999;\nif (conversationId) {\n  try {\n    const sbKey = '{{SUPABASE_ANON_KEY}}';\n    const histCheck = await $helpers.httpRequest({\n      method: 'GET',\n      url: 'https://qapqhhyfzmgkvzvtoluq.supabase.co/rest/v1/solenne_chat_histories?session_id=eq.' + conversationId + '&order=id.desc&limit=1',\n      headers: {\n        'apikey': sbKey,\n        'Authorization': 'Bearer ' + sbKey\n      }\n    });\n    const rows = Array.isArray(histCheck) ? histCheck : [];\n    if (rows.length > 0 && rows[0].created_at) {\n      const lastTs = new Date(rows[0].created_at).getTime();\n      minutosSinceMsg = Math.round((Date.now() - lastTs) / 60000);\n    }\n  } catch(e) { /* keep default */ }\n}\n\n// Check if images were already sent via custom_attribute (fast, reliable)\nlet imagenEnviada = false;\nif (original.contact_id) {\n  try {\n    const contactData = await $helpers.httpRequest({\n      method: 'GET',\n      url: 'https://chat.thebrightidea.ai/api/v1/accounts/' + accountId + '/contacts/' + original.contact_id,\n      headers: { 'api_access_token': 'daxHcwWJRwDMwBu4TZ1Cs83k' }\n    });\n    const attrs = contactData?.custom_attributes || {};\n    imagenEnviada = attrs.product_images_sent === true || attrs.product_images_sent === 'true';\n  } catch(e) {\n    // Fallback: scan Chatwoot private notes\n    try {\n      const cwMessages = await $helpers.httpRequest({\n        method: 'GET',\n        url: 'https://chat.thebrightidea.ai/api/v1/accounts/' + accountId + '/conversations/' + conversationId + '/messages',\n        headers: { 'api_access_token': 'daxHcwWJRwDMwBu4TZ1Cs83k' }\n      });\n      const msgs = Array.isArray(cwMessages?.payload) ? cwMessages.payload : [];\n      imagenEnviada = msgs.some(m =>\n        m.private === true &&\n        m.content &&\n        (m.content.toLowerCase().includes('magen') || m.content.toLowerCase().includes('foto_') || m.content.toLowerCase().includes('foto '))\n      );\n    } catch(e2) { /* default false */ }\n  }\n}\n\n// Compute google_maps_url from current message's order_data (WhatsApp location pin or maps link)\nlet googleMapsUrl = '';\nconst orderDataGps = original.order_data;\nif (orderDataGps) {\n  if (orderDataGps.latitude && orderDataGps.longitude) {\n    googleMapsUrl = 'https://maps.google.com/?q=' + orderDataGps.latitude + ',' + orderDataGps.longitude;\n  } else if (orderDataGps.mapsLink) {\n    googleMapsUrl = orderDataGps.mapsLink;\n  }\n}\n\ndynamicParts.push('[DATOS DEL CLIENTE - USA ESTOS VALORES EXACTOS EN LAS TOOLS]\\nphone: ' + phone + '\\nconversation_id: ' + conversationId + '\\naccount_id: ' + accountId + '\\nname: ' + clientName + '\\ncustomer_status: ' + customerStatus + '\\nis_web_order: ' + isWebOrder + '\\nhora_paraguay: ' + horaInfo + '\\nminutos_desde_ultimo_mensaje: ' + minutosSinceMsg + '\\nimagen_enviada: ' + imagenEnviada + (googleMapsUrl ? '\\ngoogle_maps_url: ' + googleMapsUrl : '') + '\\n[FIN DATOS]');\n\n// Real-time stock from Ordefy\nlet stockSerumCtx = 0, stockTapeCtx = 0;\ntry {\n  const sbKeyOrd = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZncWVjcXFsZXVvd3ZvaW1jb3hnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNTY5NzcsImV4cCI6MjA4MjYzMjk3N30.aRX16e_vGkRgYN1RNMjF8bAOK8PmvwoFYFjGDEfa-YI';\n  const stockRes = await $helpers.httpRequest({\n    method: 'GET',\n    url: 'https://vgqecqqleuowvoimcoxg.supabase.co/rest/v1/products?select=sku,stock&store_id=eq.0b3f13f8-d1dc-48a5-a707-27a095c9c545&sku=in.(SOLENNE-PDRN-30ML,SOLENNE-TAPE-100)',\n    headers: { 'apikey': sbKeyOrd, 'Authorization': 'Bearer ' + sbKeyOrd },\n    timeout: 3000\n  });\n  const sRows = Array.isArray(stockRes) ? stockRes : [];\n  for (const r of sRows) {\n    if (r.sku === 'SOLENNE-PDRN-30ML') stockSerumCtx = r.stock || 0;\n    if (r.sku === 'SOLENNE-TAPE-100') stockTapeCtx = r.stock || 0;\n  }\n} catch(e) { stockSerumCtx = -1; stockTapeCtx = -1; }\nconst serumStatus = stockSerumCtx < 0 ? 'desconocido' : (stockSerumCtx > 0 ? 'En stock (' + stockSerumCtx + ' uds)' : 'AGOTADO');\nconst tapeStatus = stockTapeCtx < 0 ? 'desconocido' : (stockTapeCtx > 0 ? 'En stock (' + stockTapeCtx + ' uds)' : 'AGOTADO');\ndynamicParts.push('[STOCK ACTUAL]\\nPDRN SERUM: ' + serumStatus + '\\nV-SHAPED FACE TAPE: ' + tapeStatus + '\\nIMPORTANTE: Si un producto esta AGOTADO, NO lo ofrezcas. Informale que no esta disponible.\\n[FIN STOCK]');\n\n// 2. Pending order block\nif (customerStatus === 'TIENE_ORDEN_PENDIENTE' && original.pending_orders && original.pending_orders.length > 0) {\n  const po = original.pending_orders[0];\n  const items = po.items || [];\n  const productItems = items.filter(i => !i.is_upsell);\n  const itemsDesc = productItems.map(i =>\n    (i.quantity || 1) + 'x ' + (i.name || i.sku || 'Producto')\n  ).join(', ');\n  const total = po.totals?.total || po.total || '';\n  const addr = po.shipping_address?.address || '';\n  const city = po.shipping_address?.city || '';\n  const pmMap = { 'pending': 'transferencia', 'cash_on_delivery': 'contra_entrega' };\n  const pm = pmMap[po.payment_method] || po.payment_method || '';\n\n  dynamicParts.push('[ORDEN PENDIENTE DEL CLIENTE]\\n' +\n    'Pedido #: ' + (po.order_number || 'N/A') + '\\n' +\n    'Producto: ' + (itemsDesc || 'N/A') + '\\n' +\n    (total ? 'Total: ' + Number(total).toLocaleString('es-PY') + ' Gs\\n' : '') +\n    (addr ? 'Direccion: ' + addr + '\\n' : '') +\n    (city ? 'Ciudad: ' + city + '\\n' : '') +\n    (pm ? 'Forma de pago: ' + pm + '\\n' : '') +\n    'Estado: ' + (po.status || 'pendiente') + '\\n' +\n    '[FIN ORDEN PENDIENTE]');\n\n  dynamicParts.push('[REGLA CRITICA - ORDEN PRE-EXISTENTE]\\n' +\n    'El cliente YA hizo este pedido por la web o el template antes de escribirte. Los datos estan COMPLETOS.\\n' +\n    'PROHIBIDO pedir: nombre, producto, cantidad, ciudad, direccion, forma de pago.\\n' +\n    'Cuando el cliente confirme con \"si\", \"confirmo\", \"dale\", \"ok\", \"listo\", o equivalente, llama a confirm_order con EXACTAMENTE estos valores:\\n' +\n    '  nombre = \"' + (po.customer_name || clientName || '') + '\"\\n' +\n    '  ciudad = \"' + city + '\"\\n' +\n    '  direccion = \"' + addr + '\"\\n' +\n    '  producto = \"' + (itemsDesc || '') + '\"\\n' +\n    '  cantidad = ' + (productItems.reduce((s, i) => s + (i.quantity || 1), 0) || 1) + '\\n' +\n    '  forma_pago = \"' + (pm || 'contra_entrega') + '\"\\n' +\n    'Si el cliente pregunta por el envio, aclara que el delivery se contacta para coordinar. No repitas pedir direccion.\\n' +\n    'Si el cliente quiere cancelar o cambiar algo, no modifiques la orden: escala a human_handoff.\\n' +\n    '[FIN REGLA CRITICA]');\n}\n\n// 3. KB context\nlet kbContext = '';\ntry {\n  const kbResult = $('Fetch Knowledge Base').all();\n  const kbData = kbResult.map(i => i.json);\n  const entries = Array.isArray(kbData) && kbData.length > 0 && Array.isArray(kbData[0]) ? kbData[0] : kbData;\n  if (entries.length > 0 && entries[0]?.category) {\n    const msgLower = (original.content || '').toLowerCase();\n    const matched = entries.filter(e => {\n      if (!e.trigger_keywords || !Array.isArray(e.trigger_keywords)) return false;\n      return e.trigger_keywords.some(kw => msgLower.includes(kw.toLowerCase()));\n    });\n    const toUse = matched.length > 0 ? matched : entries.slice(0, 5);\n    kbContext = '--- CONTEXTO KB RELEVANTE ---\\n' + toUse.map(e =>\n      '- [' + e.category + '] ' + e.content\n    ).join('\\n').slice(0, 2000) + '\\n--- FIN CONTEXTO KB ---';\n    dynamicParts.push(kbContext);\n  }\n} catch (e) { /* KB fetch failed, continue */ }\n\n// 4. Few-shot examples\nlet fewShotContext = '';\ntry {\n  const fsResult = $('Fetch Few-Shot').all();\n  const fsData = fsResult.map(i => i.json);\n  const entries = Array.isArray(fsData) && fsData.length > 0 && Array.isArray(fsData[0]) ? fsData[0] : fsData;\n  if (entries.length > 0 && entries[0]?.scenario) {\n    fewShotContext = '--- EJEMPLOS DE REFERENCIA ---\\n' + entries.map(e =>\n      'Escenario: ' + e.scenario + '\\n' + e.conversation_text + '\\nResultado: ' + e.outcome\n    ).join('\\n---\\n').slice(0, 1500) + '\\n--- FIN EJEMPLOS ---';\n    dynamicParts.push(fewShotContext);\n  }\n} catch (e) { /* few-shot fetch failed, continue */ }\n\n// Build complete dynamic system message\nconst dynamicSystemMessage = SOFIA_PROMPT + '\\n\\n' + dynamicParts.join('\\n\\n');\n\n// ===== CLEAN CHATINPUT (user message only - this is what memoryPostgresChat saves) =====\nlet messageContent = original.content || '';\n\n// Handle location data\nconst orderData = original.order_data;\nif (orderData && (orderData.latitude || orderData.mapsLink)) {\n  let locInfo = '';\n  if (orderData.latitude) {\n    locInfo = '[Ubicacion GPS del cliente: ' + googleMapsUrl + ']';\n  } else if (orderData.mapsLink) {\n    locInfo = '[Link de ubicacion del cliente: ' + orderData.mapsLink + ']';\n  }\n  if (!messageContent || /^https?:\\/\\//.test(messageContent.trim())) {\n    messageContent = locInfo;\n  } else {\n    messageContent += '\\n' + locInfo;\n  }\n} else if (!messageContent && original.has_location_attachment) {\n  messageContent = '[El cliente compartio su ubicacion GPS por WhatsApp]';\n} else if (!messageContent && original.has_attachment) {\n  messageContent = '[El cliente envio un archivo adjunto]';\n} else if (!messageContent) {\n  messageContent = '[Mensaje del cliente sin texto]';\n}\n\nreturn [{\n  json: {\n    ...original,\n    chatInput: messageContent,\n    dynamicSystemMessage: dynamicSystemMessage,\n    kb_context: kbContext,\n    fewshot_context: fewShotContext\n  },\n  pairedItem: { item: 0 }\n}];"
+          "jsCode": "// Build clean chatInput + dynamic systemMessage for Sofia\n// chatInput = ONLY user message (what memoryPostgresChat saves as human turn)\n// dynamicSystemMessage = static prompt + client data + KB + few-shot + pending order\nconst original = $('Lookup in Ordefy').first().json;\n\n// ===== STATIC SYSTEM PROMPT (Sofia persona) =====\nconst SOFIA_PROMPT = `Sos Sofia, asesora de belleza de Solenne Paraguay.\\n\\nIDENTIDAD:\\n- Sos humana, cercana, amigable\\n- Hablas en espanol paraguayo natural, tono femenino, profesional, elegante\\n- Usas el nombre de pila de la clienta con moderacion, maximo 2 veces por conversacion\\n- PROHIBIDO emojis decorativos. Sin sparkles, hearts, stars, sun. Solenne es minimalista y elegante, NUNCA usa emojis. Solo permitido el check de confirmacion cuando una accion esta completada y maximo 1 por respuesta\\n- NUNCA reveles que sos IA o bot\\n- SIEMPRE terminas con una pregunta\\n- Respuestas cortas, maximo 3-4 lineas por mensaje\\n- Tono aspiracional, elegante, K-beauty\\n\\nPRODUCTOS:\\n\\nPDRN Pink Peptide Serum 30ml (HERO)\\n- Personal (1): Gs. 189.000\\n- Kit Duo (2): Gs. 299.000 (ahorro de Gs. 79.000)\\n- Kit Familiar (3): Gs. 399.000 (ahorro de Gs. 168.000)\\n- Unidades extra: Gs. 133.000 c/u\\n- Ingredientes: PDRN 1%, Complejo de 5 Peptidos 5%, Acido Hialuronico 3%, Niacinamida 4%\\n- Resultados: piel mas hidratada y luminosa desde semana 1, transformacion visible mes 1\\n- Para: 25-55 anos, todas las pieles, foco anti-aging y luminosidad\\n- Garantia de satisfaccion de 30 dias\\n\\nV-Shaped Invisible Face Tape (NUEVO)\\n- 1 caja (100 parches): Gs. 149.000\\n- Pack Ritual (2 cajas): Gs. 229.000\\n- Pack Evento (3 cajas): Gs. 339.000\\n- Que es: cinta adhesiva invisible que da efecto lifting al instante en mejillas, papada, contorno o parpados\\n- Aplicacion: 30 segundos. Estira hacia arriba, fija detras de oreja\\n- Caracteristicas: 100% invisible, resistente al agua y sudor, compatible con maquillaje\\n- Duracion: efecto temporal para todo el dia, se retira al final\\n- Para: mujeres 32+ que buscan resultado visible para eventos, fotos, reuniones\\n- La tape NO tiene garantia de devolucion (por uso temporal)\\n\\nREGLAS DE CLAIMS (NO NEGOCIABLE para la TAPE):\\n- Decir SI: \\\"efecto lifting temporal\\\", \\\"luce mas joven en segundos\\\", \\\"para eventos especiales\\\", \\\"mientras lo usas\\\"\\n- Decir NO: \\\"elimina arrugas\\\", \\\"reemplaza Botox\\\", \\\"lifting permanente\\\", \\\"tratamiento medico\\\", \\\"cura\\\"\\n- Si la clienta hace una analogia con cirugia o Botox, no la confirmes ni la corrijas. Redirigi: \\\"es lo mejor para cuando queres lucir radiante en una ocasion especial sin gastar una fortuna\\\"\\n\\nLOGISTICA (ambos productos):\\n- Envio GRATIS a todo Paraguay, 1-3 dias habiles\\n- NO tienen local fisico, solo delivery\\n\\nESTRATEGIA DE VENTA:\\n- Presentas la oportunidad sin rogar\\n- Usas escasez real: \\\"nos quedan pocas unidades\\\"\\n- Usas prueba social: \\\"es nuestro mas vendido, ya van 2800+ clientas felices\\\" (solo para SERUM, la TAPE es nueva)\\n- Cierre logistico: \\\"Estamos preparando envios hoy, te gustaria recibir el tuyo?\\\"\\n\\nMANEJO DE OBJECIONES (SERUM):\\n- \\\"Es caro\\\" -> No bajas precio. Justificas: \\\"Son menos de Gs. 3.200 por dia por una piel radiante. Ademas con el Kit Duo ahorras Gs. 79.000\\\"\\n- \\\"Lo pienso\\\" -> \\\"Perfecto, te reservo uno por hoy por las dudas. Te parece?\\\"\\n- \\\"No confio\\\" -> \\\"Tenes 30 dias de garantia. Si no te gusta, te devolvemos tu plata\\\"\\n- \\\"Funciona?\\\" -> Describir ingredientes premium y resultados desde primera semana\\n- \\\"Vi algo parecido mas barato\\\" -> \\\"El PDRN concentrado al 1% es lo que lo diferencia. La mayoria usa concentraciones menores\\\"\\n\\nMANEJO DE OBJECIONES (TAPE):\\n- \\\"Es caro\\\" -> \\\"1 caja te dura varias semanas, sale menos de Gs. 1.500 por aplicacion. Y con el Pack Ritual de 2 cajas ahorras Gs. 49.000\\\"\\n- \\\"Funciona de verdad?\\\" -> \\\"El efecto es instantaneo, lo aplicas y lo ves al segundo. Es para usar el dia que queres lucir increible\\\"\\n- \\\"Es como Botox?\\\" -> \\\"No es lo mismo, esto es 100% temporal y solo dura mientras lo usas. Es perfecto para eventos especiales sin gastar en tratamientos\\\"\\n- \\\"Se nota?\\\" -> \\\"100% invisible, ni con el cabello suelto se ve. Resiste agua y sudor todo el dia\\\"\\n- \\\"Lo pienso\\\" -> \\\"Perfecto, te aparto una caja por hoy. Tenes algun evento en particular para usarla?\\\"\\n\\nCUANDO CERRAR:\\n- Si pregunto precio dos veces -> ofrece el Kit Duo (serum) o Pack Ritual (tape)\\n- Si duda -> ofrece reservar sin compromiso\\n- Si confirma -> pedi direccion + nombre inmediatamente\\n\\nCONFIRMACION DE ENVIO:\\n- \\\"Te enviaremos tu pedido lo antes posible. El delivery se pondra en contacto para coordinar la entrega!\\\"\\n\\n=== REGLAS CRITICAS DE TOOLS (NO NEGOCIABLE) ===\\n\\nREGLA 1 - HONESTIDAD ABSOLUTA SOBRE RESULTADO DE TOOLS:\\n- Si confirm_order o send_media devuelven success:false, NUNCA digas \"pedido confirmado\" ni \"ya esta tu pedido en sistema\" ni equivalente.\\n- Si el resultado tiene \"error_type\":\"missing_fields\", pedi exactamente los datos que faltan al cliente y volve a llamar confirm_order con TODOS los campos.\\n- Si el resultado tiene \"error_type\":\"duplicate_order\", responde: \"Tu pedido ya esta confirmado y en proceso. Te llegara pronto\" y NO crees nuevo pedido.\\n- Si el resultado tiene \"human_handoff_required\":true o \"DO_NOT_CALL_AGAIN\":true sin error_type missing_fields, llama human_handoff inmediato y responde: \"Tuvimos un inconveniente tecnico, una asesora te confirma en breve.\"\\n- Sin excepcion. Mentir al cliente sobre el estado de su pedido es la peor falla posible.\\n\\nREGLA 2 - CAMPOS REQUERIDOS PARA confirm_order:\\n- nombre, direccion, ciudad, producto, cantidad, forma_pago.\\n- Antes de llamar la tool, verifica que TENES los 6 campos en la conversacion. Si te falta alguno, pediselo al cliente PRIMERO.\\n- NUNCA pases strings vacios o \"N/A\" como direccion o ciudad. Si el cliente no los dio, preguntale.\\n\\nREGLA 3 - CLIENTES POST-COMPRA (ya compraron):\\n- Si el cliente menciona \"ya compre\", \"ya pague\", \"ya recibi\", \"ya me llego\", \"ya me entregaron\", \"ya tengo el producto\" o similar, NO intentes upsell. NO llames confirm_order.\\n- Responde: \"Genial, gracias por avisar! Si necesitas algo mas, escribime por aqui.\" y llama human_handoff con motivo \"post_compra\".\\n- El sistema deberia rutearlos antes de que llegues a vos, pero si llegan, manejalo asi.\\n\\n\\nCUANDO USAR send_media:\\n- Usa send_media(\\\"lista_precios\\\") solo cuando la clienta esta dudando del precio EN MEDIO de una negociacion\\n- Usa send_media(\\\"foto_producto\\\") solo si la clienta pide ver fotos del serum o tape durante la conversacion\\n- NO envies media si el FAQ ya lo hizo en la primera interaccion\\n\\nCUANDO ESCALAR A HUMANO:\\n- Clienta muy enojada o con queja grave\\n- Error tecnico en la web\\n- Pedido con problema de entrega\\n- Solicitud que no podes resolver\\n\\nNUNCA:\\n- Bajar el precio\\n- Inventar stock\\n- Prometer hora exacta de entrega\\n- Dejar un mensaje sin pregunta al final\\n- Enviar mensajes largos (maximo 3-4 lineas)\\n- Usar \\\"usted\\\", siempre tutear`;\n\n// ===== BUILD DYNAMIC CONTEXT =====\nconst dynamicParts = [];\n\n// 1. Client data block\nconst phone = original.phone || '';\nconst conversationId = original.conversation_id || '';\nconst accountId = original.account_id || '9';\nconst clientName = original.name || '';\nconst customerStatus = original.customer_status || 'NUEVO';\nconst isWebOrder = original.is_web_order || false;\n\nconst pyNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Asuncion' }));\nconst pyHour = pyNow.getHours();\nconst pyMins = String(pyNow.getMinutes()).padStart(2, '0');\nconst pyTimeStr = pyHour + ':' + pyMins;\nconst isDespacho = pyHour >= 14 && pyHour < 17;\nconst horaInfo = isDespacho ? pyTimeStr + ' [HORARIO DE DESPACHO ACTIVO]' : pyTimeStr;\n\n// Check minutes since last message in this conversation (to skip greeting if < 5h)\nlet minutosSinceMsg = 9999;\nif (conversationId) {\n  try {\n    const sbKey = '{{SUPABASE_ANON_KEY}}';\n    const histCheck = await $helpers.httpRequest({\n      method: 'GET',\n      url: 'https://qapqhhyfzmgkvzvtoluq.supabase.co/rest/v1/solenne_chat_histories?session_id=eq.' + conversationId + '&order=id.desc&limit=1',\n      headers: {\n        'apikey': sbKey,\n        'Authorization': 'Bearer ' + sbKey\n      }\n    });\n    const rows = Array.isArray(histCheck) ? histCheck : [];\n    if (rows.length > 0 && rows[0].created_at) {\n      const lastTs = new Date(rows[0].created_at).getTime();\n      minutosSinceMsg = Math.round((Date.now() - lastTs) / 60000);\n    }\n  } catch(e) { /* keep default */ }\n}\n\n// Check if images were already sent via custom_attribute (fast, reliable)\nlet imagenEnviada = false;\nif (original.contact_id) {\n  try {\n    const contactData = await $helpers.httpRequest({\n      method: 'GET',\n      url: 'https://chat.thebrightidea.ai/api/v1/accounts/' + accountId + '/contacts/' + original.contact_id,\n      headers: { 'api_access_token': 'daxHcwWJRwDMwBu4TZ1Cs83k' }\n    });\n    const attrs = contactData?.custom_attributes || {};\n    imagenEnviada = attrs.product_images_sent === true || attrs.product_images_sent === 'true';\n  } catch(e) {\n    // Fallback: scan Chatwoot private notes\n    try {\n      const cwMessages = await $helpers.httpRequest({\n        method: 'GET',\n        url: 'https://chat.thebrightidea.ai/api/v1/accounts/' + accountId + '/conversations/' + conversationId + '/messages',\n        headers: { 'api_access_token': 'daxHcwWJRwDMwBu4TZ1Cs83k' }\n      });\n      const msgs = Array.isArray(cwMessages?.payload) ? cwMessages.payload : [];\n      imagenEnviada = msgs.some(m =>\n        m.private === true &&\n        m.content &&\n        (m.content.toLowerCase().includes('magen') || m.content.toLowerCase().includes('foto_') || m.content.toLowerCase().includes('foto '))\n      );\n    } catch(e2) { /* default false */ }\n  }\n}\n\n// Compute google_maps_url from current message's order_data (WhatsApp location pin or maps link)\nlet googleMapsUrl = '';\nconst orderDataGps = original.order_data;\nif (orderDataGps) {\n  if (orderDataGps.latitude && orderDataGps.longitude) {\n    googleMapsUrl = 'https://maps.google.com/?q=' + orderDataGps.latitude + ',' + orderDataGps.longitude;\n  } else if (orderDataGps.mapsLink) {\n    googleMapsUrl = orderDataGps.mapsLink;\n  }\n}\n\ndynamicParts.push('[DATOS DEL CLIENTE - USA ESTOS VALORES EXACTOS EN LAS TOOLS]\\nphone: ' + phone + '\\nconversation_id: ' + conversationId + '\\naccount_id: ' + accountId + '\\nname: ' + clientName + '\\ncustomer_status: ' + customerStatus + '\\nis_web_order: ' + isWebOrder + '\\nhora_paraguay: ' + horaInfo + '\\nminutos_desde_ultimo_mensaje: ' + minutosSinceMsg + '\\nimagen_enviada: ' + imagenEnviada + (googleMapsUrl ? '\\ngoogle_maps_url: ' + googleMapsUrl : '') + '\\n[FIN DATOS]');\n\n// Real-time stock from Ordefy\nlet stockSerumCtx = 0, stockTapeCtx = 0;\ntry {\n  const sbKeyOrd = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZncWVjcXFsZXVvd3ZvaW1jb3hnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNTY5NzcsImV4cCI6MjA4MjYzMjk3N30.aRX16e_vGkRgYN1RNMjF8bAOK8PmvwoFYFjGDEfa-YI';\n  const stockRes = await $helpers.httpRequest({\n    method: 'GET',\n    url: 'https://vgqecqqleuowvoimcoxg.supabase.co/rest/v1/products?select=sku,stock&store_id=eq.0b3f13f8-d1dc-48a5-a707-27a095c9c545&sku=in.(SOLENNE-PDRN-30ML,SOLENNE-TAPE-100)',\n    headers: { 'apikey': sbKeyOrd, 'Authorization': 'Bearer ' + sbKeyOrd },\n    timeout: 3000\n  });\n  const sRows = Array.isArray(stockRes) ? stockRes : [];\n  for (const r of sRows) {\n    if (r.sku === 'SOLENNE-PDRN-30ML') stockSerumCtx = r.stock || 0;\n    if (r.sku === 'SOLENNE-TAPE-100') stockTapeCtx = r.stock || 0;\n  }\n} catch(e) { stockSerumCtx = -1; stockTapeCtx = -1; }\nconst serumStatus = stockSerumCtx < 0 ? 'desconocido' : (stockSerumCtx > 0 ? 'En stock (' + stockSerumCtx + ' uds)' : 'AGOTADO');\nconst tapeStatus = stockTapeCtx < 0 ? 'desconocido' : (stockTapeCtx > 0 ? 'En stock (' + stockTapeCtx + ' uds)' : 'AGOTADO');\ndynamicParts.push('[STOCK ACTUAL]\\nPDRN SERUM: ' + serumStatus + '\\nV-SHAPED FACE TAPE: ' + tapeStatus + '\\nIMPORTANTE: Si un producto esta AGOTADO, NO lo ofrezcas. Informale que no esta disponible.\\n[FIN STOCK]');\n\n// 2. Pending order block\nif (customerStatus === 'TIENE_ORDEN_PENDIENTE' && original.pending_orders && original.pending_orders.length > 0) {\n  const po = original.pending_orders[0];\n  const items = po.items || [];\n  const productItems = items.filter(i => !i.is_upsell);\n  const itemsDesc = productItems.map(i =>\n    (i.quantity || 1) + 'x ' + (i.name || i.sku || 'Producto')\n  ).join(', ');\n  const total = po.totals?.total || po.total || '';\n  const addr = po.shipping_address?.address || '';\n  const city = po.shipping_address?.city || '';\n  const pmMap = { 'pending': 'transferencia', 'cash_on_delivery': 'contra_entrega' };\n  const pm = pmMap[po.payment_method] || po.payment_method || '';\n\n  dynamicParts.push('[ORDEN PENDIENTE DEL CLIENTE]\\n' +\n    'Pedido #: ' + (po.order_number || 'N/A') + '\\n' +\n    'Producto: ' + (itemsDesc || 'N/A') + '\\n' +\n    (total ? 'Total: ' + Number(total).toLocaleString('es-PY') + ' Gs\\n' : '') +\n    (addr ? 'Direccion: ' + addr + '\\n' : '') +\n    (city ? 'Ciudad: ' + city + '\\n' : '') +\n    (pm ? 'Forma de pago: ' + pm + '\\n' : '') +\n    'Estado: ' + (po.status || 'pendiente') + '\\n' +\n    '[FIN ORDEN PENDIENTE]');\n\n  dynamicParts.push('[REGLA CRITICA - ORDEN PRE-EXISTENTE]\\n' +\n    'El cliente YA hizo este pedido por la web o el template antes de escribirte. Los datos estan COMPLETOS.\\n' +\n    'PROHIBIDO pedir: nombre, producto, cantidad, ciudad, direccion, forma de pago.\\n' +\n    'Cuando el cliente confirme con \"si\", \"confirmo\", \"dale\", \"ok\", \"listo\", o equivalente, llama a confirm_order con EXACTAMENTE estos valores:\\n' +\n    '  nombre = \"' + (po.customer_name || clientName || '') + '\"\\n' +\n    '  ciudad = \"' + city + '\"\\n' +\n    '  direccion = \"' + addr + '\"\\n' +\n    '  producto = \"' + (itemsDesc || '') + '\"\\n' +\n    '  cantidad = ' + (productItems.reduce((s, i) => s + (i.quantity || 1), 0) || 1) + '\\n' +\n    '  forma_pago = \"' + (pm || 'contra_entrega') + '\"\\n' +\n    'Si el cliente pregunta por el envio, aclara que el delivery se contacta para coordinar. No repitas pedir direccion.\\n' +\n    'Si el cliente quiere cancelar o cambiar algo, no modifiques la orden: escala a human_handoff.\\n' +\n    '[FIN REGLA CRITICA]');\n}\n\n// 3. KB context\nlet kbContext = '';\ntry {\n  const kbResult = $('Fetch Knowledge Base').all();\n  const kbData = kbResult.map(i => i.json);\n  const entries = Array.isArray(kbData) && kbData.length > 0 && Array.isArray(kbData[0]) ? kbData[0] : kbData;\n  if (entries.length > 0 && entries[0]?.category) {\n    const msgLower = (original.content || '').toLowerCase();\n    const matched = entries.filter(e => {\n      if (!e.trigger_keywords || !Array.isArray(e.trigger_keywords)) return false;\n      return e.trigger_keywords.some(kw => msgLower.includes(kw.toLowerCase()));\n    });\n    const toUse = matched.length > 0 ? matched : entries.slice(0, 5);\n    kbContext = '--- CONTEXTO KB RELEVANTE ---\\n' + toUse.map(e =>\n      '- [' + e.category + '] ' + e.content\n    ).join('\\n').slice(0, 2000) + '\\n--- FIN CONTEXTO KB ---';\n    dynamicParts.push(kbContext);\n  }\n} catch (e) { /* KB fetch failed, continue */ }\n\n// 4. Few-shot examples\nlet fewShotContext = '';\ntry {\n  const fsResult = $('Fetch Few-Shot').all();\n  const fsData = fsResult.map(i => i.json);\n  const entries = Array.isArray(fsData) && fsData.length > 0 && Array.isArray(fsData[0]) ? fsData[0] : fsData;\n  if (entries.length > 0 && entries[0]?.scenario) {\n    fewShotContext = '--- EJEMPLOS DE REFERENCIA ---\\n' + entries.map(e =>\n      'Escenario: ' + e.scenario + '\\n' + e.conversation_text + '\\nResultado: ' + e.outcome\n    ).join('\\n---\\n').slice(0, 1500) + '\\n--- FIN EJEMPLOS ---';\n    dynamicParts.push(fewShotContext);\n  }\n} catch (e) { /* few-shot fetch failed, continue */ }\n\n// Build complete dynamic system message\nconst dynamicSystemMessage = SOFIA_PROMPT + '\\n\\n' + dynamicParts.join('\\n\\n');\n\n// ===== CLEAN CHATINPUT (user message only - this is what memoryPostgresChat saves) =====\nlet messageContent = original.content || '';\n\n// Handle location data\nconst orderData = original.order_data;\nif (orderData && (orderData.latitude || orderData.mapsLink)) {\n  let locInfo = '';\n  if (orderData.latitude) {\n    locInfo = '[Ubicacion GPS del cliente: ' + googleMapsUrl + ']';\n  } else if (orderData.mapsLink) {\n    locInfo = '[Link de ubicacion del cliente: ' + orderData.mapsLink + ']';\n  }\n  if (!messageContent || /^https?:\\/\\//.test(messageContent.trim())) {\n    messageContent = locInfo;\n  } else {\n    messageContent += '\\n' + locInfo;\n  }\n} else if (!messageContent && original.has_location_attachment) {\n  messageContent = '[El cliente compartio su ubicacion GPS por WhatsApp]';\n} else if (!messageContent && original.has_attachment) {\n  messageContent = '[El cliente envio un archivo adjunto]';\n} else if (!messageContent) {\n  messageContent = '[Mensaje del cliente sin texto]';\n}\n\nreturn [{\n  json: {\n    ...original,\n    chatInput: messageContent,\n    dynamicSystemMessage: dynamicSystemMessage,\n    kb_context: kbContext,\n    fewshot_context: fewShotContext\n  },\n  pairedItem: { item: 0 }\n}];"
         },
         "id": "build-context-001",
         "name": "Build Sofia Context",
@@ -7987,7 +8731,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// Reference the original webhook data (Gmail output doesn't have it)\nconst item = $('Webhook').item.json;\nconst body = item.body || item;\n\n// Extract customer data\nconst customerName = body.customer?.name || 'Cliente';\nconst rawPhone = body.customer?.phone;\n\n// Phone normalizer (defense in depth, mirrors Vercel /api/send-order.js).\n// Tolerates +595 9XX, 0981, 981234567, (0981) 234-567, 00595..., foreign country codes.\nconst KNOWN_CC = ['595','598','591','592','593','594','597','599','54','55','56','57','58','51','52','53','1','34','39','44','49','33','7','86','81','82','91'];\nfunction normalizePhone(raw) {\n  if (raw === undefined || raw === null) return null;\n  const trimmed = String(raw).trim();\n  if (!trimmed) return null;\n  const hasPlus = trimmed.startsWith('+');\n  let d = trimmed.replace(/\\D/g, '');\n  if (!d) return null;\n  if (hasPlus) {\n    if (d.length < 8 || d.length > 15) return null;\n    return '+' + d;\n  }\n  if (d.startsWith('00')) {\n    d = d.slice(2);\n    if (d.length < 8 || d.length > 15) return null;\n    return '+' + d;\n  }\n  if (d.startsWith('5950') && d.length >= 12) return '+595' + d.slice(4);\n  if (d.startsWith('595') && d.length >= 11 && d.length <= 13) return '+' + d;\n  if (d.startsWith('0') && d.length >= 9 && d.length <= 11) return '+595' + d.slice(1);\n  if (/^9\\d{8}$/.test(d)) return '+595' + d;\n  for (const cc of KNOWN_CC) {\n    if (d.startsWith(cc) && d.length >= cc.length + 7 && d.length <= 15) return '+' + d;\n  }\n  if (d.length >= 8 && d.length <= 10) return '+595' + d;\n  return null;\n}\n\nconst phone = normalizePhone(rawPhone) || '';\nif (!phone) {\n  console.warn('[Prep Order] Phone unparseable:', JSON.stringify(rawPhone));\n}\n\n// Last 8 digits for flexible matching\nconst phoneLast8 = phone.replace(/\\D/g, '').slice(-8);\n\n// Extract order data\nconst product = body.order?.product || 'Producto Solenne';\nconst total = body.order?.total || 0;\nconst quantity = Number(body.order?.quantity) || 1;\nconst orderNumber = body.orderNumber || '';\n\nconst paymentMethod = body.payment?.method || 'pending';\nconst paymentStatus = body.payment?.status || 'pending';\n\nconst fmtTotal = Number(total).toLocaleString('es-PY');\n\nconst productMap = {\n  'PDRN Pink Peptide Serum - Personal': 'PDRN Serum Personal',\n  'PDRN Pink Peptide Serum - Kit Duo': 'Kit Duo (2 PDRN Serum)',\n  'PDRN Pink Peptide Serum - Kit Duo (x2)': 'Kit Duo (2 PDRN Serum)',\n  'PDRN Pink Peptide Serum - Kit Familiar (x3)': 'Kit Familiar (3 PDRN Serum)',\n  'V-Shaped Invisible Face Tape': 'Solenne V-Shaped Face Tape',\n  'V-Shaped Invisible Face Tape - Caja Individual': 'Solenne V-Shaped Face Tape',\n  'V-Shaped Invisible Face Tape - Pack Ritual': 'Pack Ritual (2 cajas Face Tape)',\n  'V-Shaped Invisible Face Tape - Pack Evento': 'Pack Evento (3 cajas Face Tape + bolsa)'\n};\nconst productDisplay = productMap[product] || product;\n\nconst productWithQty = productDisplay + ' x' + quantity;\n\nconst mapsLink = body.location?.googleMapsLink || '';\nconst city = body.location?.city || '';\nconst address = body.location?.address || '';\nconst hasGPS = !!(mapsLink && mapsLink.length > 10 && mapsLink.includes('google'));\n\nconst addressText = address || city || 'Direccion pendiente';\n\nreturn [{ json: {\n  phone,\n  phone_last8: phoneLast8,\n  customer_name: customerName,\n  product: productWithQty,\n  product_name: productDisplay,\n  product_original: product,\n  total: fmtTotal,\n  total_raw: total,\n  quantity,\n  order_number: orderNumber,\n  payment_method: paymentMethod,\n  payment_status: paymentStatus,\n  maps_link: mapsLink,\n  city,\n  address: addressText,\n  has_gps: hasGPS\n}}];"
+          "jsCode": "// Reference the original webhook data (Gmail output doesn't have it)\nconst item = $('Webhook').item.json;\nconst body = item.body || item;\n\n// Extract customer data\nconst customerName = body.customer?.name || 'Cliente';\nconst rawPhone = String(body.customer?.phone || '');\n\n// Phone normalization to E.164 Paraguay (+595XXXXXXXXX)\nconst digitsOnly = rawPhone.replace(/\\D/g, '');\n\nlet normalized;\nif (digitsOnly.startsWith('5950') && digitsOnly.length >= 12) {\n  normalized = '595' + digitsOnly.substring(4);\n} else if (digitsOnly.startsWith('595') && digitsOnly.length >= 11) {\n  normalized = digitsOnly;\n} else if (digitsOnly.startsWith('0')) {\n  normalized = '595' + digitsOnly.substring(1);\n} else if (digitsOnly.length >= 8 && digitsOnly.length <= 10) {\n  normalized = '595' + digitsOnly;\n} else {\n  normalized = digitsOnly;\n}\n\nlet phone = '+' + normalized;\nif (phone.startsWith('+0')) {\n  phone = '+595' + phone.substring(2);\n}\n\n// Last 8 digits for flexible matching\nconst phoneLast8 = phone.replace(/\\D/g, '').slice(-8);\n\n// Extract order data\nconst product = body.order?.product || 'Producto Solenne';\nconst total = body.order?.total || 0;\nconst quantity = Number(body.order?.quantity) || 1;\nconst orderNumber = body.orderNumber || '';\n\nconst paymentMethod = body.payment?.method || 'pending';\nconst paymentStatus = body.payment?.status || 'pending';\n\nconst fmtTotal = Number(total).toLocaleString('es-PY');\n\nconst productMap = {\n  'PDRN Pink Peptide Serum - Personal': 'PDRN Serum Personal',\n  'PDRN Pink Peptide Serum - Kit Duo': 'Kit Duo (2 PDRN Serum)',\n  'PDRN Pink Peptide Serum - Kit Duo (x2)': 'Kit Duo (2 PDRN Serum)',\n  'PDRN Pink Peptide Serum - Kit Familiar (x3)': 'Kit Familiar (3 PDRN Serum)',\n  'V-Shaped Invisible Face Tape': 'Solenne V-Shaped Face Tape',\n  'V-Shaped Invisible Face Tape - Caja Individual': 'Solenne V-Shaped Face Tape',\n  'V-Shaped Invisible Face Tape - Pack Ritual': 'Pack Ritual (2 cajas Face Tape)',\n  'V-Shaped Invisible Face Tape - Pack Evento': 'Pack Evento (3 cajas Face Tape)'\n};\nconst productDisplay = productMap[product] || product;\n\nconst productWithQty = productDisplay + ' x' + quantity;\n\nconst mapsLink = body.location?.googleMapsLink || '';\nconst city = body.location?.city || '';\nconst address = body.location?.address || '';\nconst hasGPS = !!(mapsLink && mapsLink.length > 10 && mapsLink.includes('google'));\n\nconst addressText = address || city || 'Direccion pendiente';\n\nreturn [{ json: {\n  phone,\n  phone_last8: phoneLast8,\n  customer_name: customerName,\n  product: productWithQty,\n  product_name: productDisplay,\n  product_original: product,\n  total: fmtTotal,\n  total_raw: total,\n  quantity,\n  order_number: orderNumber,\n  payment_method: paymentMethod,\n  payment_status: paymentStatus,\n  maps_link: mapsLink,\n  city,\n  address: addressText,\n  has_gps: hasGPS\n}}];"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -8242,7 +8986,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={\n  \"order_number\": {{ JSON.stringify(\n    ($(\"Extract & Route\").first().json.template_order_data?.order_number || \"\").replace(\"#\",\"\")\n  ) }},\n  \"google_maps_link\": {{ JSON.stringify(\n    $(\"Extract & Route\").first().json.order_data?.mapsLink\n    || $(\"Extract & Route\").first().json.template_order_data?.maps_link\n    || ($(\"Extract & Route\").first().json.order_data?.latitude\n      ? \"https://www.google.com/maps?q=\" + $(\"Extract & Route\").first().json.order_data.latitude + \",\" + $(\"Extract & Route\").first().json.order_data.longitude\n      : \"\")\n  ) }}\n}",
+          "jsonBody": "={\n  \"phone\": {{ JSON.stringify($(\"Extract & Route\").first().json.phone || \"\") }},\n  \"google_maps_link\": {{ JSON.stringify(\n    $(\"Extract & Route\").first().json.order_data?.mapsLink\n    || $(\"Extract & Route\").first().json.template_order_data?.maps_link\n    || ($(\"Extract & Route\").first().json.order_data?.latitude\n      ? \"https://www.google.com/maps?q=\" + $(\"Extract & Route\").first().json.order_data.latitude + \",\" + $(\"Extract & Route\").first().json.order_data.longitude\n      : \"\")\n  ) }},\n  \"shipping_city\": {{ JSON.stringify($(\"Extract & Route\").first().json.order_data?.city || \"\") }}\n}",
           "options": {}
         },
         "type": "n8n-nodes-base.httpRequest",
@@ -9016,7 +9760,7 @@
           2000,
           -752
         ],
-        "onError": "continueRegularOutput"
+        "onError": "stopWorkflow"
       },
       {
         "parameters": {
@@ -10582,7 +11326,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// Build template data from Ordefy order for resend\n// Output shape matches Prep Order for WhatsApp\nconst data = $json.resend_order_data;\nif (!data) {\n  return [{ json: { error: 'No resend data available' } }];\n}\n\n// Robust phone normalizer (mirrors Vercel /api/send-order.js).\nconst KNOWN_CC = ['595','598','591','592','593','594','597','599','54','55','56','57','58','51','52','53','1','34','39','44','49','33','7','86','81','82','91'];\nfunction normalizePhone(raw) {\n  if (raw === undefined || raw === null) return null;\n  const trimmed = String(raw).trim();\n  if (!trimmed) return null;\n  const hasPlus = trimmed.startsWith('+');\n  let d = trimmed.replace(/\\D/g, '');\n  if (!d) return null;\n  if (hasPlus) {\n    if (d.length < 8 || d.length > 15) return null;\n    return '+' + d;\n  }\n  if (d.startsWith('00')) {\n    d = d.slice(2);\n    if (d.length < 8 || d.length > 15) return null;\n    return '+' + d;\n  }\n  if (d.startsWith('5950') && d.length >= 12) return '+595' + d.slice(4);\n  if (d.startsWith('595') && d.length >= 11 && d.length <= 13) return '+' + d;\n  if (d.startsWith('0') && d.length >= 9 && d.length <= 11) return '+595' + d.slice(1);\n  if (/^9\\d{8}$/.test(d)) return '+595' + d;\n  for (const cc of KNOWN_CC) {\n    if (d.startsWith(cc) && d.length >= cc.length + 7 && d.length <= 15) return '+' + d;\n  }\n  if (d.length >= 8 && d.length <= 10) return '+595' + d;\n  return null;\n}\n\nconst phone = normalizePhone(data.phone) || '';\nconst phoneLast8 = phone.replace(/\\D/g, '').slice(-8);\n\nreturn [{ json: {\n  phone,\n  phone_last8: phoneLast8,\n  customer_name: data.customer_name || 'Cliente',\n  product: data.product || 'Producto Solenne',\n  product_original: data.product || 'Producto Solenne',\n  total: data.total || '0',\n  total_raw: data.total_raw || 0,\n  quantity: data.quantity || 1,\n  order_number: data.order_number || '',\n  payment_method: data.payment_method || 'pending',\n  payment_status: data.payment_status || 'pending',\n  maps_link: data.maps_link || '',\n  city: data.city || '',\n  address: data.address || 'Direccion pendiente',\n  has_gps: data.has_gps || false\n}}];"
+          "jsCode": "// Build template data from Ordefy order for resend\n// Output shape matches Prep Order for WhatsApp\nconst data = $json.resend_order_data;\nif (!data) {\n  return [{ json: { error: 'No resend data available' } }];\n}\n\n// Clean phone for WhatsApp API\nlet phone = String(data.phone || '');\nif (phone.startsWith('0')) {\n  phone = '+595' + phone.substring(1);\n} else if (!phone.startsWith('+')) {\n  const digits = phone.replace(/\\D/g, '');\n  if (digits.length <= 10) {\n    phone = '+595' + digits;\n  } else {\n    phone = '+' + digits;\n  }\n}\nconst phoneLast8 = phone.replace(/\\D/g, '').slice(-8);\n\nreturn [{ json: {\n  phone,\n  phone_last8: phoneLast8,\n  customer_name: data.customer_name || 'Cliente',\n  product: data.product || 'Producto Solenne',\n  product_original: data.product || 'Producto Solenne',\n  total: data.total || '0',\n  total_raw: data.total_raw || 0,\n  quantity: data.quantity || 1,\n  order_number: data.order_number || '',\n  payment_method: data.payment_method || 'pending',\n  payment_status: data.payment_status || 'pending',\n  maps_link: data.maps_link || '',\n  city: data.city || '',\n  address: data.address || 'Direccion pendiente',\n  has_gps: data.has_gps || false\n}}];"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -10873,7 +11617,7 @@
           2400,
           -602
         ],
-        "onError": "continueRegularOutput"
+        "onError": "stopWorkflow"
       },
       {
         "parameters": {
@@ -10907,6 +11651,100 @@
           -602
         ],
         "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://chat.thebrightidea.ai/api/v1/accounts/{{ $json.account_id }}/conversations/{{ $json.conversation_id }}/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "daxHcwWJRwDMwBu4TZ1Cs83k"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"content\": \"Genial, gracias por avisar! Si necesitas algo mas, escribime por aqui.\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+          "options": {}
+        },
+        "id": "ap-ack-msg-001",
+        "name": "Send Already Purchased Ack",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3568,
+          1024
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://chat.thebrightidea.ai/api/v1/accounts/{{ $('Extract & Route').first().json.account_id }}/conversations/{{ $('Extract & Route').first().json.conversation_id }}/labels",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "daxHcwWJRwDMwBu4TZ1Cs83k"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"labels\": [\"humano\", \"post_compra\"]\n}",
+          "options": {}
+        },
+        "id": "ap-label-set-001",
+        "name": "Set Already Purchased Labels",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3760,
+          1024
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://chat.thebrightidea.ai/api/v1/accounts/9/conversations",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "api_access_token",
+                "value": "daxHcwWJRwDMwBu4TZ1Cs83k"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"source_id\": {{ JSON.stringify(($('Prep Order for WhatsApp').item.json.phone || '').replace(/^\\+/, '')) }},\n  \"inbox_id\": 16,\n  \"contact_id\": {{ $json.payload?.id || $json.id || ($json.payload && Array.isArray($json.payload) && $json.payload.length > 0 ? $json.payload[0].id : null) }},\n  \"status\": \"pending\",\n  \"additional_attributes\": {\n    \"order_number\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.order_number) }},\n    \"order_total\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.total) }},\n    \"product\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.product) }},\n    \"city\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.city) }},\n    \"address\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.address) }}\n  },\n  \"custom_attributes\": {\n    \"pending_order\": true,\n    \"pending_order_id\": {{ JSON.stringify($('Prep Order for WhatsApp').item.json.order_number) }},\n    \"template_sent_at\": \"{{ $now.toISO() }}\"\n  }\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2544,
+          -752
+        ],
+        "id": "create-conv-solenne-2026",
+        "name": "Create Conversation",
+        "onError": "stopWorkflow"
       }
     ],
     "connections": {
@@ -11033,6 +11871,13 @@
           [
             {
               "node": "CR Typing",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Send Already Purchased Ack",
               "type": "main",
               "index": 0
             }
@@ -11469,7 +12314,7 @@
         "main": [
           [
             {
-              "node": "Has GPS Location?",
+              "node": "Search Contact by Phone",
               "type": "main",
               "index": 0
             }
@@ -11753,13 +12598,7 @@
       },
       "Log Template Sent": {
         "main": [
-          [
-            {
-              "node": "Search Contact by Phone",
-              "type": "main",
-              "index": 0
-            }
-          ]
+          []
         ]
       },
       "Search Contact by Phone": {
@@ -12555,6 +13394,50 @@
             }
           ]
         ]
+      },
+      "Send Already Purchased Ack": {
+        "main": [
+          [
+            {
+              "node": "Set Already Purchased Labels",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Template Flag": {
+        "main": [
+          [
+            {
+              "node": "Create Conversation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Flag New Contact": {
+        "main": [
+          [
+            {
+              "node": "Create Conversation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Conversation": {
+        "main": [
+          [
+            {
+              "node": "Has GPS Location?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Bright Idea",
@@ -12562,10 +13445,10 @@
     "description": null,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-26T21:51:25.040Z",
-        "id": 555,
+        "createdAt": "2026-05-07T06:07:28.806Z",
+        "id": 605,
         "workflowId": "541CxYqlPYw5LLvI",
-        "versionId": "f8bfab52-f4e9-406c-9f09-3e7d3f2527f3",
+        "versionId": "735d901d-d8e6-4956-8f37-9f27b6a4836a",
         "event": "activated",
         "userId": "bd801847-7be9-42fe-880a-4791b5224dd0"
       }

@@ -43,13 +43,13 @@ const BUNDLES: readonly TapeBundle[] = [
   {
     id: "ritual",
     quantity: 2,
-    price: 249000,
-    unitPrice: 124500,
+    price: 229000,
+    unitPrice: 114500,
     anchor: 278000,
     label: "Pack Ritual, 2 cajas",
-    badge: "MÁS ELEGIDO: Ahorrás Gs. 29.000",
+    badge: "MÁS ELEGIDO: Ahorrás Gs. 49.000",
     highlighted: true,
-    savings: 29000,
+    savings: 49000,
     packVariant: "ritual",
   },
   {
