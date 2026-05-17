@@ -23,13 +23,13 @@ export const PDRN_BUNDLES: readonly PdrnBundle[] = [
   {
     id: "duo",
     quantity: 2,
-    price: 309000,
-    unitPrice: 154500,
+    price: 319000,
+    unitPrice: 159500,
     label: "Kit Duo",
     badge: "MAS VENDIDO",
     highlighted: true,
-    savings: 69000,
-    subline: "Uno para vos, uno para compartir. Ahorrás 69.000 Gs.",
+    savings: 59000,
+    subline: "Uno para vos, uno para compartir. Ahorrás 59.000 Gs.",
   },
   {
     id: "familiar",

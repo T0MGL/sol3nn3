@@ -406,7 +406,7 @@ export const HeroSection = ({
             {/* Duo bundle anchor: per-unit savings vs single, evergreen pull */}
             <div className="relative rounded-lg border border-primary/30 bg-gradient-to-r from-primary/15 via-primary/8 to-primary/15 px-4 py-2.5">
               <p className="text-[13px] md:text-sm leading-snug text-foreground/85">
-                <span className="font-semibold text-primary">Kit Dúo, ahorrás 69.000 Gs.</span>{" "}
+                <span className="font-semibold text-primary">Kit Dúo, ahorrás 59.000 Gs.</span>{" "}
                 Una para vos, otra para compartir. Mismo ritual, doble resultado.
               </p>
             </div>
