@@ -23,12 +23,12 @@ const BUNDLES = [
   {
     id: 'pareja',
     quantity: 2,
-    price: 349000,
-    unitPrice: 174500,
+    price: 309000,
+    unitPrice: 154500,
     label: "Kit Dúo",
-    badge: "🔥 MÁS VENDIDO: Ahorrás Gs. 29.000",
+    badge: "MAS VENDIDO: Ahorrás Gs. 69.000",
     highlighted: true,
-    savings: 29000, // 378.000 - 349.000
+    savings: 69000, // 378.000 - 309.000
   },
   {
     id: 'oficina',
