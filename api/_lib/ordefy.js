@@ -123,7 +123,7 @@ export function getSku(productKey, packVariant) {
     return 'SOLENNE-CELIMAX-1';
   }
   // pdrn (default)
-  if (packVariant === 'individual') return 'SOLENNE-PDRN-30ML';
+  if (packVariant === 'individual') return 'SOLENNE-PDRN-30ML-IND';
   if (packVariant === 'duo') return 'SOLENNE-PDRN-DUO';
   if (packVariant === 'familiar') return 'SOLENNE-PDRN-FAMILIAR';
   return null;
