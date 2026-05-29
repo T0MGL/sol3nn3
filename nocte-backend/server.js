@@ -1,5 +1,14 @@
 /**
- * Solenne Backend API - Development Server
+ * DEPRECATED, DO NOT DEPLOY. See nocte-backend/DEPRECATED.md.
+ *
+ * Backend muerto desde 2026-05-18. El backend vivo de Solenne son las
+ * funciones serverless en api/send-order.js -> api/_lib/ordefy.js dentro del
+ * proyecto Vercel `bysolenne`. Este archivo mapea quantity 1 al SKU PADRE
+ * SOLENNE-PDRN-30ML, que dispara AMBIGUOUS_PARENT_SKU y hace que Ordefy
+ * RECHACE la orden. Nunca revivir. Si tocas ordenes a Ordefy, edita
+ * api/_lib/ordefy.js.
+ *
+ * Solenne Backend API - Development Server (legacy)
  * Stripe Payment Processing for localhost
  */
 

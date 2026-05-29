@@ -210,13 +210,18 @@ function buildItems({ productKey, packVariant, quantity, unitPrice, total, deliv
   } else {
     // pdrn
     const sku = getSku('pdrn', packVariant);
-    const resolvedUnitPrice = resolveUnitPrice({ unitPrice, productPrice, quantity: safeQuantity });
-    items.push({
-      sku,
-      name: productName || 'PDRN Serum',
-      quantity: safeQuantity,
-      price: resolvedUnitPrice,
-    });
+    const name = productName || 'PDRN Serum';
+
+    if (packVariant === 'duo' || packVariant === 'familiar') {
+      // Bundle SKU: one line at the full pack price. Ordefy deducts
+      // units_per_pack from the parent, so quantity must be the number of
+      // PACKS (1), never the number of units. Sending quantity=N here would
+      // over-deduct parent stock (N x units_per_pack).
+      items.push({ sku, name, quantity: 1, price: productPrice });
+    } else {
+      const resolvedUnitPrice = resolveUnitPrice({ unitPrice, productPrice, quantity: safeQuantity });
+      items.push({ sku, name, quantity: safeQuantity, price: resolvedUnitPrice });
+    }
   }
 
   if (isPriority) {
