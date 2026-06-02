@@ -11,6 +11,7 @@ import RetinalCelimax from "./pages/RetinalCelimax";
 import NotFound from "./pages/NotFound";
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import TerminosCondiciones from "./pages/TerminosCondiciones";
+import ComingSoon from "./pages/ComingSoon";
 import { useDisableDevTools } from "@/hooks/useDisableDevTools";
 
 // Optimized QueryClient configuration for better performance
@@ -39,6 +40,9 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* COMING-SOON-OFF: store routes parked behind holding page.
+                Reversion: uncomment this block and delete the catch-all
+                <Route path="*" element={<ComingSoon />} /> below.
             <Route path="/" element={<Index />} />
             <Route path="/lifting-tape" element={<LiftingTape />} />
             <Route path="/rizador-electrico" element={<RizadorElectrico />} />
@@ -46,8 +50,9 @@ const App = () => {
             <Route path="/retinal-celimax" element={<RetinalCelimax />} />
             <Route path="/politica-de-privacidad" element={<PoliticaPrivacidad />} />
             <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
+            COMING-SOON-OFF */}
+            <Route path="*" element={<ComingSoon />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
