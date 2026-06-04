@@ -52,7 +52,7 @@ const CheckoutModal = lazy(() =>
   import("@/components/checkout/CheckoutModal").then((m) => ({ default: m.CheckoutModal }))
 );
 
-const TAPE_UNIT_PRICE = 139000;
+const TAPE_UNIT_PRICE = 129000;
 const TAPE_BASE_PRODUCT_NAME = "V-Shaped Face Tape";
 
 const TAPE_BANNER_MESSAGES = [

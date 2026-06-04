@@ -40,18 +40,20 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* COMING-SOON-OFF: store routes parked behind holding page.
-                Reversion: uncomment this block and delete the catch-all
-                <Route path="*" element={<ComingSoon />} /> below.
-            <Route path="/" element={<Index />} />
+            {/* Active store: only the two buyable products are live.
+                Parked behind ComingSoon catch-all: Index (PDRN), rizador, celimax.
+                Reversion to full store: uncomment the parked routes below and
+                remove the ComingSoon catch-all. */}
             <Route path="/lifting-tape" element={<LiftingTape />} />
-            <Route path="/rizador-electrico" element={<RizadorElectrico />} />
             <Route path="/serum-pestanas" element={<LashSerum />} />
-            <Route path="/retinal-celimax" element={<RetinalCelimax />} />
             <Route path="/politica-de-privacidad" element={<PoliticaPrivacidad />} />
             <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
+            {/* PARKED: reactivate these when the full store relaunches.
+            <Route path="/" element={<Index />} />
+            <Route path="/rizador-electrico" element={<RizadorElectrico />} />
+            <Route path="/retinal-celimax" element={<RetinalCelimax />} />
             <Route path="*" element={<NotFound />} />
-            COMING-SOON-OFF */}
+            */}
             <Route path="*" element={<ComingSoon />} />
           </Routes>
         </BrowserRouter>
