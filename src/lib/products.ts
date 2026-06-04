@@ -40,7 +40,7 @@ export const PRODUCTS = {
     contentCategory: 'Beauty & Personal Care',
     contentType: 'product',
     currency: 'PYG',
-    unitPrice: 139000,
+    unitPrice: 129000,
     skuByQuantity: {
       1: 'SOLENNE-TAPE-100',
       2: 'SOLENNE-TAPE-RITUAL',
