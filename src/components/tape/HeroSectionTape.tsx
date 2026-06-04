@@ -165,7 +165,7 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
             </motion.div>
 
             <div className="relative w-full max-w-[500px] mx-auto">
-              <div className="relative w-full aspect-square overflow-hidden rounded-lg">
+              <div className="relative w-full aspect-[4/5] md:aspect-square overflow-hidden rounded-lg">
                 <div className="absolute inset-0 -z-10 rounded-full blur-[60px] bg-primary/20 animate-glow-breathe scale-75" />
                 <div className="absolute inset-[10%] -z-10 rounded-full blur-[30px] bg-primary/15" />
 
@@ -214,7 +214,7 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
                 </button>
               </div>
 
-              <div className="flex justify-center gap-2 mt-4">
+              <div className="flex justify-center gap-2 mt-1.5 md:mt-4">
                 {slides.map((_, index) => (
                   <button
                     key={index}
@@ -239,8 +239,8 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
             transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
             className="space-y-4 md:space-y-6 order-2 w-full"
           >
-            <div className="space-y-4 md:space-y-5">
-              <div className="h-0.5 w-10 bg-primary/40" />
+            <div className="space-y-2.5 md:space-y-5">
+              <div className="hidden md:block h-0.5 w-10 bg-primary/40" />
 
               <motion.h1
                 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"
