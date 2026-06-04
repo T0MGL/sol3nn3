@@ -20,7 +20,7 @@ const faqs = [
   {
     question: "¿Es invisible de verdad?",
     answer:
-      "Sí, 100% invisible. Pasan desapercibidas incluso con el cabello suelto, en fotos con flash y frente a cámaras. Diseñadas con material ultra fino color piel y acabado mate.",
+      "Sí, 100% invisible. Pasan desapercibidas incluso con el cabello suelto, en fotos con flash y frente a cámaras. Diseñadas con material ultra fino transparente y acabado mate.",
   },
   {
     question: "¿Resisten agua y sudor?",

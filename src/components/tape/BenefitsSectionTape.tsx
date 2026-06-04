@@ -7,7 +7,7 @@ const benefits = [
     icon: EyeSlashIcon,
     title: "100% invisible",
     description:
-      "Material ultra fino color piel, con acabado mate. Pasa desapercibido incluso con el cabello suelto, en fotos con flash y frente a las cámaras.",
+      "Material ultra fino transparente, con acabado mate. Pasa desapercibido incluso con el cabello suelto, en fotos con flash y frente a las cámaras.",
   },
   {
     icon: BoltIcon,

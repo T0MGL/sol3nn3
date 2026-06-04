@@ -140,7 +140,7 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(192,139,122,0.08),transparent_70%)] pointer-events-none" />
 
       <div className="container max-w-[1400px] mx-auto px-4 md:px-6 lg:px-12 relative z-10 pt-[80px] md:pt-36 pb-6 md:pb-12">
-        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 md:gap-8 items-start">
+        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-2 md:gap-4 lg:gap-8 items-start">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -249,13 +249,13 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
-                Parches <span className="italic">Invisibles</span>
+                Lifting Facial <span className="italic">Instantáneo</span>
               </motion.h1>
               <p className="text-lg md:text-xl text-primary font-medium">
-                Para la Cara | 100 unidades
+                Efecto V sin agujas, en 30 segundos
               </p>
               <p className="text-base md:text-lg text-muted-foreground font-light">
-                Lifting instantaneo en 30 segundos, antes de tu evento.
+                Parches invisibles que tensan tu rostro justo antes de tu evento.
               </p>
 
               <div className="flex items-center gap-2 flex-wrap">
@@ -266,9 +266,9 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
                   <StarIcon className="w-5 h-5 text-accent" />
                   <StarIcon className="w-5 h-5 text-accent" />
                 </div>
-                <p className="text-sm text-foreground/80 font-medium">
-                  Tu aliada antes de cada evento
-                </p>
+                <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                  Caja con 100 unidades
+                </span>
               </div>
             </div>
 
@@ -301,7 +301,7 @@ export const HeroSectionTape = ({ onBuyClick }: HeroSectionTapeProps) => {
 
             <div className="space-y-2">
               <p className="text-sm md:text-base text-foreground/70 leading-relaxed">
-                Cinta adhesiva ultra fina color piel que tensa mejillas, papada, contorno y párpados sin que nadie lo note. Tu mejor aliada antes de fotos, reuniones y salidas.
+                Cinta adhesiva ultra fina transparente que tensa mejillas, papada, contorno y párpados sin que nadie lo note. Tu mejor aliada antes de fotos, reuniones y salidas.
               </p>
               <p className="text-xs md:text-sm text-primary font-medium">
                 Caja con 100 parches · Aplicación en 3 pasos · 30 segundos
