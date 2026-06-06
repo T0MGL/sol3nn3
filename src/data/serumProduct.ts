@@ -50,8 +50,8 @@ export const SERUM_FORMAL_NAME = 'Eyelash Growth Essence';
 export const SERUM_VOLUME_ML = 7;
 
 /**
- * Production pricing locked Apr 30 2026.
- * COGS landed approx 32.000 Gs por frasco. Margenes: single 78%, duo 74%, trio 72%.
+ * Production pricing: single price ajustado a 139.000 Gs el 6 jun 2026.
+ * COGS landed approx 32.000 Gs por frasco. Margenes: single 77%, duo 74%, trio 72%.
  * Anchor pricing = quantity x 199.000 Gs (precio single anclado), no quantity x unitPrice.
  * Mantiene el anchor creible para no romper trust.
  */
@@ -59,14 +59,14 @@ export const SERUM_BUNDLES: readonly SerumBundle[] = [
   {
     id: 'single',
     quantity: 1,
-    unitPrice: 149000,
-    totalPrice: 149000,
+    unitPrice: 139000,
+    totalPrice: 139000,
     anchorPrice: 199000,
     label: '1 Frasco',
     subtitle: 'Tratamiento individual',
     badge: null,
     highlighted: false,
-    savings: 50000,
+    savings: 60000,
     perks: ['Envío gratis a todo Paraguay', 'Pago al recibir'],
   },
   {
@@ -220,7 +220,7 @@ export const SERUM_COMPARISON_TABLE: readonly ComparisonRow[] = [
   },
   {
     attribute: 'Costo cada 3 meses',
-    serum: 'Gs. 149.000 a 339.000',
+    serum: 'Gs. 139.000 a 339.000',
     bimatoprost: 'Gs. 600.000 a 900.000',
     extensions: 'Gs. 800.000 a 1.500.000',
     mascara: 'Gs. 80.000 a 250.000',

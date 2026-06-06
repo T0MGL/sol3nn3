@@ -739,7 +739,7 @@ if (productType === "celimax") {
 }
 
 if (productType === "lash") {
-  const LASH_PACK_PRICES = { 1: 149000, 2: 249000, 3: 339000 };
+  const LASH_PACK_PRICES = { 1: 139000, 2: 249000, 3: 339000 };
   const LASH_PACK_NAMES = { 1: "Frasco Individual", 2: "Pack Dúo", 3: "Pack Trío" };
   const LASH_PACK_SKUS = {
     1: "SOLENNE-LASH-1",
