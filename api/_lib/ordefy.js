@@ -151,7 +151,7 @@ export function getLashProductName(packVariant) {
 export function getLashPackPrice(packVariant) {
   if (packVariant === 'duo') return 249000;
   if (packVariant === 'trio') return 339000;
-  return 149000;
+  return 139000;
 }
 
 export function getCelimaxProductName(packVariant) {
@@ -196,7 +196,7 @@ function buildItems({ productKey, packVariant, quantity, unitPrice, total, deliv
     if (packVariant === 'duo' || packVariant === 'trio') {
       items.push({ sku, name, quantity: 1, price: getLashPackPrice(packVariant) });
     } else {
-      items.push({ sku, name, quantity: safeQuantity, price: 149000 });
+      items.push({ sku, name, quantity: safeQuantity, price: 139000 });
     }
   } else if (productKey === 'celimax') {
     const sku = getSku('celimax', packVariant);
