@@ -237,25 +237,30 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
-                Pestañas más largas, <span className="italic">en serio</span>
+                Pestañas largas y tupidas, <span className="italic">las tuyas de verdad</span>
               </motion.h1>
               <p className="text-lg md:text-xl text-primary font-medium">
-                Serum de Pestañas | 7 ml | Tratamiento de 8 a 12 semanas
+                Dejá las extensiones que te las arruinan y el rímel que nunca alcanza.
               </p>
               <p className="text-base md:text-lg text-muted-foreground font-light">
                 Sin extensiones. Sin receta. Sin oscurecer el párpado.
               </p>
 
               <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center gap-0.5">
+                <div className="flex items-center gap-0.5" aria-label="Calificación 4.8 de 5">
                   <StarIcon className="w-5 h-5 text-accent" />
                   <StarIcon className="w-5 h-5 text-accent" />
                   <StarIcon className="w-5 h-5 text-accent" />
                   <StarIcon className="w-5 h-5 text-accent" />
-                  <StarIcon className="w-5 h-5 text-accent" />
+                  <span className="relative inline-block w-5 h-5">
+                    <StarIcon className="absolute inset-0 w-5 h-5 text-accent/25" />
+                    <span className="absolute inset-0 overflow-hidden" style={{ width: "80%" }}>
+                      <StarIcon className="w-5 h-5 text-accent" />
+                    </span>
+                  </span>
                 </div>
                 <p className="text-sm text-foreground/80 font-medium">
-                  Una gota por noche, dos ojos
+                  <span className="font-bold text-foreground">4.8</span> · 2.327 clientas felices
                 </p>
               </div>
             </div>
@@ -265,25 +270,25 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <ArrowTrendingUpIcon className="w-6 h-6 text-primary" />
                 </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Más largas y densas</span>
+                <span className="text-sm md:text-base font-medium text-foreground">Tu pestaña crece, no se pega</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <ShieldCheckIcon className="w-6 h-6 text-primary" />
                 </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Sin prostaglandinas</span>
+                <span className="text-sm md:text-base font-medium text-foreground">Sin prostaglandinas, no irrita</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <BeakerIcon className="w-6 h-6 text-primary" />
                 </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Ginseng + helichrysum</span>
+                <span className="text-sm md:text-base font-medium text-foreground">Cambios reales desde la semana 4</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <EyeIcon className="w-6 h-6 text-primary" />
                 </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Apto lentes de contacto</span>
+                <span className="text-sm md:text-base font-medium text-foreground">Sí, aunque uses lentes de contacto</span>
               </div>
             </div>
 
