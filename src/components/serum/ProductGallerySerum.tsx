@@ -7,10 +7,10 @@ import serumBenefitsCard from "@/assets/products/serum/serum-benefits-card.webp"
 import serumDailyCare from "@/assets/products/serum/serum-daily-care.webp";
 
 const images = [
-  { src: serumHowTo, alt: "Serum de Pestañas Solenne 7 ml, paso a paso de aplicación diaria" },
   { src: serumBeforeAfter, alt: "Pestañas antes y después con el Serum de Pestañas Solenne" },
-  { src: serumBenefitsCard, alt: "Beneficios del Serum de Pestañas Solenne, fórmula avanzada 7 ml" },
   { src: serumDailyCare, alt: "Cuidado diario de pestañas con el Serum de Pestañas Solenne" },
+  { src: serumBenefitsCard, alt: "Beneficios del Serum de Pestañas Solenne, fórmula avanzada 7 ml" },
+  { src: serumHowTo, alt: "Serum de Pestañas Solenne 7 ml, paso a paso de aplicación diaria" },
 ];
 
 export const ProductGallerySerum = () => {

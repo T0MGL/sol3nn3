@@ -56,10 +56,10 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
   const [stockAnimating, setStockAnimating] = useState(false);
 
   const slides = [
-    { image: serumHowTo, alt: "Serum de Pestañas Solenne 7 ml, paso a paso de aplicación diaria" },
     { image: serumBeforeAfter, alt: "Pestañas antes y después con el Serum de Pestañas Solenne" },
-    { image: serumBenefitsCard, alt: "Beneficios del Serum de Pestañas Solenne, fórmula avanzada 7 ml" },
     { image: serumDailyCare, alt: "Cuidado diario de pestañas con el Serum de Pestañas Solenne" },
+    { image: serumBenefitsCard, alt: "Beneficios del Serum de Pestañas Solenne, fórmula avanzada 7 ml" },
+    { image: serumHowTo, alt: "Serum de Pestañas Solenne 7 ml, paso a paso de aplicación diaria" },
   ];
 
   useEffect(() => {
