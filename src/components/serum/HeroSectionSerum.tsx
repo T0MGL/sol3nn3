@@ -124,7 +124,7 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
   }, [stockLeft]);
 
   return (
-    <section className="relative min-h-[85vh] flex items-start overflow-hidden bg-background">
+    <section className="relative min-h-0 lg:min-h-[85vh] flex items-start overflow-hidden bg-background">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(192,139,122,0.08),transparent_70%)] pointer-events-none" />
 
       <div className="container max-w-[1400px] mx-auto px-4 md:px-6 lg:px-12 relative z-10 pt-[80px] md:pt-36 pb-6 md:pb-12">
@@ -152,7 +152,7 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
               </motion.p>
             </motion.div>
 
-            <div className="relative w-full max-w-[500px] mx-auto">
+            <div className="relative w-full max-w-[300px] sm:max-w-[380px] lg:max-w-[500px] mx-auto">
               <div className="relative w-full aspect-square overflow-hidden rounded-lg">
                 <div className="absolute inset-0 -z-10 rounded-full blur-[60px] bg-primary/20 animate-glow-breathe scale-75" />
                 <div className="absolute inset-[10%] -z-10 rounded-full blur-[30px] bg-primary/15" />
@@ -231,7 +231,7 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
               <div className="hidden md:block h-0.5 w-10 bg-primary/40" />
 
               <motion.h1
-                className="text-balance text-[2.75rem] leading-[1.05] md:text-6xl lg:text-7xl md:leading-tight font-bold tracking-tight text-foreground"
+                className="text-balance text-[3.25rem] leading-[1.06] md:text-6xl lg:text-7xl md:leading-tight font-bold tracking-tight text-foreground"
                 initial={{ clipPath: "inset(0 100% 0 0)" }}
                 whileInView={{ clipPath: "inset(0 0% 0 0)" }}
                 viewport={{ once: true, amount: 0.3 }}
@@ -239,27 +239,27 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
               >
                 Pestañas largas y pobladas, <span className="italic">las tuyas de verdad</span>
               </motion.h1>
-              <p className="text-lg md:text-xl text-primary font-medium">
+              <p className="text-xl leading-relaxed md:text-xl text-primary font-medium">
                 Dejá las extensiones que te las arruinan y el rímel que nunca alcanza.
               </p>
-              <p className="text-base md:text-lg text-muted-foreground font-light">
+              <p className="text-lg leading-relaxed md:text-lg text-muted-foreground font-light">
                 Sin extensiones. Sin receta. Sin oscurecer el párpado.
               </p>
 
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-0.5" aria-label="Calificación 4.8 de 5">
-                  <StarIcon className="w-5 h-5 text-accent" />
-                  <StarIcon className="w-5 h-5 text-accent" />
-                  <StarIcon className="w-5 h-5 text-accent" />
-                  <StarIcon className="w-5 h-5 text-accent" />
-                  <span className="relative inline-block w-5 h-5">
-                    <StarIcon className="absolute inset-0 w-5 h-5 text-accent/25" />
+                  <StarIcon className="w-6 h-6 md:w-5 md:h-5 text-accent" />
+                  <StarIcon className="w-6 h-6 md:w-5 md:h-5 text-accent" />
+                  <StarIcon className="w-6 h-6 md:w-5 md:h-5 text-accent" />
+                  <StarIcon className="w-6 h-6 md:w-5 md:h-5 text-accent" />
+                  <span className="relative inline-block w-6 h-6 md:w-5 md:h-5">
+                    <StarIcon className="absolute inset-0 w-6 h-6 md:w-5 md:h-5 text-accent/25" />
                     <span className="absolute inset-0 overflow-hidden" style={{ width: "80%" }}>
-                      <StarIcon className="w-5 h-5 text-accent" />
+                      <StarIcon className="w-6 h-6 md:w-5 md:h-5 text-accent" />
                     </span>
                   </span>
                 </div>
-                <p className="text-sm text-foreground/80 font-medium">
+                <p className="text-base md:text-sm text-foreground/80 font-medium">
                   <span className="font-bold text-foreground">4.8</span> · 2.327 clientas felices
                 </p>
               </div>
@@ -270,25 +270,25 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <ArrowTrendingUpIcon className="w-6 h-6 text-primary" />
                 </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Tu pestaña crece, no se pega</span>
+                <span className="text-[0.95rem] leading-snug md:text-base font-medium text-foreground">Tu pestaña crece, no se pega</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <ShieldCheckIcon className="w-6 h-6 text-primary" />
                 </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Sin prostaglandinas, no irrita</span>
+                <span className="text-[0.95rem] leading-snug md:text-base font-medium text-foreground">Sin prostaglandinas, no irrita</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <BeakerIcon className="w-6 h-6 text-primary" />
                 </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Cambios reales desde la semana 4</span>
+                <span className="text-[0.95rem] leading-snug md:text-base font-medium text-foreground">Cambios reales desde la semana 4</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <EyeIcon className="w-6 h-6 text-primary" />
                 </div>
-                <span className="text-sm md:text-base font-medium text-foreground">Sí, aunque uses lentes de contacto</span>
+                <span className="text-[0.95rem] leading-snug md:text-base font-medium text-foreground">Sí, aunque uses lentes de contacto</span>
               </div>
             </div>
 
