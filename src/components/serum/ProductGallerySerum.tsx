@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeInUpView } from "@/lib/animations";
-import serumHero from "@/assets/products/serum/serum-hero.webp";
-import serumDetail1 from "@/assets/products/serum/serum-detail-1.jpg";
-import serumDetail2 from "@/assets/products/serum/serum-detail-2.webp";
+import serumHowTo from "@/assets/products/serum/serum-how-to.webp";
+import serumBeforeAfter from "@/assets/products/serum/serum-before-after.webp";
+import serumBenefitsCard from "@/assets/products/serum/serum-benefits-card.webp";
+import serumDailyCare from "@/assets/products/serum/serum-daily-care.webp";
 
 const images = [
-  { src: serumHero, alt: "Solenne Serum de Pestañas, frasco 7 ml" },
-  { src: serumDetail2, alt: "Aplicador del Serum de Pestañas, fórmula transparente" },
-  { src: serumDetail1, alt: "Packaging del Serum de Pestañas Solenne" },
-  { src: serumDetail2, alt: "Detalle del aplicador y el frasco" },
+  { src: serumHowTo, alt: "Serum de Pestañas Solenne 7 ml, paso a paso de aplicación diaria" },
+  { src: serumBeforeAfter, alt: "Pestañas antes y después con el Serum de Pestañas Solenne" },
+  { src: serumBenefitsCard, alt: "Beneficios del Serum de Pestañas Solenne, fórmula avanzada 7 ml" },
+  { src: serumDailyCare, alt: "Cuidado diario de pestañas con el Serum de Pestañas Solenne" },
 ];
 
 export const ProductGallerySerum = () => {
