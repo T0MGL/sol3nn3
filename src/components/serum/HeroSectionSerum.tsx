@@ -10,7 +10,7 @@ import { StarIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import paymentMethodsImage from "@/assets/payments/payment-methods.webp";
 import serumHero from "@/assets/products/serum/serum-hero.webp";
-import serumDetail1 from "@/assets/products/serum/serum-detail-1.jpg";
+import serumDetail1 from "@/assets/products/serum/serum-detail-1.webp";
 import serumDetail2 from "@/assets/products/serum/serum-detail-2.webp";
 import { LivePurchaseNotification, getRandomBuyer } from "@/components/LivePurchaseNotification";
 import { trackViewContent } from "@/lib/meta-pixel";

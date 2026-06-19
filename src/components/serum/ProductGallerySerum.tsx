@@ -2,14 +2,17 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeInUpView } from "@/lib/animations";
 import serumHero from "@/assets/products/serum/serum-hero.webp";
-import serumDetail1 from "@/assets/products/serum/serum-detail-1.jpg";
-import serumDetail2 from "@/assets/products/serum/serum-detail-2.webp";
+import serumResult from "@/assets/products/serum/serum-result.webp";
+import serumTimeline from "@/assets/products/serum/serum-detail-1.webp";
+import serumApplication from "@/assets/products/serum/serum-application.webp";
+import serumOffer from "@/assets/products/serum/serum-detail-2.webp";
 
 const images = [
-  { src: serumHero, alt: "Solenne Serum de Pestañas, frasco 7 ml" },
-  { src: serumDetail2, alt: "Aplicador del Serum de Pestañas, fórmula transparente" },
-  { src: serumDetail1, alt: "Packaging del Serum de Pestañas Solenne" },
-  { src: serumDetail2, alt: "Detalle del aplicador y el frasco" },
+  { src: serumHero, alt: "Serum de Pestañas Solenne, frasco de 7 ml, pestañas más largas y densas" },
+  { src: serumResult, alt: "Antes y después del Serum de Pestañas Solenne, resultado entre la semana 4 y 8" },
+  { src: serumTimeline, alt: "Resultado paso a paso del Serum de Pestañas, semana 1 a 12" },
+  { src: serumApplication, alt: "Cómo aplicar el Serum de Pestañas, una pasada en la base de la pestaña" },
+  { src: serumOffer, alt: "Pack Duo del Serum de Pestañas Solenne, envío gratis y pago al recibir" },
 ];
 
 export const ProductGallerySerum = () => {
@@ -43,7 +46,7 @@ export const ProductGallerySerum = () => {
           <motion.div
             {...fadeInUpView}
             transition={{ ...fadeInUpView.transition, delay: 0.1 }}
-            className="grid grid-cols-4 gap-3 md:gap-4"
+            className="grid grid-cols-5 gap-2 md:gap-4"
           >
             {images.map((image, index) => (
               <button
