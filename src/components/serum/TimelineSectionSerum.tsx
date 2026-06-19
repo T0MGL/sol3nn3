@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { staggerContainerVariants, staggerItemVariants } from "@/lib/animations";
 import { SERUM_TIMELINE } from "@/data/serumProduct";
+import { BeforeAfterVideoSerum } from "@/components/serum/BeforeAfterVideoSerum";
 
 export const TimelineSectionSerum = () => {
   return (
@@ -22,6 +23,8 @@ export const TimelineSectionSerum = () => {
             Sin promesas mágicas. La fibra de la pestaña responde con uso constante. Esto es lo que la mayoría reporta.
           </p>
         </motion.div>
+
+        <BeforeAfterVideoSerum />
 
         <motion.div
           variants={staggerContainerVariants}
