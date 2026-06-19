@@ -152,7 +152,7 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
               </motion.p>
             </motion.div>
 
-            <div className="relative w-full max-w-[300px] sm:max-w-[380px] lg:max-w-[500px] mx-auto">
+            <div className="relative w-full lg:max-w-[560px] mx-auto">
               <div className="relative w-full aspect-square overflow-hidden rounded-lg">
                 <div className="absolute inset-0 -z-10 rounded-full blur-[60px] bg-primary/20 animate-glow-breathe scale-75" />
                 <div className="absolute inset-[10%] -z-10 rounded-full blur-[30px] bg-primary/15" />
@@ -230,8 +230,8 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
             <div className="space-y-3 md:space-y-5">
               <div className="hidden md:block h-0.5 w-10 bg-primary/40" />
 
-              <h1 className="text-balance text-[3.25rem] leading-[1.06] md:text-6xl lg:text-7xl md:leading-tight font-bold tracking-tight text-foreground">
-                Pestañas largas y pobladas, <span className="italic">las tuyas de verdad</span>
+              <h1 className="text-balance text-4xl leading-[1.1] md:text-5xl lg:text-6xl md:leading-tight font-bold tracking-tight text-foreground">
+                Pestañas largas y pobladas
               </h1>
               <p className="text-xl leading-relaxed md:text-xl text-primary font-medium">
                 Dejá las extensiones que te las arruinan y el rímel que nunca alcanza.
