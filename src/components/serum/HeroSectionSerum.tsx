@@ -230,15 +230,9 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
             <div className="space-y-3 md:space-y-5">
               <div className="hidden md:block h-0.5 w-10 bg-primary/40" />
 
-              <motion.h1
-                className="text-balance text-[3.25rem] leading-[1.06] md:text-6xl lg:text-7xl md:leading-tight font-bold tracking-tight text-foreground"
-                initial={{ clipPath: "inset(0 100% 0 0)" }}
-                whileInView={{ clipPath: "inset(0 0% 0 0)" }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              >
+              <h1 className="text-balance text-[3.25rem] leading-[1.06] md:text-6xl lg:text-7xl md:leading-tight font-bold tracking-tight text-foreground">
                 Pestañas largas y pobladas, <span className="italic">las tuyas de verdad</span>
-              </motion.h1>
+              </h1>
               <p className="text-xl leading-relaxed md:text-xl text-primary font-medium">
                 Dejá las extensiones que te las arruinan y el rímel que nunca alcanza.
               </p>
