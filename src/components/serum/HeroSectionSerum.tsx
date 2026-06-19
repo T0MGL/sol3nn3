@@ -128,7 +128,7 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(192,139,122,0.08),transparent_70%)] pointer-events-none" />
 
       <div className="container max-w-[1400px] mx-auto px-4 md:px-6 lg:px-12 relative z-10 pt-[80px] md:pt-36 pb-6 md:pb-12">
-        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 md:gap-8 items-start">
+        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-1.5 md:gap-8 items-start">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -202,7 +202,7 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
                 </button>
               </div>
 
-              <div className="flex justify-center gap-2 mt-4">
+              <div className="flex justify-center gap-2 mt-2 md:mt-4">
                 {slides.map((_, index) => (
                   <button
                     key={index}
@@ -227,17 +227,17 @@ export const HeroSectionSerum = ({ onBuyClick }: HeroSectionSerumProps) => {
             transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
             className="space-y-4 md:space-y-6 order-2 w-full"
           >
-            <div className="space-y-4 md:space-y-5">
-              <div className="h-0.5 w-10 bg-primary/40" />
+            <div className="space-y-3 md:space-y-5">
+              <div className="hidden md:block h-0.5 w-10 bg-primary/40" />
 
               <motion.h1
-                className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"
+                className="text-balance text-[2.75rem] leading-[1.05] md:text-6xl lg:text-7xl md:leading-tight font-bold tracking-tight text-foreground"
                 initial={{ clipPath: "inset(0 100% 0 0)" }}
                 whileInView={{ clipPath: "inset(0 0% 0 0)" }}
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
-                Pestañas largas y tupidas, <span className="italic">las tuyas de verdad</span>
+                Pestañas largas y pobladas, <span className="italic">las tuyas de verdad</span>
               </motion.h1>
               <p className="text-lg md:text-xl text-primary font-medium">
                 Dejá las extensiones que te las arruinan y el rímel que nunca alcanza.
