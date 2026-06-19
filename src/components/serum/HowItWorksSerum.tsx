@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { MoonIcon, BeakerIcon, ClockIcon } from "@heroicons/react/24/outline";
-import serumApplication from "@/assets/products/serum/serum-detail-2.webp";
+import serumApplication from "@/assets/products/serum/serum-how-to.webp";
 
 const steps = [
   {
@@ -97,14 +97,14 @@ export const HowItWorksSerum = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-          className="relative max-w-3xl mx-auto"
+          className="relative max-w-xl mx-auto"
         >
           <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-[80px] scale-90" />
-          <div className="relative rounded-2xl overflow-hidden shadow-[0_10px_40px_rgba(192,139,122,0.2)] border border-primary/10">
+          <div className="relative aspect-square rounded-2xl overflow-hidden shadow-[0_10px_40px_rgba(192,139,122,0.2)] border border-primary/10">
             <img
               src={serumApplication}
-              alt="Aplicación del Serum de Pestañas paso a paso"
-              className="w-full h-auto object-cover"
+              alt="Cómo usar el Serum de Pestañas Solenne paso a paso"
+              className="w-full h-full object-cover"
               loading="lazy"
               decoding="async"
             />

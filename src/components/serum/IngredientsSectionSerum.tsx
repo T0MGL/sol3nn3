@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { staggerContainerVariants, staggerItemVariants } from "@/lib/animations";
 import { SERUM_HERO_INGREDIENTS } from "@/data/serumProduct";
-import serumIngredients from "@/assets/products/serum/serum-detail-1.jpg";
+import serumIngredients from "@/assets/products/serum/serum-benefits-card.webp";
 
 export const IngredientsSectionSerum = () => {
   return (
@@ -37,7 +37,7 @@ export const IngredientsSectionSerum = () => {
               <div className="w-full aspect-square rounded-2xl shadow-lg drop-shadow-[0_8px_16px_rgba(192,139,122,0.25)] overflow-hidden">
                 <img
                   src={serumIngredients}
-                  alt="Ingredientes del Serum de Pestañas Solenne"
+                  alt="Fórmula avanzada del Serum de Pestañas Solenne con sus beneficios"
                   className="w-full h-full object-cover"
                   loading="lazy"
                   decoding="async"
